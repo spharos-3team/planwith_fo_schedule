@@ -31,20 +31,36 @@ public class ScheduleController {
 			@Valid @RequestBody CreateScheduleRequest request
 	) {
 		CreateScheduleCommand command = new CreateScheduleCommand(
-				request.ownerId(),
+				request.memberUuid(),
 				request.title(),
+				request.destination(),
+				request.startDate(),
+				request.endDate(),
+				request.headcount(),
+				request.expectedCost(),
+				request.transportation(),
+				request.content(),
+				request.calendarColor(),
+				request.creatorType(),
 				request.items().stream()
 						.map(item -> new CreateScheduleItemCommand(
-								item.title(),
-								item.startsAt(),
-								item.endsAt()
+								item.dayNumber(),
+								item.scheduleTime(),
+								item.subtitle(),
+								item.scheduleType(),
+								item.description(),
+								item.estimatedCost(),
+								item.placeName(),
+								item.placeAddress(),
+								item.latitude(),
+								item.longitude()
 						))
 						.toList()
 		);
 		CreateScheduleUseCase.CreateScheduleResult result = createScheduleUseCase.createSchedule(command);
 		CreateScheduleResponse response = new CreateScheduleResponse(
-				result.scheduleId(),
-				result.ownerId(),
+				result.scheduleUuid(),
+				result.memberUuid(),
 				result.title(),
 				result.itemCount()
 		);
