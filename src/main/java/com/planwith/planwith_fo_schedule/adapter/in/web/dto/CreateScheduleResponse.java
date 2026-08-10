@@ -5,7 +5,6 @@ import java.util.UUID;
 public record CreateScheduleResponse(
 		UUID scheduleUuid,
 		UUID memberUuid,
-		String title,
-		int itemCount
+		String title
 ) {
 }
