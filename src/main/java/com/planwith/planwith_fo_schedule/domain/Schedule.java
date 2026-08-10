@@ -1,51 +1,174 @@
 package com.planwith.planwith_fo_schedule.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+
+import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
+import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
+import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
 public final class Schedule {
 
-	private final UUID id;
-	private final UUID ownerId;
+	private final Long scheduleId;
+	private final ScheduleUuid scheduleUuid;
+	private final MemberUuid memberUuid;
 	private final String title;
+	private final String destination;
+	private final SchedulePeriod period;
+	private final Headcount headcount;
+	private final ScheduleCost expectedCost;
+	private final String transportation;
+	private final String content;
+	private final String calendarColor;
+	private final CreatorType creatorType;
+	private final LocalDateTime createdAt;
+	private final LocalDateTime updatedAt;
 	private final List<ScheduleItem> items;
 
-	private Schedule(UUID id, UUID ownerId, String title, List<ScheduleItem> items) {
-		this.id = Objects.requireNonNull(id, "Schedule ID is required.");
-		this.ownerId = Objects.requireNonNull(ownerId, "Owner ID is required.");
-		this.title = requireText(title, "Schedule title is required.");
+	private Schedule(
+			Long scheduleId,
+			ScheduleUuid scheduleUuid,
+			MemberUuid memberUuid,
+			String title,
+			String destination,
+			SchedulePeriod period,
+			Headcount headcount,
+			ScheduleCost expectedCost,
+			String transportation,
+			String content,
+			String calendarColor,
+			CreatorType creatorType,
+			LocalDateTime createdAt,
+			LocalDateTime updatedAt,
+			List<ScheduleItem> items
+	) {
+		this.scheduleId = scheduleId;
+		this.scheduleUuid = Objects.requireNonNull(scheduleUuid, "Schedule UUID is required.");
+		this.memberUuid = Objects.requireNonNull(memberUuid, "Member UUID is required.");
+		this.title = requireText(title, 200, "Schedule title is required.");
+		this.destination = requireText(destination, 200, "Destination is required.");
+		this.period = Objects.requireNonNull(period, "Schedule period is required.");
+		this.headcount = Objects.requireNonNull(headcount, "Headcount is required.");
+		this.expectedCost = Objects.requireNonNull(expectedCost, "Expected cost is required.");
+		this.transportation = trimToNull(transportation);
+		this.content = trimToNull(content);
+		this.calendarColor = requireOptionalText(calendarColor, 30, "Calendar color must not exceed 30 characters.");
+		this.creatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 		this.items = List.copyOf(Objects.requireNonNull(items, "Schedule items are required."));
 	}
 
-	public static Schedule create(UUID ownerId, String title, List<ScheduleItem> items) {
-		return new Schedule(UUID.randomUUID(), ownerId, title, items);
+	public static Schedule create(
+			MemberUuid memberUuid,
+			String title,
+			String destination,
+			SchedulePeriod period,
+			Headcount headcount,
+			ScheduleCost expectedCost,
+			String transportation,
+			String content,
+			String calendarColor,
+			CreatorType creatorType,
+			List<ScheduleItem> items
+	) {
+		return new Schedule(
+				null,
+				ScheduleUuid.create(),
+				memberUuid,
+				title,
+				destination,
+				period,
+				headcount,
+				expectedCost,
+				transportation,
+				content,
+				calendarColor,
+				creatorType,
+				null,
+				null,
+				items
+		);
 	}
 
-	public static Schedule restore(UUID id, UUID ownerId, String title, List<ScheduleItem> items) {
-		return new Schedule(id, ownerId, title, items);
+	public static Schedule restore(
+			Long scheduleId,
+			ScheduleUuid scheduleUuid,
+			MemberUuid memberUuid,
+			String title,
+			String destination,
+			SchedulePeriod period,
+			Headcount headcount,
+			ScheduleCost expectedCost,
+			String transportation,
+			String content,
+			String calendarColor,
+			CreatorType creatorType,
+			LocalDateTime createdAt,
+			LocalDateTime updatedAt,
+			List<ScheduleItem> items
+	) {
+		return new Schedule(
+				scheduleId,
+				scheduleUuid,
+				memberUuid,
+				title,
+				destination,
+				period,
+				headcount,
+				expectedCost,
+				transportation,
+				content,
+				calendarColor,
+				creatorType,
+				createdAt,
+				updatedAt,
+				items
+		);
 	}
 
-	private static String requireText(String value, String message) {
-		if (value == null || value.isBlank()) {
+	private static String requireText(String value, int maxLength, String message) {
+		String trimmed = trimToNull(value);
+		if (trimmed == null) {
 			throw new InvalidScheduleException(message);
+		}
+		if (trimmed.length() > maxLength) {
+			throw new InvalidScheduleException("Value must not exceed " + maxLength + " characters.");
+		}
+		return trimmed;
+	}
+
+	private static String requireOptionalText(String value, int maxLength, String message) {
+		String trimmed = trimToNull(value);
+		if (trimmed != null && trimmed.length() > maxLength) {
+			throw new InvalidScheduleException(message);
+		}
+		return trimmed;
+	}
+
+	private static String trimToNull(String value) {
+		if (value == null || value.isBlank()) {
+			return null;
 		}
 		return value.trim();
 	}
 
-	public UUID id() {
-		return id;
-	}
-
-	public UUID ownerId() {
-		return ownerId;
-	}
-
-	public String title() {
-		return title;
-	}
-
-	public List<ScheduleItem> items() {
-		return items;
-	}
+	public Long scheduleId() { return scheduleId; }
+	public ScheduleUuid scheduleUuid() { return scheduleUuid; }
+	public MemberUuid memberUuid() { return memberUuid; }
+	public String title() { return title; }
+	public String destination() { return destination; }
+	public SchedulePeriod period() { return period; }
+	public Headcount headcount() { return headcount; }
+	public ScheduleCost expectedCost() { return expectedCost; }
+	public String transportation() { return transportation; }
+	public String content() { return content; }
+	public String calendarColor() { return calendarColor; }
+	public CreatorType creatorType() { return creatorType; }
+	public LocalDateTime createdAt() { return createdAt; }
+	public LocalDateTime updatedAt() { return updatedAt; }
+	public List<ScheduleItem> items() { return items; }
 }

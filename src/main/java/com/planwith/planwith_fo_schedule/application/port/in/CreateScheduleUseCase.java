@@ -1,22 +1,51 @@
 package com.planwith.planwith_fo_schedule.application.port.in;
 
-import java.time.Instant;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleType;
 
 public interface CreateScheduleUseCase {
 
 	CreateScheduleResult createSchedule(CreateScheduleCommand command);
 
-	record CreateScheduleCommand(UUID ownerId, String title, List<CreateScheduleItemCommand> items) {
+	record CreateScheduleCommand(
+			UUID memberUuid,
+			String title,
+			String destination,
+			LocalDate startDate,
+			LocalDate endDate,
+			Integer headcount,
+			Long expectedCost,
+			String transportation,
+			String content,
+			String calendarColor,
+			CreatorType creatorType,
+			List<CreateScheduleItemCommand> items
+	) {
 		public CreateScheduleCommand {
 			items = List.copyOf(items);
 		}
 	}
 
-	record CreateScheduleItemCommand(String title, Instant startsAt, Instant endsAt) {
+	record CreateScheduleItemCommand(
+			int dayNumber,
+			LocalTime scheduleTime,
+			String subtitle,
+			ScheduleType scheduleType,
+			String description,
+			Long estimatedCost,
+			String placeName,
+			String placeAddress,
+			BigDecimal latitude,
+			BigDecimal longitude
+	) {
 	}
 
-	record CreateScheduleResult(UUID scheduleId, UUID ownerId, String title, int itemCount) {
+	record CreateScheduleResult(UUID scheduleUuid, UUID memberUuid, String title, int itemCount) {
 	}
 }
