@@ -1,0 +1,22 @@
+# Gateway route snippet for planwith-fo-schedule
+# Does NOT patch the Gateway repo automatically. Copy-paste the route item below.
+#
+# Target: planwith_gateway/src/main/resources/application.yaml
+# Under:  spring.cloud.gateway.server.webmvc.routes
+#
+# Example:
+# spring:
+#   cloud:
+#     gateway:
+#       server:
+#         webmvc:
+#           routes:
+#             # paste the item below here
+#
+# Eureka service id is usually UPPERCASE (lb://PLANWITH-FO-SCHEDULE).
+# Keep Path aligned with the service @RequestMapping. Default: /api/planwith-fo-schedule/**
+
+            - id: planwith-fo-schedule
+              uri: lb://PLANWITH-FO-SCHEDULE
+              predicates:
+                - Path=/api/planwith-fo-schedule/**
