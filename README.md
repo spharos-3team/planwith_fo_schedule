@@ -1,37 +1,41 @@
-# planwith_fo_schedule
+# schedule-service
 
-서버 노트북 Self-hosted Runner 배포 확인용 Spring Boot 서비스입니다.
+PlanWith 일정 Aggregate를 소유하는 Spring Boot 서비스입니다. 내부 구조는 `adapter -> application -> domain` 의존 방향을 따르는 Hexagonal Architecture입니다.
 
 | 항목 | 값 |
 | --- | --- |
-| Compose / Eureka 이름 | `planwith-fo-schedule` |
+| Spring/Eureka 이름 | `schedule-service` |
+| Compose 이름 | `planwith-fo-schedule` |
 | 이미지 | `planwith/planwith-fo-schedule:latest` |
-| 포트 | `8081` |
+| 로컬 기본 포트 | 랜덤 포트 (`0`) |
+| Compose 포트 | `8081` (`SERVER_PORT` 주입) |
 | 배포 확인 | `GET /api/planwith-fo-schedule/deploy-check` |
 
 ## 로컬 실행
 
+MySQL 접속 정보를 환경변수로 주입한 뒤 실행합니다.
+
 ```powershell
+$env:DB_URL='jdbc:mysql://localhost:3306/schedule'
+$env:DB_USERNAME='schedule'
+$env:DB_PASSWORD='<secret>'
 .\gradlew.bat bootRun
 ```
 
-- Swagger UI: `http://localhost:8081/swagger-ui/index.html`
-- Deploy check: `http://localhost:8081/api/planwith-fo-schedule/deploy-check`
+- `SERVER_PORT`를 지정하지 않으면 로컬 포트가 임의 할당됩니다.
+- Swagger UI: `/swagger-ui/index.html`
+- 일정 생성: `POST /api/v1/schedules`
+- Deploy check: `GET /api/planwith-fo-schedule/deploy-check`
 
-## 로그인 테스트
+## 구조
 
-```json
-{
-  "id": "test-001",
-  "pw": "1234"
-}
-```
+- `domain`: Spring/JPA에 독립적인 `Schedule`, `ScheduleItem` Aggregate
+- `application`: UseCase, Repository Port, 트랜잭션 경계
+- `adapter.in.web`: REST 요청/응답 및 검증
+- `adapter.out.persistence`: JPA Entity와 Repository Adapter
+- `config`: 서비스 설정
 
-| 환경 변수 | 기본값 |
-| --- | --- |
-| `LOGIN_ID` | 없음 (환경변수로 주입) |
-| `LOGIN_PASSWORD` | 없음 (환경변수로 주입) |
-| `DEPLOY_MARKER` | `planwith-fo-schedule-deploy-v1` |
+Kafka, Redis, CQRS, Outbox는 현재 구성에 포함하지 않습니다.
 
 ## 서버 배포 확인
 
