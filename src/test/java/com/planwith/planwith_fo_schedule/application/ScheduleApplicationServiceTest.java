@@ -27,7 +27,7 @@ class ScheduleApplicationServiceTest {
 
 		var result = service.createSchedule(new CreateScheduleCommand(
 				memberUuid,
-				"서울 여행",
+				null,
 				"서울",
 				LocalDate.of(2026, 8, 10),
 				LocalDate.of(2026, 8, 12),
@@ -35,8 +35,8 @@ class ScheduleApplicationServiceTest {
 				null,
 				"대중교통",
 				"여름 휴가",
-				"#3366FF",
-				CreatorType.SELF,
+				null,
+				CreatorType.AI,
 				List.of(new CreateScheduleItemCommand(
 						1,
 						LocalTime.of(10, 30),
@@ -53,6 +53,8 @@ class ScheduleApplicationServiceTest {
 
 		assertThat(repository.savedSchedule).isNotNull();
 		assertThat(repository.savedSchedule.memberUuid().value()).isEqualTo(memberUuid);
+		assertThat(repository.savedSchedule.title()).isEqualTo("서울 여행");
+		assertThat(repository.savedSchedule.calendarColor()).isEqualTo(Schedule.DEFAULT_CALENDAR_COLOR);
 		assertThat(repository.savedSchedule.headcount().value()).isEqualTo(1);
 		assertThat(repository.savedSchedule.expectedCost().amount()).isNull();
 		assertThat(repository.savedSchedule.items().get(0).estimatedCost().amount()).isZero();

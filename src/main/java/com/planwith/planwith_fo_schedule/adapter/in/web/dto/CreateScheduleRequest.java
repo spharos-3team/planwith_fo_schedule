@@ -20,7 +20,7 @@ import jakarta.validation.constraints.Size;
 
 public record CreateScheduleRequest(
 		@NotNull UUID memberUuid,
-		@NotBlank @Size(max = 200) String title,
+		@Size(max = 200) String title,
 		@NotBlank @Size(max = 200) String destination,
 		@NotNull LocalDate startDate,
 		@NotNull LocalDate endDate,

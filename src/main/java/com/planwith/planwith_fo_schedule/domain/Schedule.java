@@ -1,5 +1,6 @@
 package com.planwith.planwith_fo_schedule.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +12,12 @@ import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
 public final class Schedule {
+	public static final String DEFAULT_CALENDAR_COLOR = "#4F46E5";
+
+	private static final int MAX_TITLE_LENGTH = 200;
+	private static final int MAX_DESTINATION_LENGTH = 200;
+	private static final int MAX_CALENDAR_COLOR_LENGTH = 30;
+	private static final String DEFAULT_TITLE_SUFFIX = " 여행";
 
 	private final Long scheduleId;
 	private final ScheduleUuid scheduleUuid;
@@ -48,14 +55,14 @@ public final class Schedule {
 		this.scheduleId = scheduleId;
 		this.scheduleUuid = Objects.requireNonNull(scheduleUuid, "Schedule UUID is required.");
 		this.memberUuid = Objects.requireNonNull(memberUuid, "Member UUID is required.");
-		this.title = requireText(title, 200, "Schedule title is required.");
-		this.destination = requireText(destination, 200, "Destination is required.");
+		this.destination = requireText(destination, MAX_DESTINATION_LENGTH, "Destination is required.");
 		this.period = Objects.requireNonNull(period, "Schedule period is required.");
+		this.title = resolveTitle(title, this.destination);
 		this.headcount = Objects.requireNonNull(headcount, "Headcount is required.");
 		this.expectedCost = Objects.requireNonNull(expectedCost, "Expected cost is required.");
 		this.transportation = trimToNull(transportation);
 		this.content = trimToNull(content);
-		this.calendarColor = requireOptionalText(calendarColor, 30, "Calendar color must not exceed 30 characters.");
+		this.calendarColor = resolveCalendarColor(calendarColor);
 		this.creatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -66,7 +73,8 @@ public final class Schedule {
 			MemberUuid memberUuid,
 			String title,
 			String destination,
-			SchedulePeriod period,
+			LocalDate startDate,
+			LocalDate endDate,
 			Headcount headcount,
 			ScheduleCost expectedCost,
 			String transportation,
@@ -75,19 +83,30 @@ public final class Schedule {
 			CreatorType creatorType,
 			List<ScheduleItem> items
 	) {
+		String validatedDestination = requireText(
+				destination,
+				MAX_DESTINATION_LENGTH,
+				"Destination is required."
+		);
+		SchedulePeriod validatedPeriod = new SchedulePeriod(startDate, endDate);
+		String resolvedTitle = resolveTitle(title, validatedDestination);
+		String resolvedCalendarColor = resolveCalendarColor(calendarColor);
+		CreatorType validatedCreatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
+		Headcount resolvedHeadcount = resolveHeadcount(headcount, validatedCreatorType);
+
 		return new Schedule(
 				null,
 				ScheduleUuid.create(),
 				memberUuid,
-				title,
-				destination,
-				period,
-				headcount,
+				resolvedTitle,
+				validatedDestination,
+				validatedPeriod,
+				resolvedHeadcount,
 				expectedCost,
 				transportation,
 				content,
-				calendarColor,
-				creatorType,
+				resolvedCalendarColor,
+				validatedCreatorType,
 				null,
 				null,
 				items
@@ -139,6 +158,40 @@ public final class Schedule {
 			throw new InvalidScheduleException("Value must not exceed " + maxLength + " characters.");
 		}
 		return trimmed;
+	}
+
+	private static String resolveTitle(String title, String destination) {
+		String trimmedTitle = trimToNull(title);
+		if (trimmedTitle != null) {
+			return requireText(trimmedTitle, MAX_TITLE_LENGTH, "Schedule title is required.");
+		}
+
+		String automaticTitle = destination + DEFAULT_TITLE_SUFFIX;
+		return automaticTitle.length() <= MAX_TITLE_LENGTH
+				? automaticTitle
+				: automaticTitle.substring(0, MAX_TITLE_LENGTH);
+	}
+
+	private static String resolveCalendarColor(String calendarColor) {
+		String trimmedColor = trimToNull(calendarColor);
+		if (trimmedColor == null) {
+			return DEFAULT_CALENDAR_COLOR;
+		}
+		return requireOptionalText(
+				trimmedColor,
+				MAX_CALENDAR_COLOR_LENGTH,
+				"Calendar color must not exceed 30 characters."
+		);
+	}
+
+	private static Headcount resolveHeadcount(Headcount headcount, CreatorType creatorType) {
+		if (headcount != null) {
+			return headcount;
+		}
+		if (creatorType == CreatorType.AI) {
+			return Headcount.defaultValue();
+		}
+		throw new InvalidScheduleException("Headcount is required for non-AI schedules.");
 	}
 
 	private static String requireOptionalText(String value, int maxLength, String message) {
