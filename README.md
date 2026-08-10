@@ -24,7 +24,8 @@ $env:DB_PASSWORD='<secret>'
 
 - `SERVER_PORT`를 지정하지 않으면 로컬 포트가 임의 할당됩니다.
 - Swagger UI: `/swagger-ui/index.html`
-- 일정 생성: `POST /api/v1/schedules`
+- 일반 일정 생성: `POST /schedules` (`POST /api/v1/schedules` 호환)
+- 일반 일정의 자유 형식 내용은 `content`에 저장하며 상세 항목(`schedule_items`)은 생성하지 않습니다.
 - Deploy check: `GET /api/planwith-fo-schedule/deploy-check`
 
 ## 구조

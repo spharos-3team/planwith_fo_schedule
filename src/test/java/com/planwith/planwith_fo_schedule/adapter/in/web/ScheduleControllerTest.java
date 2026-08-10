@@ -1,7 +1,9 @@
 package com.planwith.planwith_fo_schedule.adapter.in.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,11 +13,13 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase;
+import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleResult;
 
 class ScheduleControllerTest {
@@ -32,14 +36,14 @@ class ScheduleControllerTest {
 	}
 
 	@Test
-	void mapsSqlAlignedScheduleRequestToUseCase() throws Exception {
+	void createsSelfScheduleThroughPublicEndpoint() throws Exception {
 		UUID scheduleUuid = UUID.randomUUID();
 		UUID memberUuid = UUID.randomUUID();
 		when(createScheduleUseCase.createSchedule(any())).thenReturn(
-				new CreateScheduleResult(scheduleUuid, memberUuid, "서울 여행", 1)
+				new CreateScheduleResult(scheduleUuid, memberUuid, "서울 여행")
 		);
 
-		mockMvc.perform(post("/api/v1/schedules")
+		mockMvc.perform(post("/schedules")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -52,27 +56,17 @@ class ScheduleControllerTest {
 								  "expectedCost": 300000,
 								  "transportation": "대중교통",
 								  "content": "여름 휴가",
-								  "calendarColor": "#3366FF",
-								  "creatorType": "SELF",
-								  "items": [{
-								    "dayNumber": 1,
-								    "scheduleTime": "10:30:00",
-								    "subtitle": "경복궁 관람",
-								    "scheduleType": "TOUR",
-								    "description": "경복궁을 관람합니다.",
-								    "estimatedCost": 3000,
-								    "placeName": "경복궁",
-								    "placeAddress": "서울특별시 종로구 사직로 161",
-								    "latitude": 37.5796170,
-								    "longitude": 126.9770410
-								  }]
+								  "calendarColor": "#3366FF"
 								}
 								""".formatted(memberUuid)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
-				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()))
-				.andExpect(jsonPath("$.data.itemCount").value(1));
+				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()));
+
+		ArgumentCaptor<CreateScheduleCommand> commandCaptor = ArgumentCaptor.forClass(CreateScheduleCommand.class);
+		verify(createScheduleUseCase).createSchedule(commandCaptor.capture());
+		assertThat(commandCaptor.getValue().content()).isEqualTo("여름 휴가");
 	}
 
 	@Test
@@ -84,9 +78,7 @@ class ScheduleControllerTest {
 								  "title": "서울 여행",
 								  "destination": "서울",
 								  "startDate": "2026-08-10",
-								  "endDate": "2026-08-12",
-								  "creatorType": "SELF",
-								  "items": []
+								  "endDate": "2026-08-12"
 								}
 								"""))
 				.andExpect(status().isBadRequest())
@@ -96,14 +88,14 @@ class ScheduleControllerTest {
 	}
 
 	@Test
-	void acceptsMissingTitleColorAndAiHeadcountForDomainDefaults() throws Exception {
+	void acceptsMissingTitleAndColor() throws Exception {
 		UUID scheduleUuid = UUID.randomUUID();
 		UUID memberUuid = UUID.randomUUID();
 		when(createScheduleUseCase.createSchedule(any())).thenReturn(
-				new CreateScheduleResult(scheduleUuid, memberUuid, "제주도 여행", 0)
+				new CreateScheduleResult(scheduleUuid, memberUuid, "제주도 여행")
 		);
 
-		mockMvc.perform(post("/api/v1/schedules")
+		mockMvc.perform(post("/schedules")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -111,8 +103,7 @@ class ScheduleControllerTest {
 								  "destination": "제주도",
 								  "startDate": "2026-08-10",
 								  "endDate": "2026-08-12",
-								  "creatorType": "AI",
-								  "items": []
+								  "headcount": 1
 								}
 								""".formatted(memberUuid)))
 				.andExpect(status().isCreated())
