@@ -94,4 +94,28 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
 				.andExpect(jsonPath("$.error.fieldErrors.memberUuid").exists());
 	}
+
+	@Test
+	void acceptsMissingTitleColorAndAiHeadcountForDomainDefaults() throws Exception {
+		UUID scheduleUuid = UUID.randomUUID();
+		UUID memberUuid = UUID.randomUUID();
+		when(createScheduleUseCase.createSchedule(any())).thenReturn(
+				new CreateScheduleResult(scheduleUuid, memberUuid, "제주도 여행", 0)
+		);
+
+		mockMvc.perform(post("/api/v1/schedules")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "memberUuid": "%s",
+								  "destination": "제주도",
+								  "startDate": "2026-08-10",
+								  "endDate": "2026-08-12",
+								  "creatorType": "AI",
+								  "items": []
+								}
+								""".formatted(memberUuid)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.data.title").value("제주도 여행"));
+	}
 }

@@ -16,7 +16,6 @@ import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
-import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 class ScheduleTest {
 
@@ -29,7 +28,8 @@ class ScheduleTest {
 				new MemberUuid(memberUuid),
 				"서울 여행",
 				"서울",
-				new SchedulePeriod(LocalDate.of(2026, 8, 10), LocalDate.of(2026, 8, 12)),
+				LocalDate.of(2026, 8, 10),
+				LocalDate.of(2026, 8, 12),
 				new Headcount(2),
 				ScheduleCost.of(300_000L),
 				"대중교통",
@@ -60,7 +60,8 @@ class ScheduleTest {
 				new MemberUuid(UUID.randomUUID()),
 				"서울 여행",
 				"서울",
-				new SchedulePeriod(LocalDate.of(2026, 8, 10), LocalDate.of(2026, 8, 10)),
+				LocalDate.of(2026, 8, 10),
+				LocalDate.of(2026, 8, 10),
 				Headcount.defaultValue(),
 				ScheduleCost.unspecified(),
 				null,

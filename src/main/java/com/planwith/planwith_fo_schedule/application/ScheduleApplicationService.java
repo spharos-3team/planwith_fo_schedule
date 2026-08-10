@@ -15,7 +15,6 @@ import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
-import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 @Service
 public class ScheduleApplicationService implements CreateScheduleUseCase {
@@ -36,8 +35,9 @@ public class ScheduleApplicationService implements CreateScheduleUseCase {
 				new MemberUuid(command.memberUuid()),
 				command.title(),
 				command.destination(),
-				new SchedulePeriod(command.startDate(), command.endDate()),
-				command.headcount() == null ? Headcount.defaultValue() : new Headcount(command.headcount()),
+				command.startDate(),
+				command.endDate(),
+				command.headcount() == null ? null : new Headcount(command.headcount()),
 				command.expectedCost() == null
 						? ScheduleCost.unspecified()
 						: ScheduleCost.of(command.expectedCost()),
