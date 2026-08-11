@@ -27,7 +27,8 @@ public final class Schedule {
 	private final SchedulePeriod period;
 	private final Headcount headcount;
 	private final ScheduleCost expectedCost;
-	private final String transportation;
+	private final TransportationType transportation;
+	private final TravelStyle travelStyle;
 	private final String content;
 	private final String calendarColor;
 	private final ScheduleCreatorType creatorType;
@@ -45,7 +46,8 @@ public final class Schedule {
 			SchedulePeriod period,
 			Headcount headcount,
 			ScheduleCost expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor,
 			ScheduleCreatorType creatorType,
@@ -62,7 +64,8 @@ public final class Schedule {
 		this.title = resolveTitle(title, this.destination);
 		this.headcount = Objects.requireNonNull(headcount, "Headcount is required.");
 		this.expectedCost = Objects.requireNonNull(expectedCost, "Expected cost is required.");
-		this.transportation = trimToNull(transportation);
+		this.transportation = transportation;
+		this.travelStyle = travelStyle;
 		this.content = trimToNull(content);
 		this.calendarColor = resolveCalendarColor(calendarColor);
 		this.creatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
@@ -80,7 +83,8 @@ public final class Schedule {
 			LocalDate endDate,
 			Headcount headcount,
 			ScheduleCost expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor,
 			ScheduleCreatorType creatorType,
@@ -107,6 +111,7 @@ public final class Schedule {
 				resolvedHeadcount,
 				expectedCost,
 				transportation,
+				travelStyle,
 				content,
 				resolvedCalendarColor,
 				validatedScheduleCreatorType,
@@ -126,7 +131,8 @@ public final class Schedule {
 			SchedulePeriod period,
 			Headcount headcount,
 			ScheduleCost expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor,
 			ScheduleCreatorType creatorType,
@@ -145,6 +151,7 @@ public final class Schedule {
 				headcount,
 				expectedCost,
 				transportation,
+				travelStyle,
 				content,
 				calendarColor,
 				creatorType,
@@ -162,7 +169,8 @@ public final class Schedule {
 			LocalDate endDate,
 			Headcount headcount,
 			ScheduleCost expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor
 	) {
@@ -184,6 +192,7 @@ public final class Schedule {
 				headcount == null ? this.headcount : headcount,
 				expectedCost == null ? this.expectedCost : expectedCost,
 				transportation == null ? this.transportation : transportation,
+				travelStyle == null ? this.travelStyle : travelStyle,
 				content == null ? this.content : content,
 				calendarColor == null ? this.calendarColor : calendarColor,
 				creatorType,
@@ -205,6 +214,7 @@ public final class Schedule {
 				headcount,
 				expectedCost,
 				transportation,
+				travelStyle,
 				content,
 				calendarColor,
 				creatorType,
@@ -293,7 +303,8 @@ public final class Schedule {
 	public SchedulePeriod period() { return period; }
 	public Headcount headcount() { return headcount; }
 	public ScheduleCost expectedCost() { return expectedCost; }
-	public String transportation() { return transportation; }
+	public TransportationType transportation() { return transportation; }
+	public TravelStyle travelStyle() { return travelStyle; }
 	public String content() { return content; }
 	public String calendarColor() { return calendarColor; }
 	public ScheduleCreatorType creatorType() { return creatorType; }

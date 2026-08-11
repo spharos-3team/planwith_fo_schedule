@@ -40,6 +40,7 @@ public class UpdateScheduleService implements UpdateScheduleUseCase {
 				validatedCommand.headcount() == null ? null : new Headcount(validatedCommand.headcount()),
 				validatedCommand.expectedCost() == null ? null : ScheduleCost.of(validatedCommand.expectedCost()),
 				validatedCommand.transportation(),
+				validatedCommand.travelStyle(),
 				validatedCommand.content(),
 				validatedCommand.calendarColor()
 		);
@@ -58,6 +59,7 @@ public class UpdateScheduleService implements UpdateScheduleUseCase {
 				schedule.headcount().value(),
 				schedule.expectedCost().amount(),
 				schedule.transportation(),
+				schedule.travelStyle(),
 				schedule.content(),
 				schedule.calendarColor(),
 				schedule.creatorType()

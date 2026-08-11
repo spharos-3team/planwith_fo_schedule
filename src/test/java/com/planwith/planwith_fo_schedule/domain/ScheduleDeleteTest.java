@@ -28,6 +28,7 @@ class ScheduleDeleteTest {
 				null,
 				null,
 				null,
+				null,
 				ScheduleCreatorType.USER,
 				List.of()
 		);

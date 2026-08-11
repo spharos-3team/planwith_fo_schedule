@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
 import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
@@ -15,7 +17,8 @@ public record AiScheduleGenerateCommand(
 		SchedulePeriod period,
 		Headcount participantCount,
 		ScheduleCost estimatedBudget,
-		String transportation,
+		TransportationType transportation,
+		TravelStyle travelStyle,
 		String additionalRequest,
 		AiScheduleFlightCommand flight
 ) {
@@ -26,7 +29,6 @@ public record AiScheduleGenerateCommand(
 		Objects.requireNonNull(period, "Schedule period is required.");
 		Objects.requireNonNull(participantCount, "Participant count is required.");
 		Objects.requireNonNull(estimatedBudget, "Estimated budget is required.");
-		transportation = trimToNull(transportation);
 		additionalRequest = trimToNull(additionalRequest);
 	}
 

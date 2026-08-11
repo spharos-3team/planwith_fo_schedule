@@ -36,6 +36,8 @@ import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCa
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleResult;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 class ScheduleControllerTest {
 
@@ -85,7 +87,8 @@ class ScheduleControllerTest {
 								  "endDate": "2026-08-12",
 								  "headcount": 2,
 								  "expectedCost": 300000,
-								  "transportation": "대중교통",
+								  "transportation": "TRAIN_PUBLIC_TRANSIT",
+								  "travelStyle": "TOUR_LANDMARK",
 								  "content": "여름 휴가",
 								  "calendarColor": "#3366FF"
 								}
@@ -116,6 +119,24 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.success").value(false))
 				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
 				.andExpect(jsonPath("$.error.fieldErrors.memberUuid").exists());
+	}
+
+	@Test
+	void rejectsUnsupportedTransportationType() throws Exception {
+		mockMvc.perform(post("/api/v1/schedules")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "memberUuid": "%s",
+								  "destination": "서울",
+								  "startDate": "2026-08-10",
+								  "endDate": "2026-08-12",
+								  "headcount": 1,
+								  "transportation": "KTX"
+								}
+								""".formatted(UUID.randomUUID())))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
 	}
 
 	@Test
@@ -152,7 +173,8 @@ class ScheduleControllerTest {
 				LocalDate.of(2026, 9, 3),
 				2,
 				500_000L,
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"해운대 방문",
 				"#3366FF",
 				ScheduleCreatorType.USER
@@ -168,6 +190,8 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.data.endDate").value("2026-09-03"))
 				.andExpect(jsonPath("$.data.headcount").value(2))
 				.andExpect(jsonPath("$.data.expectedCost").value(500000))
+				.andExpect(jsonPath("$.data.transportation").value("TRAIN_PUBLIC_TRANSIT"))
+				.andExpect(jsonPath("$.data.travelStyle").value("TOUR_LANDMARK"))
 				.andExpect(jsonPath("$.data.creatorType").value("USER"));
 	}
 
@@ -201,7 +225,8 @@ class ScheduleControllerTest {
 				LocalDate.of(2026, 10, 4),
 				3,
 				700_000L,
-				"렌터카",
+				TransportationType.RENTAL_CAR,
+				TravelStyle.RELAXATION_HEALING,
 				"가족 자유여행",
 				"#22AA88",
 				ScheduleCreatorType.USER

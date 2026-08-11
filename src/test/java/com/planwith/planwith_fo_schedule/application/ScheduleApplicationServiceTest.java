@@ -12,6 +12,8 @@ import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCa
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
 class ScheduleApplicationServiceTest {
@@ -30,7 +32,8 @@ class ScheduleApplicationServiceTest {
 				LocalDate.of(2026, 8, 12),
 				2,
 				null,
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"경복궁 관람 후 한강을 산책한다.",
 				null
 		));
@@ -42,6 +45,8 @@ class ScheduleApplicationServiceTest {
 		assertThat(repository.savedSchedule.headcount().value()).isEqualTo(2);
 		assertThat(repository.savedSchedule.expectedCost().amount()).isNull();
 		assertThat(repository.savedSchedule.creatorType()).isEqualTo(ScheduleCreatorType.USER);
+		assertThat(repository.savedSchedule.transportation()).isEqualTo(TransportationType.TRAIN_PUBLIC_TRANSIT);
+		assertThat(repository.savedSchedule.travelStyle()).isEqualTo(TravelStyle.TOUR_LANDMARK);
 		assertThat(repository.savedSchedule.content()).isEqualTo("경복궁 관람 후 한강을 산책한다.");
 		assertThat(repository.savedSchedule.items()).isEmpty();
 		assertThat(result.scheduleUuid()).isEqualTo(repository.savedSchedule.scheduleUuid().value());

@@ -3,6 +3,8 @@ package com.planwith.planwith_fo_schedule.adapter.in.web.dto;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
@@ -18,7 +20,8 @@ public record AiScheduleGenerateRequest(
 		@NotNull LocalDate endDate,
 		@NotNull @Min(1) Integer participantCount,
 		@NotNull @PositiveOrZero Long estimatedBudget,
-		@Size(max = 200) String transportation,
+		TransportationType transportation,
+		TravelStyle travelStyle,
 		@Size(max = 2_000) String additionalRequest,
 		@Valid AiScheduleFlightRequest flight
 ) {

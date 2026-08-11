@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
 import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 class AiScheduleGenerateRequestSerializationTest {
 
@@ -23,7 +25,8 @@ class AiScheduleGenerateRequestSerializationTest {
 				LocalDate.of(2026, 9, 5),
 				2,
 				1_000_000L,
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"아이와 함께 갈 수 있는 장소를 포함해 주세요.",
 				new AiScheduleFlightRequest(
 						"인천",
@@ -40,6 +43,8 @@ class AiScheduleGenerateRequestSerializationTest {
 				.contains("\"destination\":\"오사카\"")
 				.contains("\"participantCount\":2")
 				.contains("\"estimatedBudget\":1000000")
+				.contains("\"transportation\":\"TRAIN_PUBLIC_TRANSIT\"")
+				.contains("\"travelStyle\":\"TOUR_LANDMARK\"")
 				.contains("\"originLocationCode\":\"ICN\"")
 				.contains("\"tripType\":\"ROUND_TRIP\"")
 				.doesNotContain("memberUuid", "provider", "travelPeriodValid");

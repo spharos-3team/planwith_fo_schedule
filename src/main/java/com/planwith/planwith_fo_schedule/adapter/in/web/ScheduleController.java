@@ -73,6 +73,7 @@ public class ScheduleController {
 				request.headcount(),
 				request.expectedCost(),
 				request.transportation(),
+				request.travelStyle(),
 				request.content(),
 				request.calendarColor()
 		);
@@ -99,6 +100,7 @@ public class ScheduleController {
 				result.headcount(),
 				result.expectedCost(),
 				result.transportation(),
+				result.travelStyle(),
 				result.content(),
 				result.calendarColor(),
 				result.creatorType()
@@ -140,6 +142,7 @@ public class ScheduleController {
 						request.headcount(),
 						request.expectedCost(),
 						request.transportation(),
+						request.travelStyle(),
 						request.content(),
 						request.calendarColor()
 				)
@@ -153,6 +156,7 @@ public class ScheduleController {
 				result.headcount(),
 				result.expectedCost(),
 				result.transportation(),
+				result.travelStyle(),
 				result.content(),
 				result.calendarColor(),
 				result.creatorType()

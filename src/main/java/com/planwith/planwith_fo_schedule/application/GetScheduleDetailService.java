@@ -37,6 +37,7 @@ public class GetScheduleDetailService implements GetScheduleDetailUseCase {
 				schedule.headcount().value(),
 				schedule.expectedCost().amount(),
 				schedule.transportation(),
+				schedule.travelStyle(),
 				schedule.content(),
 				schedule.calendarColor(),
 				schedule.creatorType()

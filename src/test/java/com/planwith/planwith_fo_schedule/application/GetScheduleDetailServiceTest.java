@@ -17,6 +17,8 @@ import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundE
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
@@ -40,7 +42,8 @@ class GetScheduleDetailServiceTest {
 		assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 9, 3));
 		assertThat(result.headcount()).isEqualTo(2);
 		assertThat(result.expectedCost()).isEqualTo(500_000L);
-		assertThat(result.transportation()).isEqualTo("대중교통");
+		assertThat(result.transportation()).isEqualTo(TransportationType.TRAIN_PUBLIC_TRANSIT);
+		assertThat(result.travelStyle()).isEqualTo(TravelStyle.TOUR_LANDMARK);
 		assertThat(result.content()).isEqualTo("해운대 방문");
 		assertThat(result.calendarColor()).isEqualTo("#3366FF");
 		assertThat(result.creatorType()).isEqualTo(ScheduleCreatorType.USER);
@@ -70,7 +73,8 @@ class GetScheduleDetailServiceTest {
 				LocalDate.of(2026, 9, 3),
 				new Headcount(2),
 				ScheduleCost.of(500_000L),
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"해운대 방문",
 				"#3366FF",
 				ScheduleCreatorType.USER,

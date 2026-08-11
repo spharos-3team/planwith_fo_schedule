@@ -36,6 +36,7 @@ public class ScheduleApplicationService implements CreateScheduleUseCase {
 						? ScheduleCost.unspecified()
 						: ScheduleCost.of(command.expectedCost()),
 				command.transportation(),
+				command.travelStyle(),
 				command.content(),
 				command.calendarColor(),
 				ScheduleCreatorType.USER,

@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
 import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -50,6 +52,7 @@ class AiScheduleGenerateRequestValidationTest {
 				null,
 				null,
 				null,
+				null,
 				null
 		);
 
@@ -72,6 +75,7 @@ class AiScheduleGenerateRequestValidationTest {
 				-1L,
 				null,
 				null,
+				null,
 				null
 		);
 
@@ -92,6 +96,7 @@ class AiScheduleGenerateRequestValidationTest {
 				1_000_000L,
 				null,
 				null,
+				null,
 				new AiScheduleFlightRequest("인천", "icn", "KIX1", null, null)
 		);
 
@@ -108,7 +113,8 @@ class AiScheduleGenerateRequestValidationTest {
 				LocalDate.of(2026, 9, 5),
 				2,
 				1_000_000L,
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"아이와 함께 갈 수 있는 장소를 포함해 주세요.",
 				new AiScheduleFlightRequest(
 						"인천",

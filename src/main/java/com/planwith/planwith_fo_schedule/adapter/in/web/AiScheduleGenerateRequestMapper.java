@@ -34,6 +34,7 @@ public final class AiScheduleGenerateRequestMapper {
 				new Headcount(validatedRequest.participantCount()),
 				ScheduleCost.of(validatedRequest.estimatedBudget()),
 				validatedRequest.transportation(),
+				validatedRequest.travelStyle(),
 				validatedRequest.additionalRequest(),
 				toFlightCommand(validatedRequest.flight())
 		);

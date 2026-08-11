@@ -3,6 +3,9 @@ package com.planwith.planwith_fo_schedule.adapter.in.web.dto;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +20,8 @@ public record CreateScheduleRequest(
 		@NotNull LocalDate endDate,
 		@NotNull @Min(1) Integer headcount,
 		@PositiveOrZero Long expectedCost,
-		String transportation,
+		TransportationType transportation,
+		TravelStyle travelStyle,
 		String content,
 		@Size(max = 30) String calendarColor
 ) {

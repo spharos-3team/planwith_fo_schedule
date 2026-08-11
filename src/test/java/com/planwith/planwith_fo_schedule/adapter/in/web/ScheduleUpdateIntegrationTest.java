@@ -78,7 +78,8 @@ class ScheduleUpdateIntegrationTest {
 								  "endDate": "2026-09-04",
 								  "headcount": 3,
 								  "expectedCost": 700000,
-								  "transportation": "렌터카",
+								  "transportation": "RENTAL_CAR",
+								  "travelStyle": "RELAXATION_HEALING",
 								  "content": "가족 자유여행",
 								  "calendarColor": "#22AA88"
 								}
@@ -88,6 +89,8 @@ class ScheduleUpdateIntegrationTest {
 				.andExpect(jsonPath("$.data.destination").value("제주"))
 				.andExpect(jsonPath("$.data.startDate").value("2026-09-01"))
 				.andExpect(jsonPath("$.data.endDate").value("2026-09-04"))
+				.andExpect(jsonPath("$.data.transportation").value("RENTAL_CAR"))
+				.andExpect(jsonPath("$.data.travelStyle").value("RELAXATION_HEALING"))
 				.andExpect(jsonPath("$.data.creatorType").value("USER"));
 
 		entityManager.flush();
