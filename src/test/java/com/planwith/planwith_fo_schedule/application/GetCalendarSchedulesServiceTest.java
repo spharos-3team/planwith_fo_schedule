@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.port.out.CalendarScheduleQueryPort;
 import com.planwith.planwith_fo_schedule.application.port.out.CalendarScheduleQueryPort.CalendarScheduleData;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
@@ -36,7 +36,7 @@ class GetCalendarSchedulesServiceTest {
 						LocalDate.of(2026, 8, 10),
 						LocalDate.of(2026, 8, 13),
 						"#3366FF",
-						CreatorType.SELF
+						ScheduleCreatorType.USER
 				)
 		));
 
@@ -45,7 +45,7 @@ class GetCalendarSchedulesServiceTest {
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).scheduleUuid()).isEqualTo(scheduleUuid);
 		assertThat(result.get(0).title()).isEqualTo("오사카 여행");
-		assertThat(result.get(0).creatorType()).isEqualTo(CreatorType.SELF);
+		assertThat(result.get(0).creatorType()).isEqualTo(ScheduleCreatorType.USER);
 		verify(queryPort).findOverlappingSchedules(period);
 	}
 

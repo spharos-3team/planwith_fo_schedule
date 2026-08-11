@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
@@ -43,7 +43,7 @@ class GetScheduleDetailServiceTest {
 		assertThat(result.transportation()).isEqualTo("대중교통");
 		assertThat(result.content()).isEqualTo("해운대 방문");
 		assertThat(result.calendarColor()).isEqualTo("#3366FF");
-		assertThat(result.creatorType()).isEqualTo(CreatorType.SELF);
+		assertThat(result.creatorType()).isEqualTo(ScheduleCreatorType.USER);
 		verify(repository).findByScheduleUuid(schedule.scheduleUuid());
 	}
 
@@ -73,7 +73,7 @@ class GetScheduleDetailServiceTest {
 				"대중교통",
 				"해운대 방문",
 				"#3366FF",
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				List.of()
 		);
 	}

@@ -28,7 +28,7 @@ class ScheduleDeleteTest {
 				null,
 				null,
 				null,
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				List.of()
 		);
 		LocalDateTime deletionTime = LocalDateTime.of(2026, 8, 11, 6, 0);

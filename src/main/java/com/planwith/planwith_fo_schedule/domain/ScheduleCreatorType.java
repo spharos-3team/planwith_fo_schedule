@@ -1,7 +1,7 @@
 package com.planwith.planwith_fo_schedule.domain;
 
-public enum CreatorType {
+public enum ScheduleCreatorType {
+	USER,
 	AI,
-	SELF,
-	SHARED
+	OTHER
 }

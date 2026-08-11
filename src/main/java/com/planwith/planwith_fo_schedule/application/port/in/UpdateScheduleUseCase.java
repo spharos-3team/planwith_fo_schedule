@@ -3,7 +3,7 @@ package com.planwith.planwith_fo_schedule.application.port.in;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 public interface UpdateScheduleUseCase {
 
@@ -33,7 +33,7 @@ public interface UpdateScheduleUseCase {
 			String transportation,
 			String content,
 			String calendarColor,
-			CreatorType creatorType
+			ScheduleCreatorType creatorType
 	) {
 	}
 }

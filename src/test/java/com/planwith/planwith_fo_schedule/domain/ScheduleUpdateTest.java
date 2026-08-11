@@ -76,7 +76,7 @@ class ScheduleUpdateTest {
 				"KTX",
 				"해운대 방문",
 				"#3366FF",
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				items
 		);
 	}

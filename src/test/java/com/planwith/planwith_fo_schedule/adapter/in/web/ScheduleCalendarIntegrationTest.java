@@ -93,7 +93,7 @@ class ScheduleCalendarIntegrationTest {
 				.andExpect(jsonPath("$.data[1].scheduleUuid").value(inside.toString()))
 				.andExpect(jsonPath("$.data[1].title").value("오사카 여행"))
 				.andExpect(jsonPath("$.data[1].calendarColor").value("#222222"))
-				.andExpect(jsonPath("$.data[1].creatorType").value("SELF"))
+				.andExpect(jsonPath("$.data[1].creatorType").value("USER"))
 				.andExpect(jsonPath("$.data[2].scheduleUuid").value(endsAfter.toString()))
 				.andExpect(jsonPath("$.data[2].title").value("월말 일정"));
 	}

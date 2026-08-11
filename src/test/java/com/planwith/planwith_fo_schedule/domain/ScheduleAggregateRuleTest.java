@@ -34,7 +34,7 @@ class ScheduleAggregateRuleTest {
 				null,
 				null,
 				null,
-				CreatorType.AI,
+				ScheduleCreatorType.AI,
 				items
 		);
 	}

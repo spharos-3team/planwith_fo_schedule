@@ -3,7 +3,7 @@ package com.planwith.planwith_fo_schedule.adapter.in.web.dto;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 public record UpdateScheduleResponse(
 		UUID scheduleUuid,
@@ -16,6 +16,6 @@ public record UpdateScheduleResponse(
 		String transportation,
 		String content,
 		String calendarColor,
-		CreatorType creatorType
+		ScheduleCreatorType creatorType
 ) {
 }

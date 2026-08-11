@@ -35,7 +35,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUs
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleResult;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 class ScheduleControllerTest {
 
@@ -155,7 +155,7 @@ class ScheduleControllerTest {
 				"대중교통",
 				"해운대 방문",
 				"#3366FF",
-				CreatorType.SELF
+				ScheduleCreatorType.USER
 		));
 
 		mockMvc.perform(get("/schedules/{scheduleUuid}", scheduleUuid))
@@ -168,7 +168,7 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.data.endDate").value("2026-09-03"))
 				.andExpect(jsonPath("$.data.headcount").value(2))
 				.andExpect(jsonPath("$.data.expectedCost").value(500000))
-				.andExpect(jsonPath("$.data.creatorType").value("SELF"));
+				.andExpect(jsonPath("$.data.creatorType").value("USER"));
 	}
 
 	@Test
@@ -204,7 +204,7 @@ class ScheduleControllerTest {
 				"렌터카",
 				"가족 자유여행",
 				"#22AA88",
-				CreatorType.SELF
+				ScheduleCreatorType.USER
 		));
 
 		mockMvc.perform(patch("/api/v1/schedules/{scheduleUuid}", scheduleUuid)
@@ -221,7 +221,7 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
 				.andExpect(jsonPath("$.data.title").value("제주 휴가"))
 				.andExpect(jsonPath("$.data.headcount").value(3))
-				.andExpect(jsonPath("$.data.creatorType").value("SELF"));
+				.andExpect(jsonPath("$.data.creatorType").value("USER"));
 
 		ArgumentCaptor<UpdateScheduleCommand> commandCaptor = ArgumentCaptor.forClass(UpdateScheduleCommand.class);
 		verify(updateScheduleUseCase).updateSchedule(org.mockito.ArgumentMatchers.eq(scheduleUuid), commandCaptor.capture());
@@ -283,7 +283,7 @@ class ScheduleControllerTest {
 						LocalDate.of(2026, 8, 10),
 						LocalDate.of(2026, 8, 13),
 						"#3366FF",
-						CreatorType.SELF
+						ScheduleCreatorType.USER
 				),
 				new CalendarScheduleResult(
 						secondUuid,
@@ -291,7 +291,7 @@ class ScheduleControllerTest {
 						LocalDate.of(2026, 8, 20),
 						LocalDate.of(2026, 8, 22),
 						"#22AA88",
-						CreatorType.AI
+						ScheduleCreatorType.AI
 				)
 		));
 
@@ -305,7 +305,7 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.data[0].title").value("오사카 여행"))
 				.andExpect(jsonPath("$.data[0].startDate").value("2026-08-10"))
 				.andExpect(jsonPath("$.data[0].calendarColor").value("#3366FF"))
-				.andExpect(jsonPath("$.data[0].creatorType").value("SELF"));
+				.andExpect(jsonPath("$.data[0].creatorType").value("USER"));
 	}
 
 	@Test

@@ -11,7 +11,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -72,7 +72,7 @@ class ScheduleJpaEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "creator_type", nullable = false, length = 10)
-	private CreatorType creatorType;
+	private ScheduleCreatorType creatorType;
 
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
@@ -107,7 +107,7 @@ class ScheduleJpaEntity {
 			String transportation,
 			String content,
 			String calendarColor,
-			CreatorType creatorType,
+			ScheduleCreatorType creatorType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
 			LocalDateTime deletedAt
@@ -178,7 +178,7 @@ class ScheduleJpaEntity {
 	String getTransportation() { return transportation; }
 	String getContent() { return content; }
 	String getCalendarColor() { return calendarColor; }
-	CreatorType getCreatorType() { return creatorType; }
+	ScheduleCreatorType getCreatorType() { return creatorType; }
 	LocalDateTime getCreatedAt() { return createdAt; }
 	LocalDateTime getUpdatedAt() { return updatedAt; }
 	LocalDateTime getDeletedAt() { return deletedAt; }

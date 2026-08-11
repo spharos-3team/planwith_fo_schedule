@@ -36,7 +36,7 @@ class ScheduleTest {
 				"대중교통",
 				"여름 휴가",
 				"#3366FF",
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				List.of(item)
 		);
 
@@ -48,7 +48,7 @@ class ScheduleTest {
 		assertThat(schedule.period().numberOfDays()).isEqualTo(3);
 		assertThat(schedule.headcount().value()).isEqualTo(2);
 		assertThat(schedule.expectedCost().amount()).isEqualTo(300_000L);
-		assertThat(schedule.creatorType()).isEqualTo(CreatorType.SELF);
+		assertThat(schedule.creatorType()).isEqualTo(ScheduleCreatorType.USER);
 		assertThat(schedule.createdAt()).isNull();
 		assertThat(schedule.updatedAt()).isNull();
 		assertThat(schedule.items()).containsExactly(item);
@@ -68,7 +68,7 @@ class ScheduleTest {
 				null,
 				null,
 				null,
-				CreatorType.AI,
+				ScheduleCreatorType.AI,
 				items
 		);
 
@@ -79,10 +79,10 @@ class ScheduleTest {
 
 	@Test
 	void enumValuesMatchDatabaseEnumValues() {
-		assertThat(CreatorType.values()).containsExactly(
-				CreatorType.AI,
-				CreatorType.SELF,
-				CreatorType.SHARED
+		assertThat(ScheduleCreatorType.values()).containsExactly(
+				ScheduleCreatorType.USER,
+				ScheduleCreatorType.AI,
+				ScheduleCreatorType.OTHER
 		);
 		assertThat(ScheduleItemType.values()).containsExactly(
 				ScheduleItemType.MOVE,

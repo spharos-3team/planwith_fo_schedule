@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.FlightDirection;
 import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
 import com.planwith.planwith_fo_schedule.domain.FlightTripType;
@@ -54,7 +54,7 @@ class JpaScheduleAdapterIntegrationTest {
 				"대중교통",
 				"여름 휴가",
 				"#3366FF",
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				List.of(ScheduleItem.create(
 						new DayNumber(1),
 						ScheduleItemType.TOUR,
@@ -93,6 +93,35 @@ class JpaScheduleAdapterIntegrationTest {
 	}
 
 	@Test
+	void persistsEveryScheduleCreatorType() {
+		for (ScheduleCreatorType creatorType : ScheduleCreatorType.values()) {
+			Schedule schedule = Schedule.create(
+					new MemberUuid(UUID.randomUUID()),
+					creatorType + " 일정",
+					"테스트 목적지",
+					LocalDate.of(2026, 10, 1),
+					LocalDate.of(2026, 10, 2),
+					new Headcount(1),
+					ScheduleCost.zero(),
+					null,
+					null,
+					null,
+					creatorType,
+					List.of()
+			);
+
+			Schedule saved = scheduleRepositoryPort.save(schedule);
+
+			assertThat(saved.creatorType()).isEqualTo(creatorType);
+			assertThat(springDataScheduleRepository.findById(saved.scheduleId()))
+					.isPresent()
+					.get()
+					.extracting(ScheduleJpaEntity::getCreatorType)
+					.isEqualTo(creatorType);
+		}
+	}
+
+	@Test
 	void mapsAndSavesFlightWithOrderedSegments() {
 		ScheduleJpaEntity schedule = new ScheduleJpaEntity(
 				null,
@@ -107,7 +136,7 @@ class JpaScheduleAdapterIntegrationTest {
 				"항공",
 				null,
 				"#3366FF",
-				CreatorType.AI,
+				ScheduleCreatorType.AI,
 				null,
 				null,
 				null
