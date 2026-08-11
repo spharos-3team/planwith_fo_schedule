@@ -1,9 +1,12 @@
 package com.planwith.planwith_fo_schedule.adapter.in.web;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -11,9 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
+import com.planwith.planwith_fo_schedule.adapter.in.web.dto.CalendarScheduleResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.CreateScheduleRequest;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.CreateScheduleResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ScheduleDetailResponse;
@@ -24,6 +29,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCa
 import com.planwith.planwith_fo_schedule.application.port.in.DeleteScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase.ScheduleDetailResult;
+import com.planwith.planwith_fo_schedule.application.port.in.GetCalendarSchedulesUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleResult;
@@ -38,17 +44,20 @@ public class ScheduleController {
 	private final GetScheduleDetailUseCase getScheduleDetailUseCase;
 	private final UpdateScheduleUseCase updateScheduleUseCase;
 	private final DeleteScheduleUseCase deleteScheduleUseCase;
+	private final GetCalendarSchedulesUseCase getCalendarSchedulesUseCase;
 
 	public ScheduleController(
 			CreateScheduleUseCase createScheduleUseCase,
 			GetScheduleDetailUseCase getScheduleDetailUseCase,
 			UpdateScheduleUseCase updateScheduleUseCase,
-			DeleteScheduleUseCase deleteScheduleUseCase
+			DeleteScheduleUseCase deleteScheduleUseCase,
+			GetCalendarSchedulesUseCase getCalendarSchedulesUseCase
 	) {
 		this.createScheduleUseCase = createScheduleUseCase;
 		this.getScheduleDetailUseCase = getScheduleDetailUseCase;
 		this.updateScheduleUseCase = updateScheduleUseCase;
 		this.deleteScheduleUseCase = deleteScheduleUseCase;
+		this.getCalendarSchedulesUseCase = getCalendarSchedulesUseCase;
 	}
 
 	@PostMapping
@@ -94,6 +103,25 @@ public class ScheduleController {
 				result.calendarColor(),
 				result.creatorType()
 		);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	@GetMapping("/calendar")
+	public ResponseEntity<ApiResponse<List<CalendarScheduleResponse>>> getCalendarSchedules(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+	) {
+		List<CalendarScheduleResponse> response = getCalendarSchedulesUseCase
+				.getCalendarSchedules(startDate, endDate).stream()
+				.map(schedule -> new CalendarScheduleResponse(
+						schedule.scheduleUuid(),
+						schedule.title(),
+						schedule.startDate(),
+						schedule.endDate(),
+						schedule.calendarColor(),
+						schedule.creatorType()
+				))
+				.toList();
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 

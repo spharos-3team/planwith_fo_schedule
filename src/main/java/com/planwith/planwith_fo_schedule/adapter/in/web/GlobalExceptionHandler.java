@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -49,6 +50,15 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
 		return ResponseEntity.badRequest().body(
 				ApiResponse.failure("INVALID_REQUEST", "요청값이 올바르지 않습니다.", Map.of())
+		);
+	}
+
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ResponseEntity<ApiResponse<Void>> handleMissingRequestParameter(
+			MissingServletRequestParameterException exception
+	) {
+		return ResponseEntity.badRequest().body(
+				ApiResponse.failure("INVALID_REQUEST", "Required request parameter is missing.", Map.of())
 		);
 	}
 

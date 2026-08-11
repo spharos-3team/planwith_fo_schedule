@@ -2,10 +2,12 @@ package com.planwith.planwith_fo_schedule.adapter.out.persistence;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
+import com.planwith.planwith_fo_schedule.application.port.out.CalendarScheduleQueryPort;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItem;
 import com.planwith.planwith_fo_schedule.domain.vo.DayNumber;
@@ -18,7 +20,7 @@ import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
 @Repository
-public class JpaScheduleAdapter implements ScheduleRepositoryPort {
+public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarScheduleQueryPort {
 
 	private final SpringDataScheduleRepository scheduleRepository;
 
@@ -88,6 +90,20 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort {
 				.orElseThrow(() -> new IllegalStateException("Schedule disappeared during deletion."));
 		entity.markDeleted(schedule.deletedAt());
 		return toDomain(scheduleRepository.save(entity));
+	}
+
+	@Override
+	public List<CalendarScheduleData> findOverlappingSchedules(SchedulePeriod period) {
+		return scheduleRepository.findCalendarSchedules(period.startDate(), period.endDate()).stream()
+				.map(schedule -> new CalendarScheduleData(
+						schedule.getScheduleUuid(),
+						schedule.getTitle(),
+						schedule.getStartDate(),
+						schedule.getEndDate(),
+						schedule.getCalendarColor(),
+						schedule.getCreatorType()
+				))
+				.toList();
 	}
 
 	private ScheduleItemJpaEntity toEntity(ScheduleItem item) {
