@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +24,29 @@ import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 class AiScheduleApplicationServiceTest {
+
+	@Test
+	void callsAiPortAgainWithSameConditionsForRegeneration() {
+		AtomicInteger callCount = new AtomicInteger();
+		AiScheduleGenerationPort port = command -> new AiScheduleGenerationPort.GeneratedAiSchedule(
+				"AI 일정 초안 " + callCount.incrementAndGet(),
+				null,
+				List.of(
+						item(1, LocalTime.of(10, 0), "첫째 날 일정"),
+						item(2, LocalTime.of(10, 0), "둘째 날 일정"),
+						item(3, LocalTime.of(10, 0), "셋째 날 일정")
+				)
+		);
+		AiScheduleApplicationService service = new AiScheduleApplicationService(port);
+		AiScheduleGenerateCommand sameConditions = command();
+
+		var firstDraft = service.generate(sameConditions);
+		var regeneratedDraft = service.generate(sameConditions);
+
+		assertThat(callCount).hasValue(2);
+		assertThat(firstDraft.title()).isEqualTo("AI 일정 초안 1");
+		assertThat(regeneratedDraft.title()).isEqualTo("AI 일정 초안 2");
+	}
 
 	@Test
 	void returnsDraftItemsForEveryTravelDayInChronologicalOrder() {

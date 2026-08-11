@@ -43,17 +43,7 @@ class AiScheduleControllerTest {
 	@Test
 	void generatesAiScheduleWithAuthenticatedMemberHeader() throws Exception {
 		UUID memberUuid = UUID.randomUUID();
-		when(useCase.generate(any())).thenReturn(new AiScheduleResult(
-				memberUuid, "부산 AI 여행", "부산",
-				LocalDate.of(2026, 8, 20), LocalDate.of(2026, 8, 22),
-				2, 500_000, TransportationType.TRAIN_PUBLIC_TRANSIT, TravelStyle.TOUR_LANDMARK,
-				"AI 추천 일정",
-				List.of(new AiScheduleItemResult(
-						1, LocalTime.of(10, 0), "해운대 산책", ScheduleItemType.TOUR,
-						"해변 산책", 0, "해운대", "부산광역시", new BigDecimal("35.1587000"),
-						new BigDecimal("129.1604000")
-				))
-		));
+		when(useCase.generate(any())).thenReturn(aiScheduleResult(memberUuid));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
 						.header("X-Member-UUID", memberUuid)
@@ -65,6 +55,32 @@ class AiScheduleControllerTest {
 				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"));
 
 		verify(useCase).generate(any());
+	}
+
+	@Test
+	void regeneratesAiScheduleByCallingExistingGenerationUseCaseAgain() throws Exception {
+		UUID memberUuid = UUID.randomUUID();
+		when(useCase.generate(any())).thenReturn(aiScheduleResult(memberUuid));
+
+		mockMvc.perform(post("/api/v1/schedules/ai/regenerate")
+						.header("X-Member-UUID", memberUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(validRequest()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()))
+				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"));
+
+		verify(useCase).generate(any());
+	}
+
+	@Test
+	void rejectsRegenerationWithoutAuthenticationHeader() throws Exception {
+		mockMvc.perform(post("/api/v1/schedules/ai/regenerate")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(validRequest()))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
 	}
 
 	@Test
@@ -99,5 +115,19 @@ class AiScheduleControllerTest {
 				  "additionalRequest": "바다 중심 일정"
 				}
 				""";
+	}
+
+	private AiScheduleResult aiScheduleResult(UUID memberUuid) {
+		return new AiScheduleResult(
+				memberUuid, "부산 AI 여행", "부산",
+				LocalDate.of(2026, 8, 20), LocalDate.of(2026, 8, 22),
+				2, 500_000, TransportationType.TRAIN_PUBLIC_TRANSIT, TravelStyle.TOUR_LANDMARK,
+				"AI 추천 일정",
+				List.of(new AiScheduleItemResult(
+						1, LocalTime.of(10, 0), "해운대 산책", ScheduleItemType.TOUR,
+						"해변 산책", 0, "해운대", "부산광역시", new BigDecimal("35.1587000"),
+						new BigDecimal("129.1604000")
+				))
+		);
 	}
 }
