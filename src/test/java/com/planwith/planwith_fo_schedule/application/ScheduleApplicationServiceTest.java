@@ -57,6 +57,16 @@ class ScheduleApplicationServiceTest {
 		}
 
 		@Override
+		public Schedule update(Schedule schedule) {
+			throw new UnsupportedOperationException("Update is not used by the creation service test.");
+		}
+
+		@Override
+		public Schedule softDelete(Schedule schedule) {
+			throw new UnsupportedOperationException("Delete is not used by the creation service test.");
+		}
+
+		@Override
 		public Optional<Schedule> findByScheduleUuid(ScheduleUuid scheduleUuid) {
 			return Optional.ofNullable(savedSchedule)
 					.filter(schedule -> schedule.scheduleUuid().equals(scheduleUuid));

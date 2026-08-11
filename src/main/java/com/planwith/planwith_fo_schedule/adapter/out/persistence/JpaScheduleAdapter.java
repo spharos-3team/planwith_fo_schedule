@@ -43,7 +43,8 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort {
 				schedule.calendarColor(),
 				schedule.creatorType(),
 				schedule.createdAt(),
-				schedule.updatedAt()
+				schedule.updatedAt(),
+				schedule.deletedAt()
 		);
 		schedule.items().stream()
 				.map(this::toEntity)
@@ -54,7 +55,39 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort {
 
 	@Override
 	public Optional<Schedule> findByScheduleUuid(ScheduleUuid scheduleUuid) {
-		return scheduleRepository.findByScheduleUuid(scheduleUuid.value()).map(this::toDomain);
+		return scheduleRepository.findByScheduleUuidAndDeletedAtIsNull(scheduleUuid.value()).map(this::toDomain);
+	}
+
+	@Override
+	public Schedule update(Schedule schedule) {
+		if (schedule.scheduleId() == null) {
+			throw new IllegalArgumentException("Persisted schedule ID is required for update.");
+		}
+		ScheduleJpaEntity entity = scheduleRepository.findById(schedule.scheduleId())
+				.orElseThrow(() -> new IllegalStateException("Schedule disappeared during update."));
+		entity.updateDetails(
+				schedule.title(),
+				schedule.destination(),
+				schedule.period().startDate(),
+				schedule.period().endDate(),
+				schedule.headcount().value(),
+				schedule.expectedCost().amount(),
+				schedule.transportation(),
+				schedule.content(),
+				schedule.calendarColor()
+		);
+		return toDomain(scheduleRepository.save(entity));
+	}
+
+	@Override
+	public Schedule softDelete(Schedule schedule) {
+		if (schedule.scheduleId() == null) {
+			throw new IllegalArgumentException("Persisted schedule ID is required for deletion.");
+		}
+		ScheduleJpaEntity entity = scheduleRepository.findById(schedule.scheduleId())
+				.orElseThrow(() -> new IllegalStateException("Schedule disappeared during deletion."));
+		entity.markDeleted(schedule.deletedAt());
+		return toDomain(scheduleRepository.save(entity));
 	}
 
 	private ScheduleItemJpaEntity toEntity(ScheduleItem item) {
@@ -91,6 +124,7 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort {
 				entity.getCreatorType(),
 				entity.getCreatedAt(),
 				entity.getUpdatedAt(),
+				entity.getDeletedAt(),
 				entity.getItems().stream().map(this::toDomain).toList()
 		);
 	}

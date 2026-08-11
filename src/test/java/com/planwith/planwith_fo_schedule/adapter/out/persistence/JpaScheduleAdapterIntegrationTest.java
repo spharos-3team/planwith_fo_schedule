@@ -109,6 +109,7 @@ class JpaScheduleAdapterIntegrationTest {
 				"#3366FF",
 				CreatorType.AI,
 				null,
+				null,
 				null
 		);
 		ScheduleFlightJpaEntity flight = new ScheduleFlightJpaEntity(
