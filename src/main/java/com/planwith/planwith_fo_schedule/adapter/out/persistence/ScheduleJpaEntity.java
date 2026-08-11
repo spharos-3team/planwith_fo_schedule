@@ -23,6 +23,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -84,6 +85,9 @@ class ScheduleJpaEntity {
 	@OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private final List<ScheduleItemJpaEntity> items = new ArrayList<>();
 
+	@OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private ScheduleFlightJpaEntity flight;
+
 	protected ScheduleJpaEntity() {
 	}
 
@@ -126,6 +130,11 @@ class ScheduleJpaEntity {
 		item.assignSchedule(this);
 	}
 
+	void assignFlight(ScheduleFlightJpaEntity flight) {
+		this.flight = flight;
+		flight.assignSchedule(this);
+	}
+
 	Long getScheduleId() { return scheduleId; }
 	UUID getScheduleUuid() { return scheduleUuid; }
 	UUID getMemberUuid() { return memberUuid; }
@@ -142,4 +151,5 @@ class ScheduleJpaEntity {
 	LocalDateTime getCreatedAt() { return createdAt; }
 	LocalDateTime getUpdatedAt() { return updatedAt; }
 	List<ScheduleItemJpaEntity> getItems() { return List.copyOf(items); }
+	ScheduleFlightJpaEntity getFlight() { return flight; }
 }

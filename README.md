@@ -25,8 +25,20 @@ $env:DB_PASSWORD='<secret>'
 - `SERVER_PORT`를 지정하지 않으면 로컬 포트가 임의 할당됩니다.
 - Swagger UI: `/swagger-ui/index.html`
 - 일반 일정 생성: `POST /schedules` (`POST /api/v1/schedules` 호환)
+- 일정 상세 조회: `GET /schedules/{scheduleUuid}` (`GET /api/v1/schedules/{scheduleUuid}` 호환)
 - 일반 일정의 자유 형식 내용은 `content`에 저장하며 상세 항목(`schedule_items`)은 생성하지 않습니다.
 - Deploy check: `GET /api/planwith-fo-schedule/deploy-check`
+
+## 로컬 Swagger 실행
+
+`local` Profile은 `18081` 포트를 사용하고 Eureka 및 Discovery 등록을 비활성화합니다. 로컬 DB 접속 정보는 Git에서 제외된 `application-local.yml`에 설정합니다.
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE='local'
+java -classpath '.\gradle\wrapper\gradle-wrapper.jar' org.gradle.wrapper.GradleWrapperMain bootRun
+```
+
+실행 후 `http://localhost:18081/swagger-ui/index.html`로 접속합니다.
 
 ## 구조
 

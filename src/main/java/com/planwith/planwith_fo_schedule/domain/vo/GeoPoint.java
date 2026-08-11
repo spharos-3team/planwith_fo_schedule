@@ -11,6 +11,9 @@ public record GeoPoint(BigDecimal latitude, BigDecimal longitude) {
 	private static final BigDecimal MAX_LONGITUDE = BigDecimal.valueOf(180);
 
 	public GeoPoint {
+		if (latitude == null || longitude == null) {
+			throw new InvalidScheduleException("Latitude and longitude must be provided together.");
+		}
 		if (latitude != null
 				&& (latitude.compareTo(MIN_LATITUDE) < 0 || latitude.compareTo(MAX_LATITUDE) > 0)) {
 			throw new InvalidScheduleException("Latitude must be between -90 and 90.");

@@ -16,6 +16,7 @@ import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleItemLocation;
 
 class ScheduleTest {
 
@@ -83,27 +84,43 @@ class ScheduleTest {
 				CreatorType.SELF,
 				CreatorType.SHARED
 		);
-		assertThat(ScheduleType.values()).containsExactly(
-				ScheduleType.MOVE,
-				ScheduleType.FOOD,
-				ScheduleType.TOUR,
-				ScheduleType.STAY,
-				ScheduleType.ACTIVITY,
-				ScheduleType.ETC
+		assertThat(ScheduleItemType.values()).containsExactly(
+				ScheduleItemType.MOVE,
+				ScheduleItemType.FOOD,
+				ScheduleItemType.TOUR,
+				ScheduleItemType.STAY,
+				ScheduleItemType.ACTIVITY,
+				ScheduleItemType.ETC
+		);
+		assertThat(FlightTripType.values()).containsExactly(
+				FlightTripType.ONE_WAY,
+				FlightTripType.ROUND_TRIP
+		);
+		assertThat(FlightTravelClass.values()).containsExactly(
+				FlightTravelClass.ECONOMY,
+				FlightTravelClass.PREMIUM_ECONOMY,
+				FlightTravelClass.BUSINESS,
+				FlightTravelClass.FIRST
+		);
+		assertThat(FlightDirection.values()).containsExactly(
+				FlightDirection.OUTBOUND,
+				FlightDirection.RETURN
 		);
 	}
 
 	private ScheduleItem createScheduleItem() {
 		return ScheduleItem.create(
 				new DayNumber(1),
-				LocalTime.of(10, 30),
+				ScheduleItemType.TOUR,
 				"경복궁 관람",
-				ScheduleType.TOUR,
 				"경복궁을 관람합니다.",
-				ScheduleCost.of(3_000L),
-				"경복궁",
-				"서울특별시 종로구 사직로 161",
-				new GeoPoint(new BigDecimal("37.5796170"), new BigDecimal("126.9770410"))
+				new ScheduleItemLocation(
+						"경복궁",
+						"서울특별시 종로구 사직로 161",
+						new GeoPoint(new BigDecimal("37.5796170"), new BigDecimal("126.9770410"))
+				),
+				LocalTime.of(10, 30),
+				ScheduleCost.of(3_000L)
 		);
 	}
 }

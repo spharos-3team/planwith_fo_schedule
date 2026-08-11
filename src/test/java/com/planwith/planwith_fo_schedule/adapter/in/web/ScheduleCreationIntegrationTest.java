@@ -1,6 +1,7 @@
 package com.planwith.planwith_fo_schedule.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -78,6 +79,22 @@ class ScheduleCreationIntegrationTest {
 				Long.class
 		).getSingleResult();
 		assertThat(itemCount).isZero();
+
+		UUID scheduleUuid = entityManager.createQuery(
+				"select s.scheduleUuid from ScheduleJpaEntity s",
+				UUID.class
+		).getSingleResult();
+		mockMvc.perform(get("/schedules/{scheduleUuid}", scheduleUuid))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
+				.andExpect(jsonPath("$.data.title").value("부산 여행"))
+				.andExpect(jsonPath("$.data.destination").value("부산"))
+				.andExpect(jsonPath("$.data.startDate").value("2026-09-01"))
+				.andExpect(jsonPath("$.data.endDate").value("2026-09-03"))
+				.andExpect(jsonPath("$.data.headcount").value(2))
+				.andExpect(jsonPath("$.data.content").value("해운대에서 자유롭게 시간을 보낸다."))
+				.andExpect(jsonPath("$.data.creatorType").value("SELF"));
 	}
 
 	@Test

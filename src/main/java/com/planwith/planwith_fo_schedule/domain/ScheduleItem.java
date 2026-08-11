@@ -4,117 +4,102 @@ import java.time.LocalTime;
 import java.util.Objects;
 
 import com.planwith.planwith_fo_schedule.domain.vo.DayNumber;
-import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleItemLocation;
 
 public final class ScheduleItem {
+	private static final int MAX_TITLE_LENGTH = 200;
 
 	private final Long scheduleItemId;
-	private final DayNumber dayNumber;
-	private final LocalTime scheduleTime;
-	private final String subtitle;
-	private final ScheduleType scheduleType;
-	private final String description;
-	private final ScheduleCost estimatedCost;
-	private final String placeName;
-	private final String placeAddress;
-	private final GeoPoint location;
+	private final Long scheduleId;
+	private final DayNumber day;
+	private final ScheduleItemType itemType;
+	private final String title;
+	private final String content;
+	private final ScheduleItemLocation location;
+	private final LocalTime startTime;
+	private final ScheduleCost expectedCost;
 
 	private ScheduleItem(
 			Long scheduleItemId,
-			DayNumber dayNumber,
-			LocalTime scheduleTime,
-			String subtitle,
-			ScheduleType scheduleType,
-			String description,
-			ScheduleCost estimatedCost,
-			String placeName,
-			String placeAddress,
-			GeoPoint location
+			Long scheduleId,
+			DayNumber day,
+			ScheduleItemType itemType,
+			String title,
+			String content,
+			ScheduleItemLocation location,
+			LocalTime startTime,
+			ScheduleCost expectedCost
 	) {
 		this.scheduleItemId = scheduleItemId;
-		this.dayNumber = Objects.requireNonNull(dayNumber, "Day number is required.");
-		this.scheduleTime = scheduleTime;
-		this.subtitle = requireText(subtitle, 200, "Schedule item subtitle is required.");
-		this.scheduleType = Objects.requireNonNull(scheduleType, "Schedule type is required.");
-		this.description = trimToNull(description);
-		this.estimatedCost = Objects.requireNonNull(estimatedCost, "Estimated cost is required.");
-		if (!estimatedCost.isSpecified()) {
-			throw new InvalidScheduleException("Estimated cost must be specified.");
-		}
-		this.placeName = requireOptionalText(placeName, 200, "Place name must not exceed 200 characters.");
-		this.placeAddress = requireOptionalText(placeAddress, 500, "Place address must not exceed 500 characters.");
+		this.scheduleId = scheduleId;
+		this.day = Objects.requireNonNull(day, "Schedule item day is required.");
+		this.itemType = Objects.requireNonNull(itemType, "Schedule item type is required.");
+		this.title = requireText(title, MAX_TITLE_LENGTH, "Schedule item title is required.");
+		this.content = trimToNull(content);
 		this.location = location;
+		this.startTime = startTime;
+		this.expectedCost = Objects.requireNonNull(expectedCost, "Schedule item expected cost is required.");
+		if (!expectedCost.isSpecified()) {
+			throw new InvalidScheduleException("Schedule item expected cost must be specified.");
+		}
 	}
 
 	public static ScheduleItem create(
-			DayNumber dayNumber,
-			LocalTime scheduleTime,
-			String subtitle,
-			ScheduleType scheduleType,
-			String description,
-			ScheduleCost estimatedCost,
-			String placeName,
-			String placeAddress,
-			GeoPoint location
+			DayNumber day,
+			ScheduleItemType itemType,
+			String title,
+			String content,
+			ScheduleItemLocation location,
+			LocalTime startTime,
+			ScheduleCost expectedCost
 	) {
 		return new ScheduleItem(
 				null,
-				dayNumber,
-				scheduleTime,
-				subtitle,
-				scheduleType,
-				description,
-				estimatedCost,
-				placeName,
-				placeAddress,
-				location
+				null,
+				day,
+				itemType,
+				title,
+				content,
+				location,
+				startTime,
+				expectedCost
 		);
 	}
 
 	public static ScheduleItem restore(
 			Long scheduleItemId,
-			DayNumber dayNumber,
-			LocalTime scheduleTime,
-			String subtitle,
-			ScheduleType scheduleType,
-			String description,
-			ScheduleCost estimatedCost,
-			String placeName,
-			String placeAddress,
-			GeoPoint location
+			Long scheduleId,
+			DayNumber day,
+			ScheduleItemType itemType,
+			String title,
+			String content,
+			ScheduleItemLocation location,
+			LocalTime startTime,
+			ScheduleCost expectedCost
 	) {
 		return new ScheduleItem(
 				scheduleItemId,
-				dayNumber,
-				scheduleTime,
-				subtitle,
-				scheduleType,
-				description,
-				estimatedCost,
-				placeName,
-				placeAddress,
-				location
+				scheduleId,
+				day,
+				itemType,
+				title,
+				content,
+				location,
+				startTime,
+				expectedCost
 		);
 	}
 
 	private static String requireText(String value, int maxLength, String message) {
-		String trimmed = trimToNull(value);
-		if (trimmed == null) {
+		String normalized = trimToNull(value);
+		if (normalized == null) {
 			throw new InvalidScheduleException(message);
 		}
-		if (trimmed.length() > maxLength) {
+		if (normalized.length() > maxLength) {
 			throw new InvalidScheduleException("Value must not exceed " + maxLength + " characters.");
 		}
-		return trimmed;
-	}
-
-	private static String requireOptionalText(String value, int maxLength, String message) {
-		String trimmed = trimToNull(value);
-		if (trimmed != null && trimmed.length() > maxLength) {
-			throw new InvalidScheduleException(message);
-		}
-		return trimmed;
+		return normalized;
 	}
 
 	private static String trimToNull(String value) {
@@ -125,13 +110,12 @@ public final class ScheduleItem {
 	}
 
 	public Long scheduleItemId() { return scheduleItemId; }
-	public DayNumber dayNumber() { return dayNumber; }
-	public LocalTime scheduleTime() { return scheduleTime; }
-	public String subtitle() { return subtitle; }
-	public ScheduleType scheduleType() { return scheduleType; }
-	public String description() { return description; }
-	public ScheduleCost estimatedCost() { return estimatedCost; }
-	public String placeName() { return placeName; }
-	public String placeAddress() { return placeAddress; }
-	public GeoPoint location() { return location; }
+	public Long scheduleId() { return scheduleId; }
+	public DayNumber day() { return day; }
+	public ScheduleItemType itemType() { return itemType; }
+	public String title() { return title; }
+	public String content() { return content; }
+	public ScheduleItemLocation location() { return location; }
+	public LocalTime startTime() { return startTime; }
+	public ScheduleCost expectedCost() { return expectedCost; }
 }

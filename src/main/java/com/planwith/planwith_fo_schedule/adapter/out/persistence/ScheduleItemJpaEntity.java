@@ -3,7 +3,7 @@ package com.planwith.planwith_fo_schedule.adapter.out.persistence;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 
-import com.planwith.planwith_fo_schedule.domain.ScheduleType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,23 +31,17 @@ class ScheduleItemJpaEntity {
 	private ScheduleJpaEntity schedule;
 
 	@Column(name = "day_number", nullable = false)
-	private int dayNumber;
-
-	@Column(name = "schedule_time")
-	private LocalTime scheduleTime;
-
-	@Column(nullable = false, length = 200)
-	private String subtitle;
+	private int day;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "schedule_type", nullable = false, length = 20)
-	private ScheduleType scheduleType;
+	private ScheduleItemType itemType;
 
-	@Column(columnDefinition = "TEXT")
-	private String description;
+	@Column(name = "subtitle", nullable = false, length = 200)
+	private String title;
 
-	@Column(name = "estimated_cost", nullable = false)
-	private long estimatedCost;
+	@Column(name = "description", columnDefinition = "TEXT")
+	private String content;
 
 	@Column(name = "place_name", length = 200)
 	private String placeName;
@@ -61,45 +55,52 @@ class ScheduleItemJpaEntity {
 	@Column(precision = 10, scale = 7)
 	private BigDecimal longitude;
 
+	@Column(name = "schedule_time")
+	private LocalTime startTime;
+
+	@Column(name = "estimated_cost", nullable = false)
+	private long expectedCost;
+
 	protected ScheduleItemJpaEntity() {
 	}
 
 	ScheduleItemJpaEntity(
 			Long scheduleItemId,
-			int dayNumber,
-			LocalTime scheduleTime,
-			String subtitle,
-			ScheduleType scheduleType,
-			String description,
-			long estimatedCost,
+			int day,
+			ScheduleItemType itemType,
+			String title,
+			String content,
 			String placeName,
 			String placeAddress,
 			BigDecimal latitude,
-			BigDecimal longitude
+			BigDecimal longitude,
+			LocalTime startTime,
+			long expectedCost
 	) {
 		this.scheduleItemId = scheduleItemId;
-		this.dayNumber = dayNumber;
-		this.scheduleTime = scheduleTime;
-		this.subtitle = subtitle;
-		this.scheduleType = scheduleType;
-		this.description = description;
-		this.estimatedCost = estimatedCost;
+		this.day = day;
+		this.itemType = itemType;
+		this.title = title;
+		this.content = content;
 		this.placeName = placeName;
 		this.placeAddress = placeAddress;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.startTime = startTime;
+		this.expectedCost = expectedCost;
 	}
 
 	void assignSchedule(ScheduleJpaEntity schedule) { this.schedule = schedule; }
 	Long getScheduleItemId() { return scheduleItemId; }
-	int getDayNumber() { return dayNumber; }
-	LocalTime getScheduleTime() { return scheduleTime; }
-	String getSubtitle() { return subtitle; }
-	ScheduleType getScheduleType() { return scheduleType; }
-	String getDescription() { return description; }
-	long getEstimatedCost() { return estimatedCost; }
+	Long getScheduleId() { return schedule.getScheduleId(); }
+	int getDay() { return day; }
+	ScheduleItemType getItemType() { return itemType; }
+	String getTitle() { return title; }
+	String getContent() { return content; }
 	String getPlaceName() { return placeName; }
 	String getPlaceAddress() { return placeAddress; }
 	BigDecimal getLatitude() { return latitude; }
 	BigDecimal getLongitude() { return longitude; }
+	LocalTime getStartTime() { return startTime; }
+	long getExpectedCost() { return expectedCost; }
 }

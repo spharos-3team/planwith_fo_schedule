@@ -1,6 +1,6 @@
 package com.planwith.planwith_fo_schedule.domain;
 
-public enum ScheduleType {
+public enum ScheduleItemType {
 	MOVE,
 	FOOD,
 	TOUR,

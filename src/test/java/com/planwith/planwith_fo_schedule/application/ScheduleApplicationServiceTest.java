@@ -3,6 +3,7 @@ package com.planwith.planwith_fo_schedule.application;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCa
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.CreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
 class ScheduleApplicationServiceTest {
 
@@ -52,6 +54,12 @@ class ScheduleApplicationServiceTest {
 		public Schedule save(Schedule schedule) {
 			this.savedSchedule = schedule;
 			return schedule;
+		}
+
+		@Override
+		public Optional<Schedule> findByScheduleUuid(ScheduleUuid scheduleUuid) {
+			return Optional.ofNullable(savedSchedule)
+					.filter(schedule -> schedule.scheduleUuid().equals(scheduleUuid));
 		}
 	}
 }
