@@ -33,6 +33,7 @@ public final class Schedule {
 	private final CreatorType creatorType;
 	private final LocalDateTime createdAt;
 	private final LocalDateTime updatedAt;
+	private final LocalDateTime deletedAt;
 	private final List<ScheduleItem> items;
 
 	private Schedule(
@@ -50,6 +51,7 @@ public final class Schedule {
 			CreatorType creatorType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
+			LocalDateTime deletedAt,
 			List<ScheduleItem> items
 	) {
 		this.scheduleId = scheduleId;
@@ -66,6 +68,7 @@ public final class Schedule {
 		this.creatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.deletedAt = deletedAt;
 		this.items = validateItems(items, period);
 	}
 
@@ -109,6 +112,7 @@ public final class Schedule {
 				validatedCreatorType,
 				null,
 				null,
+				null,
 				items
 		);
 	}
@@ -128,6 +132,7 @@ public final class Schedule {
 			CreatorType creatorType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
+			LocalDateTime deletedAt,
 			List<ScheduleItem> items
 	) {
 		return new Schedule(
@@ -145,6 +150,67 @@ public final class Schedule {
 				creatorType,
 				createdAt,
 				updatedAt,
+				deletedAt,
+				items
+		);
+	}
+
+	public Schedule update(
+			String title,
+			String destination,
+			LocalDate startDate,
+			LocalDate endDate,
+			Headcount headcount,
+			ScheduleCost expectedCost,
+			String transportation,
+			String content,
+			String calendarColor
+	) {
+		String updatedDestination = destination == null
+				? this.destination
+				: requireText(destination, MAX_DESTINATION_LENGTH, "Destination is required.");
+		SchedulePeriod updatedPeriod = new SchedulePeriod(
+				startDate == null ? period.startDate() : startDate,
+				endDate == null ? period.endDate() : endDate
+		);
+
+		return new Schedule(
+				scheduleId,
+				scheduleUuid,
+				memberUuid,
+				title == null ? this.title : resolveTitle(title, updatedDestination),
+				updatedDestination,
+				updatedPeriod,
+				headcount == null ? this.headcount : headcount,
+				expectedCost == null ? this.expectedCost : expectedCost,
+				transportation == null ? this.transportation : transportation,
+				content == null ? this.content : content,
+				calendarColor == null ? this.calendarColor : calendarColor,
+				creatorType,
+				createdAt,
+				updatedAt,
+				deletedAt,
+				items
+		);
+	}
+
+	public Schedule delete(LocalDateTime deletionTime) {
+		return new Schedule(
+				scheduleId,
+				scheduleUuid,
+				memberUuid,
+				title,
+				destination,
+				period,
+				headcount,
+				expectedCost,
+				transportation,
+				content,
+				calendarColor,
+				creatorType,
+				createdAt,
+				updatedAt,
+				Objects.requireNonNull(deletionTime, "Deletion time is required."),
 				items
 		);
 	}
@@ -233,5 +299,6 @@ public final class Schedule {
 	public CreatorType creatorType() { return creatorType; }
 	public LocalDateTime createdAt() { return createdAt; }
 	public LocalDateTime updatedAt() { return updatedAt; }
+	public LocalDateTime deletedAt() { return deletedAt; }
 	public List<ScheduleItem> items() { return items; }
 }

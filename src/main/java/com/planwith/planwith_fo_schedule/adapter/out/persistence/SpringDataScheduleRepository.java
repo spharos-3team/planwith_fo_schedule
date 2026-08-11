@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 interface SpringDataScheduleRepository extends JpaRepository<ScheduleJpaEntity, Long> {
 
 	@EntityGraph(attributePaths = "items")
-	Optional<ScheduleJpaEntity> findByScheduleUuid(UUID scheduleUuid);
+	Optional<ScheduleJpaEntity> findByScheduleUuidAndDeletedAtIsNull(UUID scheduleUuid);
 }

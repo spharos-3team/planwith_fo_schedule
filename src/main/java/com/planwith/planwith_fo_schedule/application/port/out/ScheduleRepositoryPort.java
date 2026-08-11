@@ -9,5 +9,9 @@ public interface ScheduleRepositoryPort {
 
 	Schedule save(Schedule schedule);
 
+	Schedule update(Schedule schedule);
+
+	Schedule softDelete(Schedule schedule);
+
 	Optional<Schedule> findByScheduleUuid(ScheduleUuid scheduleUuid);
 }

@@ -82,6 +82,9 @@ class ScheduleJpaEntity {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
+
 	@OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private final List<ScheduleItemJpaEntity> items = new ArrayList<>();
 
@@ -106,7 +109,8 @@ class ScheduleJpaEntity {
 			String calendarColor,
 			CreatorType creatorType,
 			LocalDateTime createdAt,
-			LocalDateTime updatedAt
+			LocalDateTime updatedAt,
+			LocalDateTime deletedAt
 	) {
 		this.scheduleId = scheduleId;
 		this.scheduleUuid = scheduleUuid;
@@ -123,6 +127,7 @@ class ScheduleJpaEntity {
 		this.creatorType = creatorType;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.deletedAt = deletedAt;
 	}
 
 	void addItem(ScheduleItemJpaEntity item) {
@@ -133,6 +138,32 @@ class ScheduleJpaEntity {
 	void assignFlight(ScheduleFlightJpaEntity flight) {
 		this.flight = flight;
 		flight.assignSchedule(this);
+	}
+
+	void updateDetails(
+			String title,
+			String destination,
+			LocalDate startDate,
+			LocalDate endDate,
+			int headcount,
+			Long expectedCost,
+			String transportation,
+			String content,
+			String calendarColor
+	) {
+		this.title = title;
+		this.destination = destination;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.headcount = headcount;
+		this.expectedCost = expectedCost;
+		this.transportation = transportation;
+		this.content = content;
+		this.calendarColor = calendarColor;
+	}
+
+	void markDeleted(LocalDateTime deletedAt) {
+		this.deletedAt = deletedAt;
 	}
 
 	Long getScheduleId() { return scheduleId; }
@@ -150,6 +181,7 @@ class ScheduleJpaEntity {
 	CreatorType getCreatorType() { return creatorType; }
 	LocalDateTime getCreatedAt() { return createdAt; }
 	LocalDateTime getUpdatedAt() { return updatedAt; }
+	LocalDateTime getDeletedAt() { return deletedAt; }
 	List<ScheduleItemJpaEntity> getItems() { return List.copyOf(items); }
 	ScheduleFlightJpaEntity getFlight() { return flight; }
 }

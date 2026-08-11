@@ -4,7 +4,9 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,10 +17,16 @@ import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.CreateScheduleRequest;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.CreateScheduleResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ScheduleDetailResponse;
+import com.planwith.planwith_fo_schedule.adapter.in.web.dto.UpdateScheduleRequest;
+import com.planwith.planwith_fo_schedule.adapter.in.web.dto.UpdateScheduleResponse;
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleCommand;
+import com.planwith.planwith_fo_schedule.application.port.in.DeleteScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase.ScheduleDetailResult;
+import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase;
+import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleCommand;
+import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleResult;
 
 import jakarta.validation.Valid;
 
@@ -28,13 +36,19 @@ public class ScheduleController {
 
 	private final CreateScheduleUseCase createScheduleUseCase;
 	private final GetScheduleDetailUseCase getScheduleDetailUseCase;
+	private final UpdateScheduleUseCase updateScheduleUseCase;
+	private final DeleteScheduleUseCase deleteScheduleUseCase;
 
 	public ScheduleController(
 			CreateScheduleUseCase createScheduleUseCase,
-			GetScheduleDetailUseCase getScheduleDetailUseCase
+			GetScheduleDetailUseCase getScheduleDetailUseCase,
+			UpdateScheduleUseCase updateScheduleUseCase,
+			DeleteScheduleUseCase deleteScheduleUseCase
 	) {
 		this.createScheduleUseCase = createScheduleUseCase;
 		this.getScheduleDetailUseCase = getScheduleDetailUseCase;
+		this.updateScheduleUseCase = updateScheduleUseCase;
+		this.deleteScheduleUseCase = deleteScheduleUseCase;
 	}
 
 	@PostMapping
@@ -81,5 +95,46 @@ public class ScheduleController {
 				result.creatorType()
 		);
 		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	@PatchMapping("/{scheduleUuid}")
+	public ResponseEntity<ApiResponse<UpdateScheduleResponse>> updateSchedule(
+			@PathVariable UUID scheduleUuid,
+			@Valid @RequestBody UpdateScheduleRequest request
+	) {
+		UpdateScheduleResult result = updateScheduleUseCase.updateSchedule(
+				scheduleUuid,
+				new UpdateScheduleCommand(
+						request.title(),
+						request.destination(),
+						request.startDate(),
+						request.endDate(),
+						request.headcount(),
+						request.expectedCost(),
+						request.transportation(),
+						request.content(),
+						request.calendarColor()
+				)
+		);
+		UpdateScheduleResponse response = new UpdateScheduleResponse(
+				result.scheduleUuid(),
+				result.title(),
+				result.destination(),
+				result.startDate(),
+				result.endDate(),
+				result.headcount(),
+				result.expectedCost(),
+				result.transportation(),
+				result.content(),
+				result.calendarColor(),
+				result.creatorType()
+		);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	@DeleteMapping("/{scheduleUuid}")
+	public ResponseEntity<Void> deleteSchedule(@PathVariable UUID scheduleUuid) {
+		deleteScheduleUseCase.deleteSchedule(scheduleUuid);
+		return ResponseEntity.noContent().build();
 	}
 }
