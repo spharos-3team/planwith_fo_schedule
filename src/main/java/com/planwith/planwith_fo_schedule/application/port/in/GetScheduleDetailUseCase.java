@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 public interface GetScheduleDetailUseCase {
 
@@ -17,7 +19,8 @@ public interface GetScheduleDetailUseCase {
 			LocalDate endDate,
 			int headcount,
 			Long expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor,
 			ScheduleCreatorType creatorType

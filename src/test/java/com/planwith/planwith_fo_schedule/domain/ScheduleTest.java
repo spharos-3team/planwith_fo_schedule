@@ -33,7 +33,8 @@ class ScheduleTest {
 				LocalDate.of(2026, 8, 12),
 				new Headcount(2),
 				ScheduleCost.of(300_000L),
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"여름 휴가",
 				"#3366FF",
 				ScheduleCreatorType.USER,
@@ -65,6 +66,7 @@ class ScheduleTest {
 				LocalDate.of(2026, 8, 10),
 				Headcount.defaultValue(),
 				ScheduleCost.unspecified(),
+				null,
 				null,
 				null,
 				null,
@@ -105,6 +107,20 @@ class ScheduleTest {
 		assertThat(FlightDirection.values()).containsExactly(
 				FlightDirection.OUTBOUND,
 				FlightDirection.RETURN
+		);
+		assertThat(TransportationType.values()).containsExactly(
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TransportationType.SHIP_FERRY,
+				TransportationType.RENTAL_CAR,
+				TransportationType.WALKING,
+				TransportationType.OTHER
+		);
+		assertThat(TravelStyle.values()).containsExactly(
+				TravelStyle.TOUR_LANDMARK,
+				TravelStyle.RELAXATION_HEALING,
+				TravelStyle.FOOD_TOUR,
+				TravelStyle.ACTIVITY,
+				TravelStyle.OTHER
 		);
 	}
 

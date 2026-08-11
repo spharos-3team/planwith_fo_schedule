@@ -20,6 +20,8 @@ import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundE
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
@@ -65,7 +67,8 @@ class DeleteScheduleServiceTest {
 				LocalDate.of(2026, 8, 22),
 				new Headcount(2),
 				ScheduleCost.of(500_000L),
-				"KTX",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"자유여행",
 				"#3366FF",
 				ScheduleCreatorType.USER,

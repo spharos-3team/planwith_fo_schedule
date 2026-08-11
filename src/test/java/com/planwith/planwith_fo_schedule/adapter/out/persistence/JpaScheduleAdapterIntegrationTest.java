@@ -23,6 +23,8 @@ import com.planwith.planwith_fo_schedule.domain.FlightTripType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItem;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.DayNumber;
 import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
@@ -51,7 +53,8 @@ class JpaScheduleAdapterIntegrationTest {
 				LocalDate.of(2026, 8, 12),
 				new Headcount(2),
 				ScheduleCost.of(300_000L),
-				"대중교통",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"여름 휴가",
 				"#3366FF",
 				ScheduleCreatorType.USER,
@@ -77,6 +80,8 @@ class JpaScheduleAdapterIntegrationTest {
 		assertThat(savedSchedule.scheduleUuid()).isEqualTo(schedule.scheduleUuid());
 		assertThat(savedSchedule.createdAt()).isNotNull();
 		assertThat(savedSchedule.updatedAt()).isNotNull();
+		assertThat(savedSchedule.transportation()).isEqualTo(TransportationType.TRAIN_PUBLIC_TRANSIT);
+		assertThat(savedSchedule.travelStyle()).isEqualTo(TravelStyle.TOUR_LANDMARK);
 		assertThat(savedSchedule.items()).singleElement().satisfies(item -> {
 			assertThat(item.scheduleItemId()).isNotNull();
 			assertThat(item.scheduleId()).isEqualTo(savedSchedule.scheduleId());
@@ -103,6 +108,7 @@ class JpaScheduleAdapterIntegrationTest {
 					LocalDate.of(2026, 10, 2),
 					new Headcount(1),
 					ScheduleCost.zero(),
+					null,
 					null,
 					null,
 					null,
@@ -133,7 +139,8 @@ class JpaScheduleAdapterIntegrationTest {
 				LocalDate.of(2026, 9, 5),
 				2,
 				1_500_000L,
-				"항공",
+				TransportationType.OTHER,
+				TravelStyle.TOUR_LANDMARK,
 				null,
 				"#3366FF",
 				ScheduleCreatorType.AI,

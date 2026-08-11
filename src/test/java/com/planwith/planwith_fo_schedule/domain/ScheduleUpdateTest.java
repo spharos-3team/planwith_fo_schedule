@@ -27,7 +27,8 @@ class ScheduleUpdateTest {
 				LocalDate.of(2026, 8, 13),
 				new Headcount(3),
 				ScheduleCost.of(700_000L),
-				"렌터카",
+				TransportationType.RENTAL_CAR,
+				TravelStyle.RELAXATION_HEALING,
 				"가족 자유여행",
 				"#22AA88"
 		);
@@ -41,7 +42,8 @@ class ScheduleUpdateTest {
 		assertThat(updated.period().endDate()).isEqualTo(LocalDate.of(2026, 8, 13));
 		assertThat(updated.headcount().value()).isEqualTo(3);
 		assertThat(updated.expectedCost().amount()).isEqualTo(700_000L);
-		assertThat(updated.transportation()).isEqualTo("렌터카");
+		assertThat(updated.transportation()).isEqualTo(TransportationType.RENTAL_CAR);
+		assertThat(updated.travelStyle()).isEqualTo(TravelStyle.RELAXATION_HEALING);
 		assertThat(updated.content()).isEqualTo("가족 자유여행");
 		assertThat(updated.calendarColor()).isEqualTo("#22AA88");
 	}
@@ -55,6 +57,7 @@ class ScheduleUpdateTest {
 				null,
 				null,
 				LocalDate.of(2026, 8, 11),
+				null,
 				null,
 				null,
 				null,
@@ -73,7 +76,8 @@ class ScheduleUpdateTest {
 				LocalDate.of(2026, 8, 12),
 				new Headcount(2),
 				ScheduleCost.of(500_000L),
-				"KTX",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"해운대 방문",
 				"#3366FF",
 				ScheduleCreatorType.USER,

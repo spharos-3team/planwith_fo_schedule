@@ -21,6 +21,8 @@ import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCa
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
@@ -46,7 +48,8 @@ class UpdateScheduleServiceTest {
 						LocalDate.of(2026, 9, 4),
 						3,
 						700_000L,
-						"렌터카",
+						TransportationType.RENTAL_CAR,
+						TravelStyle.RELAXATION_HEALING,
 						"가족 자유여행",
 						"#22AA88"
 				)
@@ -64,6 +67,8 @@ class UpdateScheduleServiceTest {
 		assertThat(result.title()).isEqualTo("제주 휴가");
 		assertThat(result.headcount()).isEqualTo(3);
 		assertThat(result.expectedCost()).isEqualTo(700_000L);
+		assertThat(result.transportation()).isEqualTo(TransportationType.RENTAL_CAR);
+		assertThat(result.travelStyle()).isEqualTo(TravelStyle.RELAXATION_HEALING);
 	}
 
 	@Test
@@ -75,7 +80,7 @@ class UpdateScheduleServiceTest {
 
 		assertThatThrownBy(() -> service.updateSchedule(
 				scheduleUuid,
-				new UpdateScheduleCommand(null, null, null, null, null, null, null, null, null)
+				new UpdateScheduleCommand(null, null, null, null, null, null, null, null, null, null)
 		)).isInstanceOf(ScheduleNotFoundException.class);
 
 		verify(repository, never()).update(any());
@@ -90,7 +95,8 @@ class UpdateScheduleServiceTest {
 				LocalDate.of(2026, 9, 3),
 				new Headcount(2),
 				ScheduleCost.of(500_000L),
-				"KTX",
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
 				"해운대 방문",
 				"#3366FF",
 				ScheduleCreatorType.USER,

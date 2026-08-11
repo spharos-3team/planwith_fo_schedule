@@ -141,6 +141,7 @@ class ScheduleValidationTest {
 				ScheduleCost.unspecified(),
 				null,
 				null,
+				null,
 				calendarColor,
 				creatorType,
 				List.of()

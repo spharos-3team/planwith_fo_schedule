@@ -41,6 +41,7 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarSched
 				schedule.headcount().value(),
 				schedule.expectedCost().amount(),
 				schedule.transportation(),
+				schedule.travelStyle(),
 				schedule.content(),
 				schedule.calendarColor(),
 				schedule.creatorType(),
@@ -75,6 +76,7 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarSched
 				schedule.headcount().value(),
 				schedule.expectedCost().amount(),
 				schedule.transportation(),
+				schedule.travelStyle(),
 				schedule.content(),
 				schedule.calendarColor()
 		);
@@ -135,6 +137,7 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarSched
 				new Headcount(entity.getHeadcount()),
 				new ScheduleCost(entity.getExpectedCost()),
 				entity.getTransportation(),
+				entity.getTravelStyle(),
 				entity.getContent(),
 				entity.getCalendarColor(),
 				entity.getCreatorType(),

@@ -12,6 +12,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,8 +63,13 @@ class ScheduleJpaEntity {
 	@Column(name = "expected_cost")
 	private Long expectedCost;
 
-	@Column(columnDefinition = "TEXT")
-	private String transportation;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "transportation", length = 30)
+	private TransportationType transportation;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "travel_style", length = 30)
+	private TravelStyle travelStyle;
 
 	@Column(columnDefinition = "TEXT")
 	private String content;
@@ -104,7 +111,8 @@ class ScheduleJpaEntity {
 			LocalDate endDate,
 			int headcount,
 			Long expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor,
 			ScheduleCreatorType creatorType,
@@ -122,6 +130,7 @@ class ScheduleJpaEntity {
 		this.headcount = headcount;
 		this.expectedCost = expectedCost;
 		this.transportation = transportation;
+		this.travelStyle = travelStyle;
 		this.content = content;
 		this.calendarColor = calendarColor;
 		this.creatorType = creatorType;
@@ -147,7 +156,8 @@ class ScheduleJpaEntity {
 			LocalDate endDate,
 			int headcount,
 			Long expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor
 	) {
@@ -158,6 +168,7 @@ class ScheduleJpaEntity {
 		this.headcount = headcount;
 		this.expectedCost = expectedCost;
 		this.transportation = transportation;
+		this.travelStyle = travelStyle;
 		this.content = content;
 		this.calendarColor = calendarColor;
 	}
@@ -175,7 +186,8 @@ class ScheduleJpaEntity {
 	LocalDate getEndDate() { return endDate; }
 	int getHeadcount() { return headcount; }
 	Long getExpectedCost() { return expectedCost; }
-	String getTransportation() { return transportation; }
+	TransportationType getTransportation() { return transportation; }
+	TravelStyle getTravelStyle() { return travelStyle; }
 	String getContent() { return content; }
 	String getCalendarColor() { return calendarColor; }
 	ScheduleCreatorType getCreatorType() { return creatorType; }

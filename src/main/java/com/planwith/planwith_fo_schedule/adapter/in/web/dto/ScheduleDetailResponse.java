@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
 public record ScheduleDetailResponse(
 		UUID scheduleUuid,
@@ -13,7 +15,8 @@ public record ScheduleDetailResponse(
 		LocalDate endDate,
 		int headcount,
 		Long expectedCost,
-		String transportation,
+		TransportationType transportation,
+		TravelStyle travelStyle,
 		String content,
 		String calendarColor,
 		ScheduleCreatorType creatorType

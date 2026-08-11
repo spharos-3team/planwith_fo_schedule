@@ -3,6 +3,9 @@ package com.planwith.planwith_fo_schedule.application.port.in;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.planwith.planwith_fo_schedule.domain.TransportationType;
+import com.planwith.planwith_fo_schedule.domain.TravelStyle;
+
 public interface CreateScheduleUseCase {
 
 	CreateScheduleResult createSchedule(CreateScheduleCommand command);
@@ -15,7 +18,8 @@ public interface CreateScheduleUseCase {
 			LocalDate endDate,
 			Integer headcount,
 			Long expectedCost,
-			String transportation,
+			TransportationType transportation,
+			TravelStyle travelStyle,
 			String content,
 			String calendarColor
 	) {
