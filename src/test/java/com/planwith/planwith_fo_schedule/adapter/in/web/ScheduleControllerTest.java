@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,8 @@ import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCa
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleResult;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase;
+import com.planwith.planwith_fo_schedule.application.port.in.GetCalendarSchedulesUseCase;
+import com.planwith.planwith_fo_schedule.application.port.in.GetCalendarSchedulesUseCase.CalendarScheduleResult;
 import com.planwith.planwith_fo_schedule.application.port.in.DeleteScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase.ScheduleDetailResult;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase;
@@ -40,6 +43,7 @@ class ScheduleControllerTest {
 	private GetScheduleDetailUseCase getScheduleDetailUseCase;
 	private UpdateScheduleUseCase updateScheduleUseCase;
 	private DeleteScheduleUseCase deleteScheduleUseCase;
+	private GetCalendarSchedulesUseCase getCalendarSchedulesUseCase;
 	private MockMvc mockMvc;
 
 	@BeforeEach
@@ -48,12 +52,14 @@ class ScheduleControllerTest {
 		getScheduleDetailUseCase = mock(GetScheduleDetailUseCase.class);
 		updateScheduleUseCase = mock(UpdateScheduleUseCase.class);
 		deleteScheduleUseCase = mock(DeleteScheduleUseCase.class);
+		getCalendarSchedulesUseCase = mock(GetCalendarSchedulesUseCase.class);
 		mockMvc = MockMvcBuilders.standaloneSetup(
 				new ScheduleController(
 						createScheduleUseCase,
 						getScheduleDetailUseCase,
 						updateScheduleUseCase,
-						deleteScheduleUseCase
+						deleteScheduleUseCase,
+						getCalendarSchedulesUseCase
 				)
 		)
 				.setControllerAdvice(new GlobalExceptionHandler())
@@ -261,5 +267,61 @@ class ScheduleControllerTest {
 		mockMvc.perform(delete("/schedules/{scheduleUuid}", scheduleUuid))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.error.code").value("SCHEDULE_NOT_FOUND"));
+	}
+
+	@Test
+	void returnsCalendarSchedulesForRequestedPeriod() throws Exception {
+		UUID firstUuid = UUID.randomUUID();
+		UUID secondUuid = UUID.randomUUID();
+		when(getCalendarSchedulesUseCase.getCalendarSchedules(
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 31)
+		)).thenReturn(List.of(
+				new CalendarScheduleResult(
+						firstUuid,
+						"오사카 여행",
+						LocalDate.of(2026, 8, 10),
+						LocalDate.of(2026, 8, 13),
+						"#3366FF",
+						CreatorType.SELF
+				),
+				new CalendarScheduleResult(
+						secondUuid,
+						"제주 여행",
+						LocalDate.of(2026, 8, 20),
+						LocalDate.of(2026, 8, 22),
+						"#22AA88",
+						CreatorType.AI
+				)
+		));
+
+		mockMvc.perform(get("/api/v1/schedules/calendar")
+						.param("startDate", "2026-08-01")
+						.param("endDate", "2026-08-31"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.length()").value(2))
+				.andExpect(jsonPath("$.data[0].scheduleUuid").value(firstUuid.toString()))
+				.andExpect(jsonPath("$.data[0].title").value("오사카 여행"))
+				.andExpect(jsonPath("$.data[0].startDate").value("2026-08-10"))
+				.andExpect(jsonPath("$.data[0].calendarColor").value("#3366FF"))
+				.andExpect(jsonPath("$.data[0].creatorType").value("SELF"));
+	}
+
+	@Test
+	void rejectsMissingCalendarPeriodParameter() throws Exception {
+		mockMvc.perform(get("/schedules/calendar")
+						.param("startDate", "2026-08-01"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+	}
+
+	@Test
+	void rejectsInvalidCalendarDateFormat() throws Exception {
+		mockMvc.perform(get("/schedules/calendar")
+						.param("startDate", "2026/08/01")
+						.param("endDate", "2026-08-31"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
 	}
 }
