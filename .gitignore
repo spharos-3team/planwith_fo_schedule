@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local-only Spring configuration ###
+/src/main/resources/application-local.yml

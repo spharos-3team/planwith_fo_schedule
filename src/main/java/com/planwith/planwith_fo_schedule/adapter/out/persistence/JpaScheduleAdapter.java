@@ -1,6 +1,7 @@
 package com.planwith.planwith_fo_schedule.adapter.out.persistence;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +13,7 @@ import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleItemLocation;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
@@ -50,20 +52,26 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort {
 		return toDomain(scheduleRepository.save(entity));
 	}
 
+	@Override
+	public Optional<Schedule> findByScheduleUuid(ScheduleUuid scheduleUuid) {
+		return scheduleRepository.findByScheduleUuid(scheduleUuid.value()).map(this::toDomain);
+	}
+
 	private ScheduleItemJpaEntity toEntity(ScheduleItem item) {
-		GeoPoint location = item.location();
+		ScheduleItemLocation location = item.location();
+		GeoPoint coordinates = location == null ? null : location.coordinates();
 		return new ScheduleItemJpaEntity(
 				item.scheduleItemId(),
-				item.dayNumber().value(),
-				item.scheduleTime(),
-				item.subtitle(),
-				item.scheduleType(),
-				item.description(),
-				item.estimatedCost().amount(),
-				item.placeName(),
-				item.placeAddress(),
-				location == null ? null : location.latitude(),
-				location == null ? null : location.longitude()
+				item.day().value(),
+				item.itemType(),
+				item.title(),
+				item.content(),
+				location == null ? null : location.placeName(),
+				location == null ? null : location.placeAddress(),
+				coordinates == null ? null : coordinates.latitude(),
+				coordinates == null ? null : coordinates.longitude(),
+				item.startTime(),
+				item.expectedCost().amount()
 		);
 	}
 
@@ -90,16 +98,23 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort {
 	private ScheduleItem toDomain(ScheduleItemJpaEntity entity) {
 		return ScheduleItem.restore(
 				entity.getScheduleItemId(),
-				new DayNumber(entity.getDayNumber()),
-				entity.getScheduleTime(),
-				entity.getSubtitle(),
-				entity.getScheduleType(),
-				entity.getDescription(),
-				ScheduleCost.of(entity.getEstimatedCost()),
-				entity.getPlaceName(),
-				entity.getPlaceAddress(),
-				toGeoPoint(entity.getLatitude(), entity.getLongitude())
+				entity.getScheduleId(),
+				new DayNumber(entity.getDay()),
+				entity.getItemType(),
+				entity.getTitle(),
+				entity.getContent(),
+				toLocation(entity),
+				entity.getStartTime(),
+				ScheduleCost.of(entity.getExpectedCost())
 		);
+	}
+
+	private ScheduleItemLocation toLocation(ScheduleItemJpaEntity entity) {
+		GeoPoint coordinates = toGeoPoint(entity.getLatitude(), entity.getLongitude());
+		if (entity.getPlaceName() == null && entity.getPlaceAddress() == null && coordinates == null) {
+			return null;
+		}
+		return new ScheduleItemLocation(entity.getPlaceName(), entity.getPlaceAddress(), coordinates);
 	}
 
 	private GeoPoint toGeoPoint(BigDecimal latitude, BigDecimal longitude) {

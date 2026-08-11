@@ -49,4 +49,11 @@ class ScheduleValueObjectTest {
 				.isInstanceOf(InvalidScheduleException.class)
 				.hasMessage("Latitude must be between -90 and 90.");
 	}
+
+	@Test
+	void requiresLatitudeAndLongitudeTogether() {
+		assertThatThrownBy(() -> new GeoPoint(BigDecimal.ZERO, null))
+				.isInstanceOf(InvalidScheduleException.class)
+				.hasMessage("Latitude and longitude must be provided together.");
+	}
 }

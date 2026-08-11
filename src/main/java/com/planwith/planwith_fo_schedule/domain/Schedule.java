@@ -66,7 +66,7 @@ public final class Schedule {
 		this.creatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
-		this.items = List.copyOf(Objects.requireNonNull(items, "Schedule items are required."));
+		this.items = validateItems(items, period);
 	}
 
 	public static Schedule create(
@@ -147,6 +147,16 @@ public final class Schedule {
 				updatedAt,
 				items
 		);
+	}
+
+	private static List<ScheduleItem> validateItems(List<ScheduleItem> items, SchedulePeriod period) {
+		List<ScheduleItem> copiedItems = List.copyOf(Objects.requireNonNull(items, "Schedule items are required."));
+		for (ScheduleItem item : copiedItems) {
+			if (item.day().value() > period.numberOfDays()) {
+				throw new InvalidScheduleException("Schedule item day must be within the schedule period.");
+			}
+		}
+		return copiedItems;
 	}
 
 	private static String requireText(String value, int maxLength, String message) {
