@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
+import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
 
 @RestControllerAdvice
@@ -43,6 +44,15 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleScheduleNotFound(ScheduleNotFoundException exception) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
 				ApiResponse.failure("SCHEDULE_NOT_FOUND", "일정을 찾을 수 없습니다.", Map.of())
+		);
+	}
+
+	@ExceptionHandler(AuthenticationRequiredException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAuthenticationRequired(
+			AuthenticationRequiredException exception
+	) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+				ApiResponse.failure("AUTHENTICATION_REQUIRED", exception.getMessage(), Map.of())
 		);
 	}
 
