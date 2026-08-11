@@ -32,6 +32,21 @@ public class AiScheduleController {
 			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
 			@Valid @RequestBody AiScheduleGenerateRequest request
 	) {
+		return generateDraft(authenticatedMemberUuid, request);
+	}
+
+	@PostMapping("/regenerate")
+	public ResponseEntity<ApiResponse<AiScheduleGenerateResponse>> regenerate(
+			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
+			@Valid @RequestBody AiScheduleGenerateRequest request
+	) {
+		return generateDraft(authenticatedMemberUuid, request);
+	}
+
+	private ResponseEntity<ApiResponse<AiScheduleGenerateResponse>> generateDraft(
+			UUID authenticatedMemberUuid,
+			AiScheduleGenerateRequest request
+	) {
 		GenerateAiScheduleUseCase.AiScheduleResult result = generateAiScheduleUseCase.generate(
 				AiScheduleGenerateRequestMapper.toCommand(authenticatedMemberUuid, request)
 		);
