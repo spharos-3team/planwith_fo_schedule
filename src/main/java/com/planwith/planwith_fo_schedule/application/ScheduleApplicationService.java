@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
@@ -38,7 +38,7 @@ public class ScheduleApplicationService implements CreateScheduleUseCase {
 				command.transportation(),
 				command.content(),
 				command.calendarColor(),
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				List.of()
 		));
 

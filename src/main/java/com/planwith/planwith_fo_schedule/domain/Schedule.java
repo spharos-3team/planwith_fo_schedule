@@ -30,7 +30,7 @@ public final class Schedule {
 	private final String transportation;
 	private final String content;
 	private final String calendarColor;
-	private final CreatorType creatorType;
+	private final ScheduleCreatorType creatorType;
 	private final LocalDateTime createdAt;
 	private final LocalDateTime updatedAt;
 	private final LocalDateTime deletedAt;
@@ -48,7 +48,7 @@ public final class Schedule {
 			String transportation,
 			String content,
 			String calendarColor,
-			CreatorType creatorType,
+			ScheduleCreatorType creatorType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
 			LocalDateTime deletedAt,
@@ -83,7 +83,7 @@ public final class Schedule {
 			String transportation,
 			String content,
 			String calendarColor,
-			CreatorType creatorType,
+			ScheduleCreatorType creatorType,
 			List<ScheduleItem> items
 	) {
 		String validatedDestination = requireText(
@@ -94,8 +94,8 @@ public final class Schedule {
 		SchedulePeriod validatedPeriod = new SchedulePeriod(startDate, endDate);
 		String resolvedTitle = resolveTitle(title, validatedDestination);
 		String resolvedCalendarColor = resolveCalendarColor(calendarColor);
-		CreatorType validatedCreatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
-		Headcount resolvedHeadcount = resolveHeadcount(headcount, validatedCreatorType);
+		ScheduleCreatorType validatedScheduleCreatorType = Objects.requireNonNull(creatorType, "Creator type is required.");
+		Headcount resolvedHeadcount = resolveHeadcount(headcount, validatedScheduleCreatorType);
 
 		return new Schedule(
 				null,
@@ -109,7 +109,7 @@ public final class Schedule {
 				transportation,
 				content,
 				resolvedCalendarColor,
-				validatedCreatorType,
+				validatedScheduleCreatorType,
 				null,
 				null,
 				null,
@@ -129,7 +129,7 @@ public final class Schedule {
 			String transportation,
 			String content,
 			String calendarColor,
-			CreatorType creatorType,
+			ScheduleCreatorType creatorType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
 			LocalDateTime deletedAt,
@@ -260,11 +260,11 @@ public final class Schedule {
 		);
 	}
 
-	private static Headcount resolveHeadcount(Headcount headcount, CreatorType creatorType) {
+	private static Headcount resolveHeadcount(Headcount headcount, ScheduleCreatorType creatorType) {
 		if (headcount != null) {
 			return headcount;
 		}
-		if (creatorType == CreatorType.AI) {
+		if (creatorType == ScheduleCreatorType.AI) {
 			return Headcount.defaultValue();
 		}
 		throw new InvalidScheduleException("Headcount is required for non-AI schedules.");
@@ -296,7 +296,7 @@ public final class Schedule {
 	public String transportation() { return transportation; }
 	public String content() { return content; }
 	public String calendarColor() { return calendarColor; }
-	public CreatorType creatorType() { return creatorType; }
+	public ScheduleCreatorType creatorType() { return creatorType; }
 	public LocalDateTime createdAt() { return createdAt; }
 	public LocalDateTime updatedAt() { return updatedAt; }
 	public LocalDateTime deletedAt() { return deletedAt; }

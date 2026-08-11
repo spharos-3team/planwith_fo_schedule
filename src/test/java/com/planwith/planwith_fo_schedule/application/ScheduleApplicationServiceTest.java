@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
@@ -41,7 +41,7 @@ class ScheduleApplicationServiceTest {
 		assertThat(repository.savedSchedule.calendarColor()).isEqualTo(Schedule.DEFAULT_CALENDAR_COLOR);
 		assertThat(repository.savedSchedule.headcount().value()).isEqualTo(2);
 		assertThat(repository.savedSchedule.expectedCost().amount()).isNull();
-		assertThat(repository.savedSchedule.creatorType()).isEqualTo(CreatorType.SELF);
+		assertThat(repository.savedSchedule.creatorType()).isEqualTo(ScheduleCreatorType.USER);
 		assertThat(repository.savedSchedule.content()).isEqualTo("경복궁 관람 후 한강을 산책한다.");
 		assertThat(repository.savedSchedule.items()).isEmpty();
 		assertThat(result.scheduleUuid()).isEqualTo(repository.savedSchedule.scheduleUuid().value());

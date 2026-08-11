@@ -18,7 +18,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
@@ -68,7 +68,7 @@ class DeleteScheduleServiceTest {
 				"KTX",
 				"자유여행",
 				"#3366FF",
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				List.of()
 		);
 	}

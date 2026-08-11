@@ -3,7 +3,7 @@ package com.planwith.planwith_fo_schedule.adapter.out.persistence;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 interface CalendarScheduleProjection {
 
@@ -17,5 +17,5 @@ interface CalendarScheduleProjection {
 
 	String getCalendarColor();
 
-	CreatorType getCreatorType();
+	ScheduleCreatorType getCreatorType();
 }

@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 import jakarta.persistence.EntityManager;
 
@@ -71,7 +71,7 @@ class ScheduleCreationIntegrationTest {
 				"부산",
 				java.time.LocalDate.of(2026, 9, 1),
 				java.time.LocalDate.of(2026, 9, 3),
-				CreatorType.SELF,
+				ScheduleCreatorType.USER,
 				"해운대에서 자유롭게 시간을 보낸다."
 		);
 		Long itemCount = entityManager.createQuery(
@@ -94,7 +94,7 @@ class ScheduleCreationIntegrationTest {
 				.andExpect(jsonPath("$.data.endDate").value("2026-09-03"))
 				.andExpect(jsonPath("$.data.headcount").value(2))
 				.andExpect(jsonPath("$.data.content").value("해운대에서 자유롭게 시간을 보낸다."))
-				.andExpect(jsonPath("$.data.creatorType").value("SELF"));
+				.andExpect(jsonPath("$.data.creatorType").value("USER"));
 	}
 
 	@Test

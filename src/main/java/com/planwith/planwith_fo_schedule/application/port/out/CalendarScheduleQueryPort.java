@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import com.planwith.planwith_fo_schedule.domain.CreatorType;
+import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 public interface CalendarScheduleQueryPort {
@@ -17,7 +17,7 @@ public interface CalendarScheduleQueryPort {
 			LocalDate startDate,
 			LocalDate endDate,
 			String calendarColor,
-			CreatorType creatorType
+			ScheduleCreatorType creatorType
 	) {
 	}
 }

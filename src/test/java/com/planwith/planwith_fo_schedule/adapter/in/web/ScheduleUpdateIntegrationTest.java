@@ -88,7 +88,7 @@ class ScheduleUpdateIntegrationTest {
 				.andExpect(jsonPath("$.data.destination").value("제주"))
 				.andExpect(jsonPath("$.data.startDate").value("2026-09-01"))
 				.andExpect(jsonPath("$.data.endDate").value("2026-09-04"))
-				.andExpect(jsonPath("$.data.creatorType").value("SELF"));
+				.andExpect(jsonPath("$.data.creatorType").value("USER"));
 
 		entityManager.flush();
 		entityManager.clear();
@@ -100,7 +100,7 @@ class ScheduleUpdateIntegrationTest {
 				.setParameter("scheduleUuid", scheduleUuid)
 				.getSingleResult();
 		assertThat(stored).containsExactly(memberUuid, "제주 가족여행", "제주", 3, 700_000L,
-				com.planwith.planwith_fo_schedule.domain.CreatorType.SELF);
+				com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType.USER);
 
 		mockMvc.perform(get("/schedules/{scheduleUuid}", scheduleUuid))
 				.andExpect(status().isOk())
