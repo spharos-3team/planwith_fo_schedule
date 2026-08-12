@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
+import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
 
@@ -62,6 +63,17 @@ public class GlobalExceptionHandler {
 		log.warn("GlobalExceptionHandler : handleAuthenticationRequired : 인증되지 않은 API 요청");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
 				ApiResponse.failure("AUTHENTICATION_REQUIRED", exception.getMessage(), Map.of())
+		);
+	}
+
+	@ExceptionHandler(ScheduleAccessDeniedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleScheduleAccessDenied(
+			ScheduleAccessDeniedException exception
+	) {
+		log.warn("GlobalExceptionHandler : handleScheduleAccessDenied : 일정 접근 권한 없음 - scheduleUuid={}",
+				exception.scheduleUuid());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+				ApiResponse.failure("SCHEDULE_ACCESS_DENIED", "일정에 접근할 권한이 없습니다.", Map.of())
 		);
 	}
 
