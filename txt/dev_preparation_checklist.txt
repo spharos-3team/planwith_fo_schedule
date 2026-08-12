@@ -1,0 +1,70 @@
+개발 준비 체크리스트 (요약)
+
+목표: 코드 변경 없이 외부연동(Amadeus 항공, 날씨 API) 개발을 준비하기 위한 실행 가능한 체크리스트
+
+우선순위 작업
+1) API 키/계정 확보
+- Amadeus 개발자 계정 생성 및 샌드박스 애플리케이션 등록
+- 사용하려는 날씨 API(예: OpenWeatherMap) 키 발급
+
+2) 환경 및 시크릿 관리 설정
+- 시크릿 저장소(Vault) 또는 환경변수 사용 정책 결정
+- 제안 환경변수: AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET, AMADEUS_ENV, WEATHER_API_KEY, WEATHER_PROVIDER
+
+3) 구성 템플릿 준비(`application.yml` 자리표시자)
+- 샌드박스/운영 분리
+
+예시:
+```yaml
+external:
+  amadeus:
+    env: "test" # test | prod
+    clientId: ${AMADEUS_CLIENT_ID:}
+    clientSecret: ${AMADEUS_CLIENT_SECRET:}
+  weather:
+    provider: "openweathermap"
+    apiKey: ${WEATHER_API_KEY:}
+```
+
+4) 기본 호출 검증(샌드박스)
+- 토큰 발급 및 간단 검색 호출로 연동 확인
+
+샘플 요청:
+```bash
+# 토큰 발급
+curl -X POST "https://test.api.amadeus.com/v1/security/oauth2/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials&client_id=${AMADEUS_CLIENT_ID}&client_secret=${AMADEUS_CLIENT_SECRET}"
+
+# 항공편 검색 예시
+curl -X GET "https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=ICN&destinationLocationCode=LAX&departureDate=2026-09-01&adults=1" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# 날씨 현재 예시(OpenWeatherMap)
+curl "https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${WEATHER_API_KEY}&units=metric"
+```
+
+5) 의존성(코드에 직접 추가하지 않음, 확인용)
+- 권장: Amadeus 공식 Java SDK(문서에서 정확한 아티팩트명 확인)
+- HTTP: Spring WebClient (Spring Boot 사용 시)
+- Resilience: Resilience4j, 캐싱: Caffeine/Redis
+
+6) 테스트 전략
+- WireMock 템플릿으로 외부 API 모킹 준비
+- 샌드박스 기반 통합 테스트 케이스 목록 작성(토큰, 검색, 요금확인, 에러/타임아웃)
+
+7) 보안·운영
+- 시크릿 접근 권한 최소화, 키 롤오버 절차 문서화
+- 요청/오류 메트릭 수집 지점 정의(예: 검색 지연, 실패율)
+
+8) 문서화
+- API 엔드포인트 목록(샌드박스/운영), 필요한 파라미터, 응답 예시 정리
+- 예약/발권 관련 비즈니스·법무 검토 항목 정리
+
+체크리스트 완료 기준
+- 샌드박스 키 확보 및 토큰 발급 검증 완료
+- `application.yml` 자리표시자 반영(코드 변경 없음)
+- WireMock 템플릿과 테스트 케이스 목록 완성
+
+다음 단계 제안
+- (권장) 샌드박스 키 발급부터 진행 — 원하시면 발급 절차 문안(메일/요청 템플릿) 작성해 드립니다.
