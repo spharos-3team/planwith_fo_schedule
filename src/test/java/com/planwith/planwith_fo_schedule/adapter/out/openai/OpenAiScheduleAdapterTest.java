@@ -20,6 +20,7 @@ import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
+import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.ScheduleRevisionContext;
 import com.planwith.planwith_fo_schedule.config.OpenAiProperties;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
@@ -95,6 +96,37 @@ class OpenAiScheduleAdapterTest {
 		server.verify();
 	}
 
+	@Test
+	void requestsStructuredRevisionAndMapsResponse() throws Exception {
+		String revisedJson = """
+				{
+				  "title": "부산 바다 여행",
+				  "content": "해운대를 중심으로 여유롭게 여행합니다."
+				}
+				""";
+		String response = """
+				{
+				  "output": [{
+				    "content": [{"type": "output_text", "text": %s}]
+				  }]
+				}
+				""".formatted(objectMapper.writeValueAsString(revisedJson));
+
+		server.expect(requestTo("https://api.openai.com/v1/responses"))
+				.andExpect(method(HttpMethod.POST))
+				.andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer test-api-key"))
+				.andExpect(jsonPath("$.text.format.name").value("planwith_schedule_revision"))
+				.andExpect(jsonPath("$.text.format.strict").value(true))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("currentSchedule")))
+				.andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
+
+		var result = adapter.revise(revisionContext());
+
+		assertThat(result.title()).isEqualTo("부산 바다 여행");
+		assertThat(result.content()).contains("해운대");
+		server.verify();
+	}
+
 	private AiScheduleGenerateCommand command() {
 		return new AiScheduleGenerateCommand(
 				new MemberUuid(UUID.randomUUID()),
@@ -106,6 +138,21 @@ class OpenAiScheduleAdapterTest {
 				TravelStyle.TOUR_LANDMARK,
 				"바다 중심 일정",
 				null
+		);
+	}
+
+	private ScheduleRevisionContext revisionContext() {
+		return new ScheduleRevisionContext(
+				"부산 여행",
+				"부산",
+				LocalDate.of(2026, 8, 20),
+				LocalDate.of(2026, 8, 22),
+				2,
+				500_000,
+				TransportationType.TRAIN_PUBLIC_TRANSIT,
+				TravelStyle.TOUR_LANDMARK,
+				"해운대와 광안리를 방문합니다.",
+				"바다 중심으로 더 자세히 작성해줘"
 		);
 	}
 }

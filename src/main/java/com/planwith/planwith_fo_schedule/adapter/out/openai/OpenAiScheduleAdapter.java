@@ -1,6 +1,7 @@
 package com.planwith.planwith_fo_schedule.adapter.out.openai;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +16,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
+import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
+import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
+import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.ScheduleRevisionContext;
 import com.planwith.planwith_fo_schedule.config.OpenAiProperties;
 
 @Component
-public class OpenAiScheduleAdapter implements AiScheduleGenerationPort {
+public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiScheduleRevisionPort {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenAiScheduleAdapter.class);
 
@@ -41,17 +45,49 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort {
 
 	@Override
 	public GeneratedAiSchedule generate(AiScheduleGenerateCommand command) {
+		String outputText = requestOutputText(
+				promptFactory.instructions(),
+				promptFactory.userInput(command),
+				"planwith_schedule",
+				OpenAiScheduleSchema.value(),
+				"generate",
+				"일정 생성"
+		);
+		return toGeneratedSchedule(outputText);
+	}
+
+	@Override
+	public RevisedSchedule revise(ScheduleRevisionContext context) {
+		String outputText = requestOutputText(
+				promptFactory.revisionInstructions(),
+				promptFactory.revisionUserInput(context),
+				"planwith_schedule_revision",
+				OpenAiScheduleRevisionSchema.value(),
+				"revise",
+				"일정 첨삭"
+		);
+		return toRevisedSchedule(outputText);
+	}
+
+	private String requestOutputText(
+			String instructions,
+			String input,
+			String schemaName,
+			Map<String, Object> schema,
+			String operation,
+			String roleDescription
+	) {
 		validateConfiguration();
 		OpenAiResponsesRequest request = new OpenAiResponsesRequest(
 				properties.getModel(),
-				promptFactory.instructions(),
-				promptFactory.userInput(command),
+				instructions,
+				input,
 				new OpenAiResponsesRequest.TextConfiguration(
 						new OpenAiResponsesRequest.StructuredFormat(
 								"json_schema",
-								"planwith_schedule",
+								schemaName,
 								true,
-								OpenAiScheduleSchema.value()
+								schema
 						)
 				)
 		);
@@ -64,23 +100,23 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort {
 					.body(request)
 					.retrieve()
 					.body(OpenAiResponsesResponse.class);
-			return toGeneratedSchedule(response);
+			String outputText = response == null ? null : response.outputText();
+			if (outputText == null) {
+				throw new AiScheduleGenerationException("OpenAI returned no schedule content.");
+			}
+			return outputText;
 		} catch (RestClientResponseException exception) {
-			log.warn("OpenAiScheduleAdapter : generate : OpenAI 일정 요청 실패 - status={}",
-					exception.getStatusCode().value());
+			log.warn("OpenAiScheduleAdapter : {} : OpenAI {} 요청 실패 - status={}",
+					operation, roleDescription, exception.getStatusCode().value());
 			throw new AiScheduleGenerationException("OpenAI rejected the schedule generation request.", exception);
 		} catch (RestClientException exception) {
-			log.warn("OpenAiScheduleAdapter : generate : OpenAI 통신 오류로 일정 요청 실패", exception);
+			log.warn("OpenAiScheduleAdapter : {} : OpenAI 통신 오류로 {} 요청 실패",
+					operation, roleDescription, exception);
 			throw new AiScheduleGenerationException("Failed to communicate with OpenAI.", exception);
 		}
 	}
 
-	private GeneratedAiSchedule toGeneratedSchedule(OpenAiResponsesResponse response) {
-		String outputText = response == null ? null : response.outputText();
-		if (outputText == null) {
-			throw new AiScheduleGenerationException("OpenAI returned no schedule content.");
-		}
-
+	private GeneratedAiSchedule toGeneratedSchedule(String outputText) {
 		try {
 			OpenAiGeneratedSchedulePayload payload = objectMapper.readValue(
 					outputText,
@@ -98,6 +134,22 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort {
 			return new GeneratedAiSchedule(payload.title(), payload.content(), items);
 		} catch (JsonProcessingException exception) {
 			throw new AiScheduleGenerationException("OpenAI returned an invalid schedule response.", exception);
+		}
+	}
+
+	private RevisedSchedule toRevisedSchedule(String outputText) {
+		try {
+			OpenAiRevisedSchedulePayload payload = objectMapper.readValue(
+					outputText,
+					OpenAiRevisedSchedulePayload.class
+			);
+			if (payload.title() == null || payload.title().isBlank()
+					|| payload.content() == null || payload.content().isBlank()) {
+				throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision.");
+			}
+			return new RevisedSchedule(payload.title(), payload.content());
+		} catch (JsonProcessingException exception) {
+			throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision response.", exception);
 		}
 	}
 
