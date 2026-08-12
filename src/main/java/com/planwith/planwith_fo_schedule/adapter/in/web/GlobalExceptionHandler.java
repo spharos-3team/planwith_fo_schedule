@@ -30,6 +30,8 @@ public class GlobalExceptionHandler {
 		exception.getBindingResult().getFieldErrors().forEach(error ->
 				fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage())
 		);
+		log.warn("GlobalExceptionHandler : handleValidation : 요청값 검증 실패 - fieldCount={}, fields={}",
+				fieldErrors.size(), fieldErrors.keySet());
 		return ResponseEntity.badRequest().body(
 				ApiResponse.failure("INVALID_REQUEST", "요청값이 올바르지 않습니다.", fieldErrors)
 		);
@@ -37,6 +39,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(InvalidScheduleException.class)
 	public ResponseEntity<ApiResponse<Void>> handleInvalidSchedule(InvalidScheduleException exception) {
+		log.warn("GlobalExceptionHandler : handleInvalidSchedule : 일정 비즈니스 규칙 위반 - message={}",
+				exception.getMessage());
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(
 				ApiResponse.failure("INVALID_SCHEDULE", exception.getMessage(), Map.of())
 		);
@@ -44,6 +48,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(ScheduleNotFoundException.class)
 	public ResponseEntity<ApiResponse<Void>> handleScheduleNotFound(ScheduleNotFoundException exception) {
+		log.warn("GlobalExceptionHandler : handleScheduleNotFound : 일정 조회 실패 - scheduleUuid={}",
+				exception.scheduleUuid());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
 				ApiResponse.failure("SCHEDULE_NOT_FOUND", "일정을 찾을 수 없습니다.", Map.of())
 		);
@@ -53,6 +59,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleAuthenticationRequired(
 			AuthenticationRequiredException exception
 	) {
+		log.warn("GlobalExceptionHandler : handleAuthenticationRequired : 인증되지 않은 API 요청");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
 				ApiResponse.failure("AUTHENTICATION_REQUIRED", exception.getMessage(), Map.of())
 		);
@@ -60,7 +67,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(AiScheduleGenerationException.class)
 	public ResponseEntity<ApiResponse<Void>> handleAiScheduleGeneration(AiScheduleGenerationException exception) {
-		log.warn("AI schedule generation failed: {}", exception.getMessage());
+		log.warn("GlobalExceptionHandler : handleAiScheduleGeneration : AI 일정 생성 실패 - message={}",
+				exception.getMessage());
 		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(
 				ApiResponse.failure(
 						"AI_SCHEDULE_GENERATION_FAILED",
@@ -72,6 +80,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+		log.warn("GlobalExceptionHandler : handleTypeMismatch : 요청 파라미터 타입 불일치 - parameter={}",
+				exception.getName());
 		return ResponseEntity.badRequest().body(
 				ApiResponse.failure("INVALID_REQUEST", "요청값이 올바르지 않습니다.", Map.of())
 		);
@@ -79,6 +89,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ApiResponse<Void>> handleUnreadableRequest(HttpMessageNotReadableException exception) {
+		log.warn("GlobalExceptionHandler : handleUnreadableRequest : 요청 본문 파싱 실패");
+		log.debug("GlobalExceptionHandler : handleUnreadableRequest : 요청 본문 파싱 실패 원인", exception);
 		return ResponseEntity.badRequest().body(
 				ApiResponse.failure("INVALID_REQUEST", "Request body contains an unsupported value.", Map.of())
 		);
@@ -88,6 +100,8 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleMissingRequestParameter(
 			MissingServletRequestParameterException exception
 	) {
+		log.warn("GlobalExceptionHandler : handleMissingRequestParameter : 필수 요청 파라미터 누락 - parameter={}",
+				exception.getParameterName());
 		return ResponseEntity.badRequest().body(
 				ApiResponse.failure("INVALID_REQUEST", "Required request parameter is missing.", Map.of())
 		);
@@ -95,7 +109,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<Void>> handleUnexpectedException(Exception exception) {
-		log.error("Unexpected request processing failure", exception);
+		log.error("GlobalExceptionHandler : handleUnexpectedException : 예상하지 못한 시스템 오류 발생", exception);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
 				ApiResponse.failure("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.", Map.of())
 		);

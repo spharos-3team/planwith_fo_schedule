@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +27,8 @@ import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleU
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleItemResult;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleResult;
+import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase;
+import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase.SaveAiScheduleResult;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
@@ -33,12 +36,14 @@ import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 class AiScheduleControllerTest {
 
 	private GenerateAiScheduleUseCase useCase;
+	private SaveAiScheduleUseCase saveUseCase;
 	private MockMvc mockMvc;
 
 	@BeforeEach
 	void setUp() {
 		useCase = mock(GenerateAiScheduleUseCase.class);
-		mockMvc = MockMvcBuilders.standaloneSetup(new AiScheduleController(useCase))
+		saveUseCase = mock(SaveAiScheduleUseCase.class);
+		mockMvc = MockMvcBuilders.standaloneSetup(new AiScheduleController(useCase, saveUseCase))
 				.setControllerAdvice(new GlobalExceptionHandler())
 				.build();
 	}
@@ -128,6 +133,37 @@ class AiScheduleControllerTest {
 	}
 
 	@Test
+	void savesConfirmedAiDraft() throws Exception {
+		UUID memberUuid = UUID.randomUUID();
+		UUID scheduleUuid = UUID.randomUUID();
+		when(saveUseCase.save(any())).thenReturn(
+				new SaveAiScheduleResult(scheduleUuid, memberUuid, "부산 AI 여행", 1)
+		);
+
+		mockMvc.perform(post("/api/v1/schedules/ai/save")
+						.header("X-Member-UUID", memberUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(validSaveRequest()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
+				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()))
+				.andExpect(jsonPath("$.data.itemCount").value(1));
+
+		verify(saveUseCase).save(any());
+		verifyNoInteractions(useCase);
+	}
+
+	@Test
+	void rejectsAiDraftSaveWithoutAuthenticationHeader() throws Exception {
+		mockMvc.perform(post("/api/v1/schedules/ai/save")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(validSaveRequest()))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
+	}
+
+	@Test
 	void rejectsRequestWithoutAuthenticationHeader() throws Exception {
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -173,5 +209,33 @@ class AiScheduleControllerTest {
 						new BigDecimal("129.1604000")
 				))
 		);
+	}
+
+	private String validSaveRequest() {
+		return """
+				{
+				  "title": "부산 AI 여행",
+				  "destination": "부산",
+				  "startDate": "2026-08-20",
+				  "endDate": "2026-08-22",
+				  "participantCount": 2,
+				  "estimatedBudget": 500000,
+				  "transportation": "TRAIN_PUBLIC_TRANSIT",
+				  "travelStyle": "TOUR_LANDMARK",
+				  "calendarColor": "#4F46E5",
+				  "items": [{
+				    "dayNumber": 1,
+				    "scheduleTime": "10:00:00",
+				    "subtitle": "해운대 산책",
+				    "scheduleType": "TOUR",
+				    "description": "해변 산책",
+				    "estimatedCost": 0,
+				    "placeName": "해운대",
+				    "placeAddress": "부산광역시 해운대구",
+				    "latitude": null,
+				    "longitude": null
+				  }]
+				}
+				""";
 	}
 }
