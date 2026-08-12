@@ -1,5 +1,6 @@
 package com.planwith.planwith_fo_schedule.adapter.in.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,11 +17,13 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
+import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleItemResult;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleResult;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
@@ -55,6 +58,47 @@ class AiScheduleControllerTest {
 				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"));
 
 		verify(useCase).generate(any());
+	}
+
+	@Test
+	void generatesNewDraftWithReenteredAndModifiedConditions() throws Exception {
+		UUID memberUuid = UUID.randomUUID();
+		when(useCase.generate(any())).thenReturn(aiScheduleResult(memberUuid));
+
+		mockMvc.perform(post("/api/v1/schedules/ai/generate")
+						.header("X-Member-UUID", memberUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "destination": "제주",
+								  "startDate": "2026-09-01",
+								  "endDate": "2026-09-05",
+								  "participantCount": 4,
+								  "estimatedBudget": 1200000,
+								  "transportation": "RENTAL_CAR",
+								  "travelStyle": "RELAXATION_HEALING",
+								  "additionalRequest": "아이와 함께 이동하기 편한 일정"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true));
+
+		ArgumentCaptor<AiScheduleGenerateCommand> commandCaptor =
+				ArgumentCaptor.forClass(AiScheduleGenerateCommand.class);
+		verify(useCase).generate(commandCaptor.capture());
+		AiScheduleGenerateCommand command = commandCaptor.getValue();
+		assertThat(command.memberUuid().value()).isEqualTo(memberUuid);
+		assertThat(command.destination()).isEqualTo("제주");
+		assertThat(command.period().startDate())
+				.isEqualTo(LocalDate.of(2026, 9, 1));
+		assertThat(command.period().endDate())
+				.isEqualTo(LocalDate.of(2026, 9, 5));
+		assertThat(command.participantCount().value()).isEqualTo(4);
+		assertThat(command.estimatedBudget().amount()).isEqualTo(1_200_000L);
+		assertThat(command.transportation()).isEqualTo(TransportationType.RENTAL_CAR);
+		assertThat(command.travelStyle()).isEqualTo(TravelStyle.RELAXATION_HEALING);
+		assertThat(command.additionalRequest())
+				.isEqualTo("아이와 함께 이동하기 편한 일정");
 	}
 
 	@Test
