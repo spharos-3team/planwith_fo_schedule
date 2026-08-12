@@ -66,10 +66,11 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort {
 					.body(OpenAiResponsesResponse.class);
 			return toGeneratedSchedule(response);
 		} catch (RestClientResponseException exception) {
-			log.warn("OpenAI schedule request failed with status {}", exception.getStatusCode().value());
+			log.warn("OpenAiScheduleAdapter : generate : OpenAI 일정 요청 실패 - status={}",
+					exception.getStatusCode().value());
 			throw new AiScheduleGenerationException("OpenAI rejected the schedule generation request.", exception);
 		} catch (RestClientException exception) {
-			log.warn("OpenAI schedule request failed due to a communication error", exception);
+			log.warn("OpenAiScheduleAdapter : generate : OpenAI 통신 오류로 일정 요청 실패", exception);
 			throw new AiScheduleGenerationException("Failed to communicate with OpenAI.", exception);
 		}
 	}

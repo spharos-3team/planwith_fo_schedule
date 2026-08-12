@@ -2,9 +2,6 @@ package com.planwith.planwith_fo_schedule.application;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 import org.springframework.stereotype.Service;
 
@@ -36,10 +33,7 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 		AiScheduleGenerationPort.GeneratedAiSchedule generated = aiScheduleGenerationPort.generate(command);
 		try {
 			List<ScheduleItem> generatedItems = normalizeItems(generated.items());
-			if (generatedItems.isEmpty()) {
-				throw new InvalidScheduleException("AI schedule must contain at least one schedule item.");
-			}
-			validateEveryTravelDayHasItems(command, generatedItems);
+			AiScheduleDraftValidator.validate(command.period(), generatedItems);
 			Schedule schedule = Schedule.create(
 					command.memberUuid(),
 					generated.title(),
@@ -81,20 +75,6 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 						.comparingInt((ScheduleItem item) -> item.day().value())
 						.thenComparing(ScheduleItem::startTime, Comparator.nullsLast(Comparator.naturalOrder())))
 				.toList();
-	}
-
-	private void validateEveryTravelDayHasItems(
-			AiScheduleGenerateCommand command,
-			List<ScheduleItem> generatedItems
-	) {
-		Set<Long> generatedDays = generatedItems.stream()
-				.map(item -> (long) item.day().value())
-				.collect(Collectors.toSet());
-		boolean coversEveryDay = LongStream.rangeClosed(1, command.period().numberOfDays())
-				.allMatch(generatedDays::contains);
-		if (!coversEveryDay) {
-			throw new InvalidScheduleException("AI schedule must contain at least one item for every travel day.");
-		}
 	}
 
 	private ScheduleItem toDomainItem(GeneratedScheduleItem generated) {
