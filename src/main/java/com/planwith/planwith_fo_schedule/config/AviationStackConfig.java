@@ -6,10 +6,10 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-public class OpenAiConfig {
+public class AviationStackConfig {
 
-	@Bean("openAiRestClient")
-	RestClient openAiRestClient(OpenAiProperties properties) {
+	@Bean("aviationStackRestClient")
+	RestClient aviationStackRestClient(AviationStackProperties properties) {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setConnectTimeout(properties.getConnectTimeoutMillis());
 		requestFactory.setReadTimeout(properties.getReadTimeoutMillis());
