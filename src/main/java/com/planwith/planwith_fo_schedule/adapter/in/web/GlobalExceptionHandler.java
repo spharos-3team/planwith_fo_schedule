@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
+import com.planwith.planwith_fo_schedule.application.exception.AirportCodeNotFoundException;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
+import com.planwith.planwith_fo_schedule.application.exception.FlightLocationNotSupportedException;
+import com.planwith.planwith_fo_schedule.application.exception.InvalidFlightLocationException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
@@ -87,6 +90,38 @@ public class GlobalExceptionHandler {
 						"AI schedule generation failed. Please try again later.",
 						Map.of()
 				)
+		);
+	}
+
+	@ExceptionHandler(InvalidFlightLocationException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvalidFlightLocation(
+			InvalidFlightLocationException exception
+	) {
+		log.warn("GlobalExceptionHandler : handleInvalidFlightLocation : 항공편 지역 입력값 누락");
+		return ResponseEntity.badRequest().body(
+				ApiResponse.failure("INVALID_FLIGHT_LOCATION", "지역명을 입력해야 합니다.", Map.of())
+		);
+	}
+
+	@ExceptionHandler(FlightLocationNotSupportedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleFlightLocationNotSupported(
+			FlightLocationNotSupportedException exception
+	) {
+		log.warn("GlobalExceptionHandler : handleFlightLocationNotSupported : 지원하지 않는 항공편 지역 - location={}",
+				exception.location());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+				ApiResponse.failure("FLIGHT_LOCATION_NOT_SUPPORTED", "지원하지 않는 지역입니다.", Map.of())
+		);
+	}
+
+	@ExceptionHandler(AirportCodeNotFoundException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAirportCodeNotFound(
+			AirportCodeNotFoundException exception
+	) {
+		log.warn("GlobalExceptionHandler : handleAirportCodeNotFound : 유효한 공항 IATA 코드 없음 - location={}",
+				exception.location());
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(
+				ApiResponse.failure("AIRPORT_CODE_NOT_FOUND", "유효한 공항 코드를 찾을 수 없습니다.", Map.of())
 		);
 	}
 
