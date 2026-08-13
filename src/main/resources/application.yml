@@ -42,3 +42,10 @@ openai:
   base-url: ${OPENAI_BASE_URL:https://api.openai.com}
   connect-timeout-millis: ${OPENAI_CONNECT_TIMEOUT_MILLIS:5000}
   read-timeout-millis: ${OPENAI_READ_TIMEOUT_MILLIS:60000}
+
+aviationstack:
+  enabled: ${AVIATIONSTACK_ENABLED:false}
+  access-key: ${AVIATIONSTACK_ACCESS_KEY:}
+  base-url: ${AVIATIONSTACK_BASE_URL:https://api.aviationstack.com/v1}
+  connect-timeout-millis: ${AVIATIONSTACK_CONNECT_TIMEOUT_MILLIS:5000}
+  read-timeout-millis: ${AVIATIONSTACK_READ_TIMEOUT_MILLIS:10000}
