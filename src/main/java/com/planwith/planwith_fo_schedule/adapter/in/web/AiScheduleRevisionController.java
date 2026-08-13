@@ -37,7 +37,7 @@ public class AiScheduleRevisionController {
 	@PostMapping("/{scheduleUuid}/ai/revise")
 	@Operation(
 			summary = "기존 일정 AI 첨삭",
-			description = "기존 일정과 추가 요청사항을 OpenAI에 전달해 제목과 자유 일정 내용의 수정안을 반환합니다. 결과는 DB에 저장하지 않습니다."
+			description = "기존 일정 전체를 참고해 자유 일정 내용의 수정안만 반환합니다. 결과는 DB에 저장하지 않습니다."
 	)
 	public ResponseEntity<ApiResponse<AiScheduleReviseResponse>> revise(
 			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
@@ -51,7 +51,6 @@ public class AiScheduleRevisionController {
 		);
 		AiScheduleReviseResponse response = new AiScheduleReviseResponse(
 				result.scheduleUuid(),
-				result.revisedTitle(),
 				result.revisedContent()
 		);
 		log.info("AiScheduleRevisionController : POSTrevise : 기존 일정 AI 첨삭 초안 반환 완료 - scheduleUuid={}",

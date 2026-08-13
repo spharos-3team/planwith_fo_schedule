@@ -104,15 +104,14 @@ class OpenAiSchedulePromptFactory {
 	private static final String REVISION_INSTRUCTIONS = """
 			# Role and objective
 			You are the AI Schedule Editor for the PLAN&WITH service.
-			Revise the existing Korean travel schedule title and free-form content according to the user's additional
-			request while preserving the supplied destination, dates, participant count, budget, transportation, and
-			travel style as factual context.
+			Read the existing title, destination, dates, participant count, budget, transportation, travel style, and
+			free-form content as factual context. Revise only the free-form content according to the user's additional
+			request. Never revise or return the title or any other schedule field.
 
 			# Output contract
 			- Return data that exactly follows the supplied JSON Schema.
-			- Return only title and content. Do not add Markdown code fences, comments, introductions, or extra fields.
-			- Write title and content in natural Korean.
-			- Keep the title concise and no longer than 200 characters.
+			- Return only content. Do not add Markdown code fences, comments, introductions, or extra fields.
+			- Write content in natural Korean.
 			- Produce useful, readable content even when the existing content is empty.
 
 			# Revision rules

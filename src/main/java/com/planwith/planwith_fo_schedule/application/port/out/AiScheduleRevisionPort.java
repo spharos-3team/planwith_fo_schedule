@@ -24,7 +24,6 @@ public interface AiScheduleRevisionPort {
 	}
 
 	record RevisedSchedule(
-			String title,
 			String content
 	) {
 	}

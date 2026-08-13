@@ -52,7 +52,7 @@ class AiScheduleRevisionServiceTest {
 		Schedule schedule = createSchedule(UUID.randomUUID());
 		when(repository.findByScheduleUuid(schedule.scheduleUuid())).thenReturn(Optional.of(schedule));
 		when(revisionPort.revise(any())).thenReturn(
-				new RevisedSchedule("부산 바다 여행", "첫날에는 해운대를 여유롭게 산책합니다.")
+				new RevisedSchedule("첫날에는 해운대를 여유롭게 산책합니다.")
 		);
 
 		var result = service.revise(new ReviseScheduleCommand(
@@ -62,7 +62,6 @@ class AiScheduleRevisionServiceTest {
 		));
 
 		assertThat(result.scheduleUuid()).isEqualTo(schedule.scheduleUuid().value());
-		assertThat(result.revisedTitle()).isEqualTo("부산 바다 여행");
 		assertThat(result.revisedContent()).contains("해운대");
 		verify(revisionPort).revise(any(ScheduleRevisionContext.class));
 		verify(repository, never()).update(any());
@@ -101,7 +100,7 @@ class AiScheduleRevisionServiceTest {
 	void rejectsBlankRevisionReturnedByAi() {
 		Schedule schedule = createSchedule(UUID.randomUUID());
 		when(repository.findByScheduleUuid(schedule.scheduleUuid())).thenReturn(Optional.of(schedule));
-		when(revisionPort.revise(any())).thenReturn(new RevisedSchedule(" ", " "));
+		when(revisionPort.revise(any())).thenReturn(new RevisedSchedule(" "));
 
 		assertThatThrownBy(() -> service.revise(new ReviseScheduleCommand(
 				schedule.memberUuid().value(),

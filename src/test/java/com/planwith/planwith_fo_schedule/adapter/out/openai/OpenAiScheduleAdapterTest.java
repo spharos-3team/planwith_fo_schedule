@@ -100,7 +100,6 @@ class OpenAiScheduleAdapterTest {
 	void requestsStructuredRevisionAndMapsResponse() throws Exception {
 		String revisedJson = """
 				{
-				  "title": "부산 바다 여행",
 				  "content": "해운대를 중심으로 여유롭게 여행합니다."
 				}
 				""";
@@ -118,11 +117,18 @@ class OpenAiScheduleAdapterTest {
 				.andExpect(jsonPath("$.text.format.name").value("planwith_schedule_revision"))
 				.andExpect(jsonPath("$.text.format.strict").value(true))
 				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("currentSchedule")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("title")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("destination")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("startDate")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("endDate")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("headcount")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("expectedCost")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("transportation")))
+				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("content")))
 				.andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
 
 		var result = adapter.revise(revisionContext());
 
-		assertThat(result.title()).isEqualTo("부산 바다 여행");
 		assertThat(result.content()).contains("해운대");
 		server.verify();
 	}

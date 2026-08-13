@@ -258,19 +258,67 @@ Swagger 기능별 통합 테스트 작성 가이드
 2-10. 기존 일정 AI 첨삭
 - 기능: 기존 일정에 대한 AI 수정안 생성
 - Endpoint: POST /schedules/{scheduleUuid}/ai/revise
+- Header:
+  - X-Member-UUID: 기존 일정을 생성한 회원 UUID
 - Request Body Example:
 {
-  "additionalRequest": "기존 일정을 1박 2일로 압축하고, 각 일자별 뭘 하면 좋을지 조금 상세하게 알려줘"
+  "additionalRequest": "2일차를 맛집 위주로 변경해줘"
 }
 - 목적: 기존 일정 기반으로 텍스트 수정안 생성 검증
 - 실행 순서:
   1) 기존 일정 생성
-  2) scheduleUuid와 수정 요청사항 전달
-  3) revise 호출
+  2) 생성 응답의 scheduleUuid와 memberUuid 기록
+  3) scheduleUuid, X-Member-UUID, 수정 요청사항 전달
+  4) revise 호출
+  5) 응답의 revisedContent 기록
+  6) GET /schedules/{scheduleUuid}로 기존 일정 재조회
 - 기대 결과:
   - HTTP 200
-  - revisedTitle, revisedContent 반환
-  - DB에 즉시 반영되지 않음
+  - title, destination, startDate, endDate, headcount, expectedCost, transportation, content를 종합한 revisedContent 반환
+  - revisedTitle은 반환하지 않음
+  - 재조회한 title, content는 AI 첨삭 전 값과 동일
+  - AI 첨삭 결과는 DB에 즉시 반영되지 않음
+
+2-11. AI 첨삭안 적용 후 최종 일정 수정 저장
+- 기능: AI 첨삭 결과와 사용자가 직접 수정한 내용을 최종 일정에 반영
+- Endpoint: PATCH /schedules/{scheduleUuid}
+- Request Body Example:
+{
+  "title": "사용자가 직접 수정한 부산 가족 여행",
+  "revisedContent": "1일차 해운대, 2일차 맛집 탐방, 3일차 광안리",
+  "expectedCost": 650000
+}
+- 목적:
+  - AI 첨삭안 적용 단계에서는 DB가 변경되지 않는지 확인
+  - 일반 일정 수정 페이지의 최종 저장 시 한 번만 DB가 변경되는지 확인
+  - AI 첨삭 결과와 사용자가 직접 변경한 값이 함께 저장되는지 확인
+- 사전 조건:
+  1) 2-10의 AI 첨삭 테스트 완료
+  2) revise 응답의 revisedContent 기록
+  3) AI 첨삭 전 일정의 title, content, expectedCost 기록
+- 실행 순서:
+  1) AI 첨삭 응답을 받은 직후 GET /schedules/{scheduleUuid} 호출
+  2) DB 조회 결과가 AI 첨삭 전 값과 동일한지 확인
+  3) 프론트 수정 Form 반영을 가정하여 revisedContent를 PATCH Body에 입력
+  4) 사용자가 직접 수정한 expectedCost를 같은 PATCH Body에 입력
+  5) PATCH /schedules/{scheduleUuid}를 한 번 호출
+  6) 응답의 title, content, expectedCost 확인
+  7) GET /schedules/{scheduleUuid}로 최종 저장 결과 재조회
+- 기대 결과:
+  - AI 첨삭 직후 재조회: 기존 title, content, expectedCost 유지
+  - 최종 PATCH 응답: HTTP 200
+  - title에는 사용자가 직접 수정한 값 반영
+  - content에는 revisedContent 반영
+  - expectedCost에는 사용자가 직접 수정한 값 반영
+  - scheduleUuid, memberUuid, creatorType은 변경되지 않음
+  - 최종 PATCH 호출 전에는 DB 변경 없음
+  - 최종 PATCH 호출 이후에만 DB 변경 발생
+- Swagger 테스트 주의사항:
+  - AI 첨삭 결과를 수정 Form State에 반영하는 동작은 프론트엔드 기능이므로 Swagger에서 직접 검증할 수 없음
+  - Swagger에서는 revise 직후 재조회로 DB 미변경을 확인한 다음, revisedContent를 PATCH Body에 전달하여 저장 흐름을 검증
+  - 일반 수정의 title은 사용자 입력값을 유지하고 AI 첨삭 결과는 content에만 반영
+  - PATCH는 일반 content와 AI 첨삭 응답의 revisedContent를 모두 지원
+  - AI 첨삭 결과 확인 단계에서 POST /schedules/ai/save를 호출하지 않음
 
 3. 예외 및 검증 테스트
 
@@ -353,7 +401,7 @@ Swagger 기능별 통합 테스트 작성 가이드
 5. 통합 테스트 완료 기준
 - Swagger에서 주요 기능 모두 실행 가능
 - 일반 일정 기능: 생성/조회/수정/삭제 정상 동작
-- AI 일정 기능: 생성/재생성/저장/첨삭 정상 동작
+- AI 일정 기능: 생성/재생성/저장/첨삭/첨삭 후 최종 수정 저장 정상 동작
 - 예외 처리: 유효성 검사 및 에러 응답 정상 동작
 - 데이터 일관성: DB 저장과 응답 값이 일치
 - 반복 실행 시 동일한 결과 확인
@@ -369,5 +417,6 @@ Swagger 기능별 통합 테스트 작성 가이드
 8) AI 일정 재생성
 9) AI 일정 저장
 10) 기존 일정 AI 첨삭
-11) 예외 케이스 검증
-12) 결과 문서화 및 보완 사항 정리
+11) AI 첨삭안 적용 후 최종 일정 수정 저장
+12) 예외 케이스 검증
+13) 결과 문서화 및 보완 사항 정리

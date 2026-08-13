@@ -2,6 +2,7 @@ package com.planwith.planwith_fo_schedule.adapter.in.web.dto;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
@@ -21,7 +22,7 @@ public record UpdateScheduleRequest(
 		@PositiveOrZero Long expectedCost,
 		TransportationType transportation,
 		TravelStyle travelStyle,
-		String content,
+		@JsonAlias("revisedContent") String content,
 		@Size(max = 30) String calendarColor
 ) {
 }

@@ -143,11 +143,10 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 					outputText,
 					OpenAiRevisedSchedulePayload.class
 			);
-			if (payload.title() == null || payload.title().isBlank()
-					|| payload.content() == null || payload.content().isBlank()) {
+			if (payload.content() == null || payload.content().isBlank()) {
 				throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision.");
 			}
-			return new RevisedSchedule(payload.title(), payload.content());
+			return new RevisedSchedule(payload.content());
 		} catch (JsonProcessingException exception) {
 			throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision response.", exception);
 		}

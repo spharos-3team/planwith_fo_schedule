@@ -1,6 +1,8 @@
 package com.planwith.planwith_fo_schedule.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,6 +26,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.planwith.planwith_fo_schedule.adapter.out.openai.OpenAiScheduleAdapter;
+import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
 
 import jakarta.persistence.EntityManager;
 
@@ -39,6 +44,9 @@ class ScheduleUpdateIntegrationTest {
 
 	@Autowired
 	private EntityManager entityManager;
+
+	@MockitoBean
+	private OpenAiScheduleAdapter openAiScheduleAdapter;
 
 	private MockMvc mockMvc;
 
@@ -111,5 +119,83 @@ class ScheduleUpdateIntegrationTest {
 				.andExpect(jsonPath("$.data.destination").value("제주"))
 				.andExpect(jsonPath("$.data.headcount").value(3))
 				.andExpect(jsonPath("$.data.content").value("가족 자유여행"));
+	}
+
+	@Test
+	void persistsAiRevisionAndManualChangesOnlyWhenFinalUpdateIsRequested() throws Exception {
+		UUID memberUuid = UUID.randomUUID();
+		MvcResult createResult = mockMvc.perform(post("/api/v1/schedules")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "memberUuid": "%s",
+								  "title": "부산 여행",
+								  "destination": "부산",
+								  "startDate": "2026-10-01",
+								  "endDate": "2026-10-03",
+								  "headcount": 2,
+								  "expectedCost": 500000,
+								  "content": "1일차 해운대, 2일차 자유 일정, 3일차 광안리"
+								}
+								""".formatted(memberUuid)))
+				.andExpect(status().isCreated())
+				.andReturn();
+		JsonNode createBody = objectMapper.readTree(createResult.getResponse().getContentAsString());
+		UUID scheduleUuid = UUID.fromString(createBody.path("data").path("scheduleUuid").asText());
+
+		String manuallyEditedTitle = "부산 가족 여행";
+		String revisedContent = "1일차 해운대, 2일차 맛집 탐방, 3일차 광안리";
+		when(openAiScheduleAdapter.revise(any())).thenReturn(new RevisedSchedule(revisedContent));
+
+		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
+						.header("X-Member-UUID", memberUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "additionalRequest": "2일차를 맛집 위주로 변경해줘"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
+				.andExpect(jsonPath("$.data.revisedTitle").doesNotExist())
+				.andExpect(jsonPath("$.data.revisedContent").value(revisedContent));
+
+		entityManager.flush();
+		entityManager.clear();
+		Object[] storedBeforeFinalUpdate = findStoredRevisionFields(scheduleUuid);
+		assertThat(storedBeforeFinalUpdate).containsExactly(
+				"부산 여행",
+				"1일차 해운대, 2일차 자유 일정, 3일차 광안리",
+				500_000L
+		);
+
+		mockMvc.perform(patch("/api/v1/schedules/{scheduleUuid}", scheduleUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "title": "%s",
+								  "revisedContent": "%s",
+								  "expectedCost": 650000
+								}
+								""".formatted(manuallyEditedTitle, revisedContent)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.title").value(manuallyEditedTitle))
+				.andExpect(jsonPath("$.data.content").value(revisedContent))
+				.andExpect(jsonPath("$.data.expectedCost").value(650000));
+
+		entityManager.flush();
+		entityManager.clear();
+		Object[] storedAfterFinalUpdate = findStoredRevisionFields(scheduleUuid);
+		assertThat(storedAfterFinalUpdate).containsExactly(manuallyEditedTitle, revisedContent, 650_000L);
+	}
+
+	private Object[] findStoredRevisionFields(UUID scheduleUuid) {
+		return entityManager.createQuery("""
+				select s.title, s.content, s.expectedCost
+				from ScheduleJpaEntity s
+				where s.scheduleUuid = :scheduleUuid
+				""", Object[].class)
+				.setParameter("scheduleUuid", scheduleUuid)
+				.getSingleResult();
 	}
 }
