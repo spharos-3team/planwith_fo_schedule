@@ -19,6 +19,8 @@ import com.planwith.planwith_fo_schedule.application.exception.AirportCodeNotFou
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
 import com.planwith.planwith_fo_schedule.application.exception.FlightLocationNotSupportedException;
+import com.planwith.planwith_fo_schedule.application.exception.FlightSearchException;
+import com.planwith.planwith_fo_schedule.application.exception.InvalidFlightSearchException;
 import com.planwith.planwith_fo_schedule.application.exception.InvalidFlightLocationException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
@@ -122,6 +124,28 @@ public class GlobalExceptionHandler {
 				exception.location());
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(
 				ApiResponse.failure("AIRPORT_CODE_NOT_FOUND", "유효한 공항 코드를 찾을 수 없습니다.", Map.of())
+		);
+	}
+
+	@ExceptionHandler(InvalidFlightSearchException.class)
+	public ResponseEntity<ApiResponse<Void>> handleInvalidFlightSearch(InvalidFlightSearchException exception) {
+		log.warn("GlobalExceptionHandler : handleInvalidFlightSearch : 항공편 검색 조건 오류 - message={}",
+				exception.getMessage());
+		return ResponseEntity.badRequest().body(
+				ApiResponse.failure("INVALID_FLIGHT_SEARCH", exception.getMessage(), Map.of())
+		);
+	}
+
+	@ExceptionHandler(FlightSearchException.class)
+	public ResponseEntity<ApiResponse<Void>> handleFlightSearch(FlightSearchException exception) {
+		log.warn("GlobalExceptionHandler : handleFlightSearch : 외부 항공편 조회 실패 - providerCode={}, message={}",
+				exception.providerCode(), exception.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(
+				ApiResponse.failure(
+						"FLIGHT_SEARCH_FAILED",
+						"항공편 정보를 조회하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+						Map.of()
+				)
 		);
 	}
 
