@@ -1,0 +1,373 @@
+Swagger 기능별 통합 테스트 작성 가이드
+
+0. 테스트 작성 원칙
+- 기능 단위로 나누어 작성한다.
+- 각 기능마다 목적, 요청값, 실행 순서, 기대 결과를 명시한다.
+- API는 Swagger UI에서 직접 호출하며, 응답 코드와 응답 body를 함께 기록한다.
+- 기능 테스트는 반드시 사전조건 → 실행 → 검증 순서로 작성한다.
+- Request Body 예시는 실제 프로젝트 DTO 구조에 맞춰 작성한다.
+
+1. 사전 준비
+- 실행 환경 확인
+  - MySQL 연결 정보 확인
+  - 로컬 프로필 활성화: SPRING_PROFILES_ACTIVE=local
+  - 서버 기동 확인
+- Swagger 접속 확인
+  - URL: http://localhost:18081/swagger-ui/index.html
+  - API 문서 로딩 여부 확인
+- 테스트 데이터 준비
+  - member UUID
+  - 일정 UUID
+  - AI 생성 요청 payload
+  - 수정 요청 payload
+
+2. 기능별 테스트 실행 순서
+
+2-1. 배포 상태 확인
+- 기능: 서버 상태 점검
+- Endpoint: GET /api/planwith-fo-schedule/deploy-check
+- Request Body: 없음
+- 목적: 서버가 정상 구동 중인지 확인
+- 실행 순서:
+  1) Swagger에서 호출
+  2) 응답 코드 확인
+  3) marker, service, message 값 확인
+- 기대 결과:
+  - HTTP 200
+  - response body에 service, marker, message 포함
+
+2-2. 일반 일정 생성
+- 기능: 로컬 일정 등록
+- Endpoint: POST /schedules 또는 POST /api/v1/schedules
+- Request Body Example:
+{
+  "memberUuid": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "제주도 2박 3일 여행",
+  "destination": "제주",
+  "startDate": "2026-09-01",
+  "endDate": "2026-09-03",
+  "headcount": 2,
+  "expectedCost": 500000,
+  "transportation": "TRAIN_PUBLIC_TRANSIT",
+  "travelStyle": "FOOD_TOUR",
+  "content": "맛집 중심으로 일정을 구성합니다.",
+  "calendarColor": "#FFB84D"
+}
+- 목적: 일반 일정 생성 기능 검증
+- 실행 순서:
+  1) title, destination, startDate, endDate, headcount, transportation, travelStyle, content 입력
+  2) CreateScheduleRequest 전송
+  3) 생성된 scheduleUuid 수집
+- 기대 결과:
+  - HTTP 201 Created
+  - response body의 scheduleUuid, memberUuid, title 확인
+  - DB에 실제 일정 생성 여부 확인
+
+2-3. 일반 일정 상세 조회
+- 기능: 생성된 일정 상세 확인
+- Endpoint: GET /schedules/{scheduleUuid} 또는 GET /api/v1/schedules/{scheduleUuid}
+- Request Body: 없음 (path parameter 사용)
+- 목적: 일정 데이터가 정확히 저장되었는지 검증
+- 실행 순서:
+  1) 생성 직후 scheduleUuid 전달
+  2) 상세 조회 요청
+  3) 응답 값과 생성 요청값 비교
+- 기대 결과:
+  - HTTP 200
+  - title, destination, startDate, endDate, content 값 일치
+
+2-4. 캘린더 일정 조회
+- 기능: 기간별 일정 목록 조회
+- Endpoint: GET /schedules/calendar
+- Request Body: 없음
+- Query Parameter Example:
+  - startDate=2026-09-01
+  - endDate=2026-09-30
+- 목적: 특정 기간 내 일정 목록이 정상 조회되는지 검증
+- 실행 순서:
+  1) startDate, endDate 설정
+  2) /schedules/calendar 호출
+  3) 일정 목록 개수와 제목/기간 확인
+- 기대 결과:
+  - HTTP 200
+  - requested period 범위 안의 일정만 반환
+  - calendarColor, creatorType 포함 여부 확인
+
+2-5. 일반 일정 수정
+- 기능: 일정 정보 변경
+- Endpoint: PATCH /schedules/{scheduleUuid}
+- Request Body Example:
+{
+  "title": "제주도 3박 4일 여행",
+  "destination": "제주",
+  "startDate": "2026-09-01",
+  "endDate": "2026-09-04",
+  "headcount": 3,
+  "expectedCost": 700000,
+  "transportation": "RENTAL_CAR",
+  "travelStyle": "ACTIVITY",
+  "content": "한라산, 오름, 카페, 서귀포 중심으로 수정합니다.",
+  "calendarColor": "#4CAF50"
+}
+- 목적: 일정 수정 로직 검증
+- 실행 순서:
+  1) 기존 일정 생성
+  2) title, destination, content 등 일부 필드만 변경
+  3) PATCH 요청 전송
+  4) 재조회로 반영 여부 확인
+- 기대 결과:
+  - HTTP 200
+  - 수정된 값만 반영되고 나머지는 유지
+  - 수정 후 상세 조회 결과와 일치
+
+2-6. 일반 일정 삭제
+- 기능: 일정 제거
+- Endpoint: DELETE /schedules/{scheduleUuid}
+- Request Body: 없음
+- 목적: 소프트 삭제 동작 검증
+- 실행 순서:
+  1) 일정 생성
+  2) DELETE 요청
+  3) 다시 상세 조회 또는 캘린더 조회
+- 기대 결과:
+  - HTTP 204 No Content
+  - 이후 상세 조회 시 없음 처리 또는 접근 실패
+  - DB상 상태가 삭제 처리되었는지 확인
+
+2-7. AI 일정 초안 생성
+- 기능: AI 기반 여행 일정 제안 생성
+- Endpoint: POST /schedules/ai/generate 또는 POST /api/v1/schedules/ai/generate
+- Request Body Example:
+{
+  "destination": "도쿄",
+  "startDate": "2026-11-10",
+  "endDate": "2026-11-14",
+  "participantCount": 2,
+  "estimatedBudget": 1200000,
+  "transportation": "TRAIN_PUBLIC_TRANSIT",
+  "travelStyle": "TOUR_LANDMARK",
+  "additionalRequest": "현지 맛집과 야경을 중심으로 일정 짜줘",
+  "flight": null
+}
+- 목적: 사용자 입력 조건 기반 AI 일정 초안 생성 검증
+- 실행 순서:
+  1) 시작일, 종료일, 인원, 이동 수단, 여행 스타일, 목적지, 예산 등 입력
+  2) 요청 전송
+  3) 생성된 title, content, items 확인
+- 기대 결과:
+  - HTTP 200
+  - item 목록이 생성됨
+  - 기존 DB 저장 없이 응답만 반환
+
+2-8. AI 일정 동일 조건 재생성
+- 기능: AI 초안 재생성
+- Endpoint: POST /schedules/ai/regenerate
+- Request Body Example:
+{
+  "destination": "도쿄",
+  "startDate": "2026-11-10",
+  "endDate": "2026-11-14",
+  "participantCount": 2,
+  "estimatedBudget": 1200000,
+  "transportation": "TRAIN_PUBLIC_TRANSIT",
+  "travelStyle": "TOUR_LANDMARK",
+  "additionalRequest": "현지 맛집과 야경을 중심으로 일정 짜줘",
+  "flight": {
+    "departureLocation": "서울",
+    "originLocationCode": "GMP",
+    "destinationLocationCode": "HND",
+    "tripType": "ROUND_TRIP",
+    "travelClass": "ECONOMY"
+  }
+}
+- 목적: 동일 조건으로 다시 생성 시 결과가 새로 생성되는지 검증
+- 실행 순서:
+  1) generate 결과를 기준으로 동일 payload 재전송
+  2) regenerate 호출
+  3) 응답 비교
+- 기대 결과:
+  - HTTP 200
+  - 결과 값이 새로 생성된 형태로 응답됨
+  - DB 저장 없이 임시 생성만 수행
+
+2-9. AI 일정 저장
+- 기능: AI 초안 DB 반영
+- Endpoint: POST /schedules/ai/save
+- Request Body Example:
+{
+  "title": "도쿄 5일 여행",
+  "destination": "도쿄",
+  "startDate": "2026-11-10",
+  "endDate": "2026-11-14",
+  "participantCount": 2,
+  "estimatedBudget": 1200000,
+  "transportation": "TRAIN_PUBLIC_TRANSIT",
+  "travelStyle": "TOUR_LANDMARK",
+  "content": "1일차: 시부야, 2일차: 아사쿠사, 3일차: 우에노, 4일차: 신주쿠, 5일차: 오다이바",
+  "calendarColor": "#4A90E2",
+  "items": [
+    {
+      "dayNumber": 1,
+      "scheduleTime": "09:00:00",
+      "subtitle": "시부야 관광",
+      "scheduleType": "TOUR",
+      "description": "시부야 스크램블 교차로와 하라주쿠를 둘러봅니다.",
+      "estimatedCost": 25000,
+      "placeName": "시부야 스크램블 교차로",
+      "placeAddress": "Japan, Tokyo",
+      "latitude": 35.6595,
+      "longitude": 139.7005
+    },
+    {
+      "dayNumber": 1,
+      "scheduleTime": "12:30:00",
+      "subtitle": "점심 식사",
+      "scheduleType": "FOOD",
+      "description": "로컬 라멘 체험",
+      "estimatedCost": 18000,
+      "placeName": "로컬 라멘집",
+      "placeAddress": "Tokyo, Japan",
+      "latitude": 35.6581,
+      "longitude": 139.7017
+    },
+    {
+      "dayNumber": 2,
+      "scheduleTime": "10:00:00",
+      "subtitle": "아사쿠사 관광",
+      "scheduleType": "TOUR",
+      "description": "센소지와 아사쿠사 거리 방문",
+      "estimatedCost": 30000,
+      "placeName": "센소지",
+      "placeAddress": "Tokyo, Japan",
+      "latitude": 35.7147,
+      "longitude": 139.7967
+    }
+  ]
+}
+- 목적: AI 초안 저장 로직과 트랜잭션 검증
+- 실행 순서:
+  1) AI generate 결과를 저장용 payload로 변환
+  2) save 호출
+  3) scheduleUuid 확인
+  4) 상세 조회로 저장 여부 확인
+- 기대 결과:
+  - HTTP 201 Created
+  - 저장된 일정의 제목/항목 수와 payload 일치
+  - Schedule 및 ScheduleItem 저장 확인
+
+2-10. 기존 일정 AI 첨삭
+- 기능: 기존 일정에 대한 AI 수정안 생성
+- Endpoint: POST /schedules/{scheduleUuid}/ai/revise
+- Request Body Example:
+{
+  "additionalRequest": "기존 일정을 1박 2일로 압축하고, 각 일자별 뭘 하면 좋을지 조금 상세하게 알려줘"
+}
+- 목적: 기존 일정 기반으로 텍스트 수정안 생성 검증
+- 실행 순서:
+  1) 기존 일정 생성
+  2) scheduleUuid와 수정 요청사항 전달
+  3) revise 호출
+- 기대 결과:
+  - HTTP 200
+  - revisedTitle, revisedContent 반환
+  - DB에 즉시 반영되지 않음
+
+3. 예외 및 검증 테스트
+
+3-1. 잘못된 입력값 검증
+- 테스트 대상: title 공백, startDate null, 잘못된 payload 구조
+- Request Body Example:
+{
+  "memberUuid": "invalid-uuid",
+  "title": "",
+  "destination": "",
+  "startDate": null,
+  "endDate": "2026-09-03",
+  "headcount": 0,
+  "expectedCost": -100,
+  "transportation": "INVALID_TYPE",
+  "travelStyle": "INVALID_STYLE"
+}
+- 목적: Validation 동작 확인
+- 기대 결과:
+  - HTTP 400 Bad Request
+  - 에러 메시지 반환
+
+3-2. 존재하지 않는 일정 조회
+- 테스트 대상: 잘못된 UUID 요청
+- Request Body: 없음
+- 목적: 404 처리 확인
+- 기대 결과:
+  - HTTP 404 또는 정의된 에러 응답
+
+3-3. 권한/헤더 검증
+- 테스트 대상: X-Member-UUID 누락 또는 잘못된 값
+- Request Body Example:
+{
+  "title": "권한 검증용 테스트 일정",
+  "destination": "서울",
+  "startDate": "2026-10-01",
+  "endDate": "2026-10-02",
+  "headcount": 1,
+  "expectedCost": 250000,
+  "transportation": "WALKING",
+  "travelStyle": "RELAXATION_HEALING",
+  "content": "권한 검증 대상"
+}
+- 목적: 인증/권한 예외 흐름 검증
+- 기대 결과:
+  - 인증 예외 또는 접근 거부 응답
+
+3-4. 서버 오류 상황
+- 테스트 대상: 잘못된 JSON 형식, DB 연결 문제, 비정상 경로
+- Request Body Example:
+{
+  "title": 123,
+  "destination": ["배열"],
+  "startDate": "not-date"
+}
+- 기대 결과:
+  - HTTP 500 또는 적절한 에러 코드
+  - 로그 기록, 에러 응답 구조 일관성 유지
+
+4. 테스트 작성 템플릿
+- 기능명
+- Endpoint
+- 사전조건
+- 요청 payload
+- 실행 순서
+- 기대 결과
+- 실제 결과
+- 체크 여부
+
+예시:
+- 기능명: 일반 일정 생성
+- Endpoint: POST /schedules
+- 사전조건: 로컬 서버 구동 중
+- 요청: title, destination, startDate, endDate ...
+- 실행: Swagger 호출 → 응답 확인 → DB 확인
+- 기대 결과: HTTP 201, scheduleUuid 생성
+- 실제 결과: 기록
+- 체크 여부: [ ] 통과 / [ ] 실패
+
+5. 통합 테스트 완료 기준
+- Swagger에서 주요 기능 모두 실행 가능
+- 일반 일정 기능: 생성/조회/수정/삭제 정상 동작
+- AI 일정 기능: 생성/재생성/저장/첨삭 정상 동작
+- 예외 처리: 유효성 검사 및 에러 응답 정상 동작
+- 데이터 일관성: DB 저장과 응답 값이 일치
+- 반복 실행 시 동일한 결과 확인
+
+6. 권장 실행 순서
+1) deploy-check
+2) 일반 일정 생성
+3) 일반 일정 상세 조회
+4) 캘린더 조회
+5) 일반 일정 수정
+6) 일반 일정 삭제
+7) AI 일정 초안 생성
+8) AI 일정 재생성
+9) AI 일정 저장
+10) 기존 일정 AI 첨삭
+11) 예외 케이스 검증
+12) 결과 문서화 및 보완 사항 정리
