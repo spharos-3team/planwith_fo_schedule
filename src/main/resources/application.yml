@@ -14,6 +14,13 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
+      timeout: ${REDIS_TIMEOUT:2s}
 
 server:
   address: ${SERVER_ADDRESS:0.0.0.0}
@@ -49,3 +56,10 @@ aviationstack:
   base-url: ${AVIATIONSTACK_BASE_URL:https://api.aviationstack.com/v1}
   connect-timeout-millis: ${AVIATIONSTACK_CONNECT_TIMEOUT_MILLIS:5000}
   read-timeout-millis: ${AVIATIONSTACK_READ_TIMEOUT_MILLIS:10000}
+
+flight:
+  recommendation:
+    cache:
+      enabled: ${FLIGHT_RECOMMENDATION_CACHE_ENABLED:true}
+      ttl: ${FLIGHT_RECOMMENDATION_CACHE_TTL:10m}
+      key-prefix: ${FLIGHT_RECOMMENDATION_CACHE_KEY_PREFIX:flight:recommendation}

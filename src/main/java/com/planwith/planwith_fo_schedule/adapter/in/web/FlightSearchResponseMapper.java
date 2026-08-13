@@ -4,6 +4,7 @@ import com.planwith.planwith_fo_schedule.adapter.in.web.dto.FlightSearchResponse
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.FlightSearchResponse.AirportScheduleResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.FlightSearchResponse.FlightCandidateResponse;
 import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
+import com.planwith.planwith_fo_schedule.application.model.FlightRecommendation;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchResult;
 
 final class FlightSearchResponseMapper {
@@ -16,6 +17,18 @@ final class FlightSearchResponseMapper {
 				result.tripType(),
 				result.outboundCandidates().stream().map(FlightSearchResponseMapper::toCandidateResponse).toList(),
 				result.returnCandidates().stream().map(FlightSearchResponseMapper::toCandidateResponse).toList()
+		);
+	}
+
+	static FlightSearchResponse toResponse(FlightRecommendation recommendation) {
+		return new FlightSearchResponse(
+				recommendation.tripType(),
+				recommendation.outboundCandidates().stream()
+						.map(FlightSearchResponseMapper::toCandidateResponse)
+						.toList(),
+				recommendation.returnCandidates().stream()
+						.map(FlightSearchResponseMapper::toCandidateResponse)
+						.toList()
 		);
 	}
 
