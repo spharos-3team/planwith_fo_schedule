@@ -43,7 +43,6 @@ class AiScheduleRevisionControllerTest {
 		UUID scheduleUuid = UUID.randomUUID();
 		when(useCase.revise(any())).thenReturn(new ReviseScheduleResult(
 				scheduleUuid,
-				"부산 바다 여행",
 				"해운대를 중심으로 여유롭게 여행합니다."
 		));
 
@@ -54,7 +53,7 @@ class AiScheduleRevisionControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
-				.andExpect(jsonPath("$.data.revisedTitle").value("부산 바다 여행"))
+				.andExpect(jsonPath("$.data.revisedTitle").doesNotExist())
 				.andExpect(jsonPath("$.data.revisedContent").value("해운대를 중심으로 여유롭게 여행합니다."));
 
 		ArgumentCaptor<ReviseScheduleCommand> captor = ArgumentCaptor.forClass(ReviseScheduleCommand.class);

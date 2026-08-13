@@ -65,7 +65,7 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 
 		try {
 			Schedule revisedDraft = schedule.update(
-					revisedSchedule.title(),
+					null,
 					null,
 					null,
 					null,
@@ -80,7 +80,6 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 					scheduleUuid);
 			return new ReviseScheduleResult(
 					scheduleUuid,
-					revisedDraft.title(),
 					revisedDraft.content()
 			);
 		} catch (InvalidScheduleException exception) {
@@ -118,8 +117,7 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 	}
 
 	private void validateRevisedSchedule(RevisedSchedule revisedSchedule) {
-		if (revisedSchedule.title() == null || revisedSchedule.title().isBlank()
-				|| revisedSchedule.content() == null || revisedSchedule.content().isBlank()) {
+		if (revisedSchedule.content() == null || revisedSchedule.content().isBlank()) {
 			throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision.");
 		}
 	}

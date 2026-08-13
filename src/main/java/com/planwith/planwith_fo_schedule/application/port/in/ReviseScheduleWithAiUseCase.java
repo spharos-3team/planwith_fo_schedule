@@ -15,7 +15,6 @@ public interface ReviseScheduleWithAiUseCase {
 
 	record ReviseScheduleResult(
 			UUID scheduleUuid,
-			String revisedTitle,
 			String revisedContent
 	) {
 	}

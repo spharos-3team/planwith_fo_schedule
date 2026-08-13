@@ -11,11 +11,6 @@ final class OpenAiScheduleRevisionSchema {
 
 	static Map<String, Object> value() {
 		Map<String, Object> properties = new LinkedHashMap<>();
-		properties.put("title", Map.of(
-				"type", "string",
-				"minLength", 1,
-				"maxLength", 200
-		));
 		properties.put("content", Map.of(
 				"type", "string",
 				"minLength", 1
