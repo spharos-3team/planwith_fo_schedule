@@ -23,7 +23,7 @@ public class FlightRecommendationPolicy {
 						candidate, departureAirportCode, arrivalAirportCode
 				))
 				.thenComparing(
-						FlightCandidate::durationMinutes,
+						candidate -> candidate.durationMinutes(),
 						Comparator.nullsLast(Comparator.naturalOrder())
 				)
 				.thenComparing(

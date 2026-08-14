@@ -3,7 +3,6 @@ package com.planwith.planwith_fo_schedule.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 

@@ -28,7 +28,7 @@ class FlightRecommendationPolicyTest {
 				"NRT"
 		);
 
-		assertThat(result).extracting(FlightCandidate::flightNumber)
+		assertThat(result).extracting(candidate -> candidate.flightNumber())
 				.containsExactly("102", "101", "103");
 	}
 
@@ -43,7 +43,7 @@ class FlightRecommendationPolicyTest {
 		);
 
 		assertThat(policy.recommend(List.of(missing, complete), "ICN", "NRT"))
-				.extracting(FlightCandidate::flightNumber)
+				.extracting(candidate -> candidate.flightNumber())
 				.containsExactly("200", "201");
 	}
 

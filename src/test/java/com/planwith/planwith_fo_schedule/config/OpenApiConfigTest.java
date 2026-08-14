@@ -12,7 +12,15 @@ class OpenApiConfigTest {
 
 	@Test
 	void gatewayRelativeServerUrlIsIncludedInOpenApiDocument() {
-		OpenAPI openAPI = openApiConfig.planwith_fo_scheduleOpenAPI("/");
+		OpenAPI openAPI = openApiConfig.planwithFoScheduleOpenApi(new OpenApiProperties("/"));
+
+		assertThat(openAPI.getServers()).hasSize(1);
+		assertThat(openAPI.getServers().get(0).getUrl()).isEqualTo("/");
+	}
+
+	@Test
+	void blankServerUrlUsesGatewayRelativeDefault() {
+		OpenAPI openAPI = openApiConfig.planwithFoScheduleOpenApi(new OpenApiProperties(" "));
 
 		assertThat(openAPI.getServers()).hasSize(1);
 		assertThat(openAPI.getServers().get(0).getUrl()).isEqualTo("/");

@@ -47,8 +47,8 @@ public class GetScheduleDetailService implements GetScheduleDetailUseCase {
 				toFlightResult(schedule.flight()),
 				schedule.items().stream()
 						.sorted(Comparator.comparingInt((ScheduleItem item) -> item.day().value())
-								.thenComparing(ScheduleItem::startTime, Comparator.nullsLast(Comparator.naturalOrder()))
-								.thenComparing(ScheduleItem::scheduleItemId,
+								.thenComparing(item -> item.startTime(), Comparator.nullsLast(Comparator.naturalOrder()))
+								.thenComparing(item -> item.scheduleItemId(),
 										Comparator.nullsLast(Comparator.naturalOrder())))
 						.map(this::toItemResult)
 						.toList()

@@ -81,7 +81,7 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 				.map(this::toDomainItem)
 				.sorted(Comparator
 						.comparingInt((ScheduleItem item) -> item.day().value())
-						.thenComparing(ScheduleItem::startTime, Comparator.nullsLast(Comparator.naturalOrder())))
+						.thenComparing(item -> item.startTime(), Comparator.nullsLast(Comparator.naturalOrder())))
 				.toList();
 	}
 

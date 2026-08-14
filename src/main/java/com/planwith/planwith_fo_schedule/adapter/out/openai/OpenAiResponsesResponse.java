@@ -15,7 +15,7 @@ record OpenAiResponsesResponse(List<Output> output) {
 				.filter(item -> item.content() != null)
 				.flatMap(item -> item.content().stream())
 				.filter(content -> "output_text".equals(content.type()))
-				.map(Content::text)
+				.map(content -> content.text())
 				.filter(text -> text != null && !text.isBlank())
 				.findFirst()
 				.orElse(null);
