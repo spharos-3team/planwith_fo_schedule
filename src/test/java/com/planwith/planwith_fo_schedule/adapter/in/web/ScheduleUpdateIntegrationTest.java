@@ -115,10 +115,10 @@ class ScheduleUpdateIntegrationTest {
 
 		mockMvc.perform(get("/schedules/{scheduleUuid}", scheduleUuid))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.title").value("제주 가족여행"))
-				.andExpect(jsonPath("$.data.destination").value("제주"))
-				.andExpect(jsonPath("$.data.headcount").value(3))
-				.andExpect(jsonPath("$.data.content").value("가족 자유여행"));
+				.andExpect(jsonPath("$.data.schedule.title").value("제주 가족여행"))
+				.andExpect(jsonPath("$.data.schedule.destination").value("제주"))
+				.andExpect(jsonPath("$.data.schedule.headcount").value(3))
+				.andExpect(jsonPath("$.data.schedule.content").value("가족 자유여행"));
 	}
 
 	@Test
