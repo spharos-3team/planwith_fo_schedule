@@ -19,12 +19,16 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 public record AiScheduleSaveRequest(
 		@NotBlank @Size(max = 200) String title,
 		@NotBlank @Size(max = 200) String destination,
+		@Size(max = 2_048)
+		@Pattern(regexp = "^https://\\S+$", message = "imageUrl must be a valid HTTPS URL")
+		String imageUrl,
 		@NotNull LocalDate startDate,
 		@NotNull LocalDate endDate,
 		@NotNull @Min(1) Integer participantCount,

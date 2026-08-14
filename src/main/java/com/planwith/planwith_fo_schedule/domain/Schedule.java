@@ -8,6 +8,7 @@ import java.util.Objects;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
 import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleCost;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleImageUrl;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
@@ -24,6 +25,7 @@ public final class Schedule {
 	private final MemberUuid memberUuid;
 	private final String title;
 	private final String destination;
+	private final ScheduleImageUrl imageUrl;
 	private final SchedulePeriod period;
 	private final Headcount headcount;
 	private final ScheduleCost expectedCost;
@@ -44,6 +46,7 @@ public final class Schedule {
 			MemberUuid memberUuid,
 			String title,
 			String destination,
+			String imageUrl,
 			SchedulePeriod period,
 			Headcount headcount,
 			ScheduleCost expectedCost,
@@ -62,6 +65,7 @@ public final class Schedule {
 		this.scheduleUuid = Objects.requireNonNull(scheduleUuid, "Schedule UUID is required.");
 		this.memberUuid = Objects.requireNonNull(memberUuid, "Member UUID is required.");
 		this.destination = requireText(destination, MAX_DESTINATION_LENGTH, "Destination is required.");
+		this.imageUrl = ScheduleImageUrl.ofNullable(imageUrl);
 		this.period = Objects.requireNonNull(period, "Schedule period is required.");
 		this.title = resolveTitle(title, this.destination);
 		this.headcount = Objects.requireNonNull(headcount, "Headcount is required.");
@@ -93,6 +97,28 @@ public final class Schedule {
 			ScheduleCreatorType creatorType,
 			List<ScheduleItem> items
 	) {
+		return create(
+				memberUuid, title, destination, null, startDate, endDate, headcount, expectedCost,
+				transportation, travelStyle, content, calendarColor, creatorType, items
+		);
+	}
+
+	public static Schedule create(
+			MemberUuid memberUuid,
+			String title,
+			String destination,
+			String imageUrl,
+			LocalDate startDate,
+			LocalDate endDate,
+			Headcount headcount,
+			ScheduleCost expectedCost,
+			TransportationType transportation,
+			TravelStyle travelStyle,
+			String content,
+			String calendarColor,
+			ScheduleCreatorType creatorType,
+			List<ScheduleItem> items
+	) {
 		String validatedDestination = requireText(
 				destination,
 				MAX_DESTINATION_LENGTH,
@@ -110,6 +136,7 @@ public final class Schedule {
 				memberUuid,
 				resolvedTitle,
 				validatedDestination,
+				imageUrl,
 				validatedPeriod,
 				resolvedHeadcount,
 				expectedCost,
@@ -151,6 +178,7 @@ public final class Schedule {
 				memberUuid,
 				title,
 				destination,
+				null,
 				period,
 				headcount,
 				expectedCost,
@@ -173,6 +201,7 @@ public final class Schedule {
 			MemberUuid memberUuid,
 			String title,
 			String destination,
+			String imageUrl,
 			SchedulePeriod period,
 			Headcount headcount,
 			ScheduleCost expectedCost,
@@ -188,7 +217,7 @@ public final class Schedule {
 			ScheduleFlight flight
 	) {
 		return new Schedule(
-				scheduleId, scheduleUuid, memberUuid, title, destination, period, headcount, expectedCost,
+				scheduleId, scheduleUuid, memberUuid, title, destination, imageUrl, period, headcount, expectedCost,
 				transportation, travelStyle, content, calendarColor, creatorType, createdAt, updatedAt,
 				deletedAt, items, flight
 		);
@@ -220,6 +249,7 @@ public final class Schedule {
 				memberUuid,
 				title == null ? this.title : resolveTitle(title, updatedDestination),
 				updatedDestination,
+				imageUrl(),
 				updatedPeriod,
 				headcount == null ? this.headcount : headcount,
 				expectedCost == null ? this.expectedCost : expectedCost,
@@ -243,6 +273,7 @@ public final class Schedule {
 				memberUuid,
 				title,
 				destination,
+				imageUrl(),
 				period,
 				headcount,
 				expectedCost,
@@ -261,7 +292,7 @@ public final class Schedule {
 
 	public Schedule withFlight(ScheduleFlight flight) {
 		return new Schedule(
-				scheduleId, scheduleUuid, memberUuid, title, destination, period, headcount, expectedCost,
+				scheduleId, scheduleUuid, memberUuid, title, destination, imageUrl(), period, headcount, expectedCost,
 				transportation, travelStyle, content, calendarColor, creatorType, createdAt, updatedAt,
 				deletedAt, items, Objects.requireNonNull(flight, "Schedule flight is required.")
 		);
@@ -349,6 +380,7 @@ public final class Schedule {
 	public MemberUuid memberUuid() { return memberUuid; }
 	public String title() { return title; }
 	public String destination() { return destination; }
+	public String imageUrl() { return imageUrl == null ? null : imageUrl.value(); }
 	public SchedulePeriod period() { return period; }
 	public Headcount headcount() { return headcount; }
 	public ScheduleCost expectedCost() { return expectedCost; }

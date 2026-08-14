@@ -10,6 +10,7 @@ import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerat
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
+import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
@@ -23,9 +24,14 @@ import com.planwith.planwith_fo_schedule.domain.vo.ScheduleItemLocation;
 public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 
 	private final AiScheduleGenerationPort aiScheduleGenerationPort;
+	private final DestinationImageSearchPort destinationImageSearchPort;
 
-	public AiScheduleApplicationService(AiScheduleGenerationPort aiScheduleGenerationPort) {
+	public AiScheduleApplicationService(
+			AiScheduleGenerationPort aiScheduleGenerationPort,
+			DestinationImageSearchPort destinationImageSearchPort
+	) {
 		this.aiScheduleGenerationPort = aiScheduleGenerationPort;
+		this.destinationImageSearchPort = destinationImageSearchPort;
 	}
 
 	@Override
@@ -49,11 +55,13 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 					ScheduleCreatorType.AI,
 					generatedItems
 			);
+			String imageUrl = destinationImageSearchPort.searchRepresentativeImage(command.destination()).orElse(null);
 
 			return new AiScheduleResult(
 					schedule.memberUuid().value(),
 					schedule.title(),
 					schedule.destination(),
+					imageUrl,
 					schedule.period().startDate(),
 					schedule.period().endDate(),
 					schedule.headcount().value(),

@@ -31,6 +31,7 @@ public interface GetScheduleDetailUseCase {
 			UUID scheduleUuid,
 			String title,
 			String destination,
+			String imageUrl,
 			LocalDate startDate,
 			LocalDate endDate,
 			int headcount,

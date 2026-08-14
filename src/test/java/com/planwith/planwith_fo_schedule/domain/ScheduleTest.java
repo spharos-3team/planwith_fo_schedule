@@ -1,6 +1,7 @@
 package com.planwith.planwith_fo_schedule.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -80,6 +81,27 @@ class ScheduleTest {
 	}
 
 	@Test
+	void acceptsPublicHttpsRepresentativeImageUrl() {
+		Schedule schedule = createScheduleWithImage("https://images.example.com/seoul.jpg");
+
+		assertThat(schedule.imageUrl()).isEqualTo("https://images.example.com/seoul.jpg");
+	}
+
+	@Test
+	void rejectsNonHttpsRepresentativeImageUrl() {
+		assertThatThrownBy(() -> createScheduleWithImage("http://localhost/seoul.jpg"))
+				.isInstanceOf(InvalidScheduleException.class)
+				.hasMessageContaining("public HTTPS URL");
+	}
+
+	@Test
+	void rejectsPrivateNetworkRepresentativeImageUrl() {
+		assertThatThrownBy(() -> createScheduleWithImage("https://192.168.10.10/seoul.jpg"))
+				.isInstanceOf(InvalidScheduleException.class)
+				.hasMessageContaining("public HTTPS URL");
+	}
+
+	@Test
 	void enumValuesMatchDatabaseEnumValues() {
 		assertThat(ScheduleCreatorType.values()).containsExactly(
 				ScheduleCreatorType.USER,
@@ -131,6 +153,25 @@ class ScheduleTest {
 				),
 				LocalTime.of(10, 30),
 				ScheduleCost.of(3_000L)
+		);
+	}
+
+	private Schedule createScheduleWithImage(String imageUrl) {
+		return Schedule.create(
+				new MemberUuid(UUID.randomUUID()),
+				"서울 여행",
+				"서울",
+				imageUrl,
+				LocalDate.of(2026, 8, 10),
+				LocalDate.of(2026, 8, 10),
+				Headcount.defaultValue(),
+				ScheduleCost.zero(),
+				null,
+				null,
+				null,
+				null,
+				ScheduleCreatorType.AI,
+				List.of()
 		);
 	}
 }

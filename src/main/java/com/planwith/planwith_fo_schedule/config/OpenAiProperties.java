@@ -7,6 +7,7 @@ public class OpenAiProperties {
 
 	private String apiKey;
 	private String model = "gpt-4o-mini";
+	private String imageSearchModel = "gpt-5.6";
 	private String baseUrl = "https://api.openai.com";
 	private int connectTimeoutMillis = 5_000;
 	private int readTimeoutMillis = 60_000;
@@ -25,6 +26,14 @@ public class OpenAiProperties {
 
 	public void setModel(String model) {
 		this.model = model;
+	}
+
+	public String getImageSearchModel() {
+		return imageSearchModel;
+	}
+
+	public void setImageSearchModel(String imageSearchModel) {
+		this.imageSearchModel = imageSearchModel;
 	}
 
 	public String getBaseUrl() {

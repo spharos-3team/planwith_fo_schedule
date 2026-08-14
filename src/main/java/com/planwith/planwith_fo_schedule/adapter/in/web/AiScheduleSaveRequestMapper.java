@@ -26,6 +26,7 @@ final class AiScheduleSaveRequestMapper {
 				authenticatedMemberUuid,
 				validatedRequest.title(),
 				validatedRequest.destination(),
+				validatedRequest.imageUrl(),
 				validatedRequest.startDate(),
 				validatedRequest.endDate(),
 				validatedRequest.participantCount(),

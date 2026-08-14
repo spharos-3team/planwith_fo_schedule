@@ -38,6 +38,7 @@ class SaveAiScheduleServiceTest {
 				memberUuid,
 				"부산 AI 여행",
 				"부산",
+				"https://images.example.com/busan.jpg",
 				LocalDate.of(2026, 8, 20),
 				LocalDate.of(2026, 8, 20),
 				2,
@@ -65,6 +66,7 @@ class SaveAiScheduleServiceTest {
 		assertThat(saved).isNotNull();
 		assertThat(saved.memberUuid().value()).isEqualTo(memberUuid);
 		assertThat(saved.creatorType()).isEqualTo(ScheduleCreatorType.AI);
+		assertThat(saved.imageUrl()).isEqualTo("https://images.example.com/busan.jpg");
 		assertThat(saved.items()).hasSize(1);
 		assertThat(saved.items().get(0).itemType()).isEqualTo(ScheduleItemType.TOUR);
 		assertThat(result.scheduleUuid()).isEqualTo(saved.scheduleUuid().value());
@@ -85,7 +87,7 @@ class SaveAiScheduleServiceTest {
 		);
 
 		var result = service.save(new SaveAiScheduleCommand(
-				UUID.randomUUID(), "Tokyo AI trip", "Tokyo",
+				UUID.randomUUID(), "Tokyo AI trip", "Tokyo", null,
 				LocalDate.of(2026, 8, 20), LocalDate.of(2026, 8, 22), 2, 500_000L,
 				TransportationType.OTHER, TravelStyle.TOUR_LANDMARK, null, "#4F46E5",
 				List.of(

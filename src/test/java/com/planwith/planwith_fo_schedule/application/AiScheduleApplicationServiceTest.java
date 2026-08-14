@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,6 +16,7 @@ import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateC
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
+import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
@@ -37,7 +39,7 @@ class AiScheduleApplicationServiceTest {
 						item(3, LocalTime.of(10, 0), "셋째 날 일정")
 				)
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port);
+		AiScheduleApplicationService service = new AiScheduleApplicationService(port, noImageSearch());
 		AiScheduleGenerateCommand sameConditions = command();
 
 		var firstDraft = service.generate(sameConditions);
@@ -60,11 +62,15 @@ class AiScheduleApplicationServiceTest {
 						item(2, LocalTime.of(9, 0), "자갈치시장 방문")
 				)
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port);
+		AiScheduleApplicationService service = new AiScheduleApplicationService(
+				port,
+				destination -> Optional.of("https://images.example.com/busan.jpg")
+		);
 
 		var result = service.generate(command());
 
 		assertThat(result.title()).isEqualTo("부산 AI 여행");
+		assertThat(result.imageUrl()).isEqualTo("https://images.example.com/busan.jpg");
 		assertThat(result.items())
 				.extracting(item -> "%d-%s".formatted(item.dayNumber(), item.scheduleTime()))
 				.containsExactly("1-10:00", "2-09:00", "2-14:00", "3-11:00");
@@ -80,7 +86,7 @@ class AiScheduleApplicationServiceTest {
 						item(3, LocalTime.of(10, 0), "마지막 날 일정")
 				)
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port);
+		AiScheduleApplicationService service = new AiScheduleApplicationService(port, noImageSearch());
 
 		assertThatThrownBy(() -> service.generate(command()))
 				.isInstanceOf(AiScheduleGenerationException.class)
@@ -94,7 +100,7 @@ class AiScheduleApplicationServiceTest {
 				null,
 				List.of(item(4, LocalTime.NOON, "범위를 벗어난 일정"))
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port);
+		AiScheduleApplicationService service = new AiScheduleApplicationService(port, noImageSearch());
 
 		assertThatThrownBy(() -> service.generate(command()))
 				.isInstanceOf(AiScheduleGenerationException.class)
@@ -114,6 +120,10 @@ class AiScheduleApplicationServiceTest {
 				null,
 				null
 		);
+	}
+
+	private DestinationImageSearchPort noImageSearch() {
+		return destination -> Optional.empty();
 	}
 
 	private AiScheduleGenerateCommand command() {

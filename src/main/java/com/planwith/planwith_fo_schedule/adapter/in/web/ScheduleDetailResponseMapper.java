@@ -18,6 +18,7 @@ final class ScheduleDetailResponseMapper {
 		return new ScheduleDetailResponse(
 				new ScheduleResponse(
 						result.schedule().scheduleUuid(), result.schedule().title(), result.schedule().destination(),
+						result.schedule().imageUrl(),
 						result.schedule().startDate(), result.schedule().endDate(), result.schedule().headcount(),
 						result.schedule().expectedCost(), result.schedule().transportation(),
 						result.schedule().travelStyle(), result.schedule().content(),
