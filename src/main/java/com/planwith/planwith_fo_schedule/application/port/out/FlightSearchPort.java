@@ -12,7 +12,16 @@ public interface FlightSearchPort {
 	record FlightSearchCriteria(
 			String departureAirportCode,
 			String arrivalAirportCode,
-			LocalDate flightDate
+			LocalDate flightDate,
+			String carrierCode,
+			String flightNumber
 	) {
+		public FlightSearchCriteria(
+				String departureAirportCode,
+				String arrivalAirportCode,
+				LocalDate flightDate
+		) {
+			this(departureAirportCode, arrivalAirportCode, flightDate, null, null);
+		}
 	}
 }

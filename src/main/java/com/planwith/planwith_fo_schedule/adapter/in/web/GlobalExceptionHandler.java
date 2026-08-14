@@ -19,6 +19,7 @@ import com.planwith.planwith_fo_schedule.application.exception.AirportCodeNotFou
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
 import com.planwith.planwith_fo_schedule.application.exception.FlightLocationNotSupportedException;
+import com.planwith.planwith_fo_schedule.application.exception.FlightCandidateNotFoundException;
 import com.planwith.planwith_fo_schedule.application.exception.FlightSearchException;
 import com.planwith.planwith_fo_schedule.application.exception.InvalidFlightSearchException;
 import com.planwith.planwith_fo_schedule.application.exception.InvalidFlightLocationException;
@@ -144,6 +145,21 @@ public class GlobalExceptionHandler {
 				ApiResponse.failure(
 						"FLIGHT_SEARCH_FAILED",
 						"항공편 정보를 조회하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+						Map.of()
+				)
+		);
+	}
+
+	@ExceptionHandler(FlightCandidateNotFoundException.class)
+	public ResponseEntity<ApiResponse<Void>> handleFlightCandidateNotFound(
+			FlightCandidateNotFoundException exception
+	) {
+		log.warn("GlobalExceptionHandler : handleFlightCandidateNotFound : 선택 항공편 최신 정보 없음 - carrierCode={}, flightNumber={}",
+				exception.carrierCode(), exception.flightNumber());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(
+				ApiResponse.failure(
+						"FLIGHT_CANDIDATE_NOT_AVAILABLE",
+						"선택한 항공편의 최신 정보를 확인할 수 없습니다. 항공편을 다시 선택해 주세요.",
 						Map.of()
 				)
 		);
