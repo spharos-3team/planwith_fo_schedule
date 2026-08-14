@@ -39,12 +39,11 @@ management:
       exposure:
         include: health,info
 
-springdoc:
-  server-url: ${SWAGGER_SERVER_URL:/}
-
 app:
   deploy:
     marker: ${DEPLOY_MARKER:planwith-fo-schedule-deploy-v1}
+  openapi:
+    server-url: ${SWAGGER_SERVER_URL:/}
 
 openai:
   api-key: ${OPENAI_API_KEY:}

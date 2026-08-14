@@ -18,8 +18,6 @@ import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateC
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
-import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
-import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.ScheduleRevisionContext;
 import com.planwith.planwith_fo_schedule.config.OpenAiProperties;
 
 @Component

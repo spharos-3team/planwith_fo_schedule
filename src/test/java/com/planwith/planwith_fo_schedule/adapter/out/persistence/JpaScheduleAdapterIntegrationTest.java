@@ -127,7 +127,7 @@ class JpaScheduleAdapterIntegrationTest {
 			assertThat(springDataScheduleRepository.findById(saved.scheduleId()))
 					.isPresent()
 					.get()
-					.extracting(ScheduleJpaEntity::getCreatorType)
+					.extracting(entity -> entity.getCreatorType())
 					.isEqualTo(creatorType);
 		}
 	}

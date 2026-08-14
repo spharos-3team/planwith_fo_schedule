@@ -62,7 +62,7 @@ public class OpenAiDestinationImageSearchAdapter implements DestinationImageSear
 					.retrieve()
 					.body(OpenAiImageSearchResponse.class);
 			String imageUrl = response == null ? null : response.firstImageUrl();
-			if (!isValidPublicImageUrl(imageUrl)) {
+			if (imageUrl == null || !isValidPublicImageUrl(imageUrl)) {
 				log.warn("OpenAiDestinationImageSearchAdapter : searchRepresentativeImage : 유효한 대표 이미지 검색 결과 없음");
 				return Optional.empty();
 			}

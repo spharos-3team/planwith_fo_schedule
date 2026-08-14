@@ -17,7 +17,7 @@ record OpenAiImageSearchResponse(List<Output> output) {
 				.filter(item -> item.results() != null)
 				.flatMap(item -> item.results().stream())
 				.filter(result -> "image_result".equals(result.type()))
-				.map(ImageResult::imageUrl)
+				.map(result -> result.imageUrl())
 				.filter(url -> url != null && !url.isBlank())
 				.findFirst()
 				.orElse(null);

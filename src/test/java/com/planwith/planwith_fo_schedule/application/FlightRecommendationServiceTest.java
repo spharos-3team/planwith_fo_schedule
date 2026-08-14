@@ -64,7 +64,7 @@ class FlightRecommendationServiceTest {
 
 		FlightRecommendation result = service.recommend(command());
 
-		assertThat(result.outboundCandidates()).extracting(FlightCandidate::flightNumber)
+		assertThat(result.outboundCandidates()).extracting(candidate -> candidate.flightNumber())
 				.containsExactly("101", "102", "103");
 		verify(searchFlightsUseCase).search(any());
 		verify(cachePort).save(any(FlightRecommendationCacheKey.class), any(FlightRecommendation.class));

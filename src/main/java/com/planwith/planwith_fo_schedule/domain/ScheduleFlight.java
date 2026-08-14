@@ -99,8 +99,8 @@ public final class ScheduleFlight {
 			throw new InvalidScheduleException("One-way flight must not contain return segments.");
 		}
 		return copied.stream()
-				.sorted(Comparator.comparing(ScheduleFlightSegment::direction)
-						.thenComparingInt(ScheduleFlightSegment::segmentOrder))
+				.sorted(Comparator.comparing((ScheduleFlightSegment segment) -> segment.direction())
+						.thenComparingInt(segment -> segment.segmentOrder()))
 				.toList();
 	}
 
@@ -119,11 +119,11 @@ public final class ScheduleFlight {
 	private void validateReturnAfterOutbound(List<ScheduleFlightSegment> segments) {
 		ScheduleFlightSegment lastOutbound = segments.stream()
 				.filter(segment -> segment.direction() == FlightDirection.OUTBOUND)
-				.max(Comparator.comparingInt(ScheduleFlightSegment::segmentOrder))
+				.max(Comparator.comparingInt(segment -> segment.segmentOrder()))
 				.orElseThrow();
 		ScheduleFlightSegment firstReturn = segments.stream()
 				.filter(segment -> segment.direction() == FlightDirection.RETURN)
-				.min(Comparator.comparingInt(ScheduleFlightSegment::segmentOrder))
+				.min(Comparator.comparingInt(segment -> segment.segmentOrder()))
 				.orElseThrow();
 		if (firstReturn.departureAt().isBefore(lastOutbound.arrivalAt())) {
 			throw new InvalidScheduleException("Return flight must depart after outbound arrival.");
@@ -138,7 +138,7 @@ public final class ScheduleFlight {
 	) {
 		List<ScheduleFlightSegment> directional = segments.stream()
 				.filter(segment -> segment.direction() == direction)
-				.sorted(Comparator.comparingInt(ScheduleFlightSegment::segmentOrder))
+				.sorted(Comparator.comparingInt(segment -> segment.segmentOrder()))
 				.toList();
 		if (directional.isEmpty()) {
 			throw new InvalidScheduleException(direction + " flight segment is required.");
