@@ -137,7 +137,7 @@ class AiScheduleControllerTest {
 		UUID memberUuid = UUID.randomUUID();
 		UUID scheduleUuid = UUID.randomUUID();
 		when(saveUseCase.save(any())).thenReturn(
-				new SaveAiScheduleResult(scheduleUuid, memberUuid, "부산 AI 여행", 1)
+				new SaveAiScheduleResult(scheduleUuid, memberUuid, "부산 AI 여행", 1, false, 0)
 		);
 
 		mockMvc.perform(post("/api/v1/schedules/ai/save")

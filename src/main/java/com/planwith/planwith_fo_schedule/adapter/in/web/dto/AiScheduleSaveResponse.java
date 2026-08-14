@@ -6,6 +6,8 @@ public record AiScheduleSaveResponse(
 		UUID scheduleUuid,
 		UUID memberUuid,
 		String title,
-		int itemCount
+		int itemCount,
+		boolean flightSaved,
+		int flightSegmentCount
 ) {
 }

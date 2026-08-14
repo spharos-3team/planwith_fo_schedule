@@ -3,6 +3,8 @@ package com.planwith.planwith_fo_schedule.application;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +23,25 @@ import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 @Service
 public class SaveAiScheduleService implements SaveAiScheduleUseCase {
+	private static final Logger log = LoggerFactory.getLogger(SaveAiScheduleService.class);
 
 	private final ScheduleRepositoryPort scheduleRepositoryPort;
+	private final FlightDomainMapper flightDomainMapper;
 
-	public SaveAiScheduleService(ScheduleRepositoryPort scheduleRepositoryPort) {
+	public SaveAiScheduleService(
+			ScheduleRepositoryPort scheduleRepositoryPort,
+			FlightDomainMapper flightDomainMapper
+	) {
 		this.scheduleRepositoryPort = scheduleRepositoryPort;
+		this.flightDomainMapper = flightDomainMapper;
 	}
 
 	@Override
 	@Transactional
 	public SaveAiScheduleResult save(SaveAiScheduleCommand command) {
 		SaveAiScheduleCommand validatedCommand = Objects.requireNonNull(command, "AI schedule save command is required.");
+		log.info("SaveAiScheduleService : save : AI 일정 및 선택 항공편 저장 시작 - flightSelected={}",
+				validatedCommand.flight() != null);
 		List<ScheduleItem> items = Objects.requireNonNull(
 				validatedCommand.items(),
 				"AI schedule items are required."
@@ -39,7 +49,7 @@ public class SaveAiScheduleService implements SaveAiScheduleUseCase {
 		SchedulePeriod period = new SchedulePeriod(validatedCommand.startDate(), validatedCommand.endDate());
 		AiScheduleDraftValidator.validate(period, items);
 
-		Schedule savedSchedule = scheduleRepositoryPort.save(Schedule.create(
+		Schedule schedule = Schedule.create(
 				new MemberUuid(validatedCommand.memberUuid()),
 				validatedCommand.title(),
 				validatedCommand.destination(),
@@ -53,13 +63,30 @@ public class SaveAiScheduleService implements SaveAiScheduleUseCase {
 				validatedCommand.calendarColor(),
 				ScheduleCreatorType.AI,
 				items
-		));
+		);
+		if (validatedCommand.flight() != null) {
+			schedule = schedule.withFlight(flightDomainMapper.toScheduleFlight(
+					validatedCommand.flight().departureLocation(),
+					schedule.destination(),
+					validatedCommand.flight().tripType(),
+					validatedCommand.flight().outboundCandidates(),
+					validatedCommand.flight().returnCandidates()
+			));
+		}
+
+		Schedule savedSchedule = scheduleRepositoryPort.save(schedule);
+		int flightSegmentCount = savedSchedule.flight() == null ? 0 : savedSchedule.flight().segments().size();
+		log.info("SaveAiScheduleService : save : AI 일정 및 선택 항공편 저장 완료 - scheduleUuid={}, "
+				+ "flightSaved={}, flightSegmentCount={}",
+				savedSchedule.scheduleUuid().value(), savedSchedule.flight() != null, flightSegmentCount);
 
 		return new SaveAiScheduleResult(
 				savedSchedule.scheduleUuid().value(),
 				savedSchedule.memberUuid().value(),
 				savedSchedule.title(),
-				savedSchedule.items().size()
+				savedSchedule.items().size(),
+				savedSchedule.flight() != null,
+				flightSegmentCount
 		);
 	}
 

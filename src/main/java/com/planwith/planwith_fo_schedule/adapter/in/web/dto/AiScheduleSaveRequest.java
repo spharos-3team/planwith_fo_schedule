@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
@@ -32,7 +33,8 @@ public record AiScheduleSaveRequest(
 		TravelStyle travelStyle,
 		@Size(max = 65_535) String content,
 		@Size(max = 30) String calendarColor,
-		@NotEmpty List<@Valid AiScheduleItemSaveRequest> items
+		@NotEmpty List<@Valid AiScheduleItemSaveRequest> items,
+		@Valid SelectedFlightSaveRequest flight
 ) {
 
 	@JsonIgnore
@@ -58,6 +60,27 @@ public record AiScheduleSaveRequest(
 		@AssertTrue(message = "latitude and longitude must be provided together")
 		public boolean isCoordinatePairValid() {
 			return (latitude == null) == (longitude == null);
+		}
+	}
+
+	public record SelectedFlightSaveRequest(
+			@NotBlank @Size(max = 200) String departureLocation,
+			@NotNull TripType tripType,
+			@NotEmpty List<@Valid FlightCandidateRequest> outboundCandidates,
+			List<@Valid FlightCandidateRequest> returnCandidates
+	) {
+		public SelectedFlightSaveRequest {
+			outboundCandidates = outboundCandidates == null ? null : List.copyOf(outboundCandidates);
+			returnCandidates = returnCandidates == null ? List.of() : List.copyOf(returnCandidates);
+		}
+
+		@JsonIgnore
+		@AssertTrue(message = "returnCandidates are required only for a round trip")
+		public boolean isReturnCandidatesValid() {
+			if (tripType == null || returnCandidates == null) {
+				return true;
+			}
+			return tripType == TripType.ROUND_TRIP ? !returnCandidates.isEmpty() : returnCandidates.isEmpty();
 		}
 	}
 }
