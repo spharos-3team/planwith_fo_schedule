@@ -9,6 +9,8 @@ import java.util.UUID;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
+import com.planwith.planwith_fo_schedule.domain.TripType;
+import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 
 public interface SaveAiScheduleUseCase {
 
@@ -26,10 +28,23 @@ public interface SaveAiScheduleUseCase {
 			TravelStyle travelStyle,
 			String content,
 			String calendarColor,
-			List<SaveAiScheduleItemCommand> items
+			List<SaveAiScheduleItemCommand> items,
+			SaveAiScheduleFlightCommand flight
 	) {
 		public SaveAiScheduleCommand {
 			items = items == null ? null : List.copyOf(items);
+		}
+	}
+
+	record SaveAiScheduleFlightCommand(
+			String departureLocation,
+			TripType tripType,
+			List<FlightCandidate> outboundCandidates,
+			List<FlightCandidate> returnCandidates
+	) {
+		public SaveAiScheduleFlightCommand {
+			outboundCandidates = outboundCandidates == null ? null : List.copyOf(outboundCandidates);
+			returnCandidates = returnCandidates == null ? List.of() : List.copyOf(returnCandidates);
 		}
 	}
 
@@ -51,7 +66,9 @@ public interface SaveAiScheduleUseCase {
 			UUID scheduleUuid,
 			UUID memberUuid,
 			String title,
-			int itemCount
+			int itemCount,
+			boolean flightSaved,
+			int flightSegmentCount
 	) {
 	}
 }

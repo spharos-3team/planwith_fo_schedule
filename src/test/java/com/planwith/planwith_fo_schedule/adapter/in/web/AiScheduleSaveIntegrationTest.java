@@ -14,11 +14,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
+import com.planwith.planwith_fo_schedule.domain.vo.ScheduleUuid;
 
 import jakarta.persistence.EntityManager;
 
@@ -32,6 +36,11 @@ class AiScheduleSaveIntegrationTest {
 
 	@Autowired
 	private EntityManager entityManager;
+
+	@Autowired
+	private ScheduleRepositoryPort scheduleRepositoryPort;
+
+	private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
 	private MockMvc mockMvc;
 
@@ -66,6 +75,72 @@ class AiScheduleSaveIntegrationTest {
 				Long.class
 		).getSingleResult();
 		assertThat(itemCount).isEqualTo(3L);
+
+		Long flightCount = entityManager.createQuery(
+				"select count(f) from ScheduleFlightJpaEntity f",
+				Long.class
+		).getSingleResult();
+		assertThat(flightCount).isZero();
+	}
+
+	@Test
+	void savesScheduleItemsSelectedFlightAndSegmentsInOneRequest() throws Exception {
+		MvcResult result = mockMvc.perform(post("/api/v1/schedules/ai/save")
+						.header("X-Member-UUID", UUID.randomUUID())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(saveRequestWithItemsAndFlight("""
+								%s,
+								%s,
+								%s
+								""".formatted(
+								item(1, "10:00:00", "Arrival"),
+								item(2, "14:00:00", "Tokyo tour"),
+								item(3, "11:00:00", "Departure")
+						))))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.itemCount").value(3))
+				.andExpect(jsonPath("$.data.flightSaved").value(true))
+				.andExpect(jsonPath("$.data.flightSegmentCount").value(2))
+				.andReturn();
+
+		entityManager.flush();
+		assertThat(count("ScheduleJpaEntity")).isEqualTo(1L);
+		assertThat(count("ScheduleItemJpaEntity")).isEqualTo(3L);
+		assertThat(count("ScheduleFlightJpaEntity")).isEqualTo(1L);
+		assertThat(count("ScheduleFlightSegmentJpaEntity")).isEqualTo(2L);
+
+		UUID scheduleUuid = UUID.fromString(objectMapper.readTree(result.getResponse().getContentAsString())
+				.path("data").path("scheduleUuid").asText());
+		entityManager.clear();
+		var loaded = scheduleRepositoryPort.findByScheduleUuid(new ScheduleUuid(scheduleUuid)).orElseThrow();
+		assertThat(loaded.items()).hasSize(3);
+		assertThat(loaded.flight()).isNotNull();
+		assertThat(loaded.flight().segments()).hasSize(2);
+		assertThat(loaded.flight().segments().get(0).flightNumber()).isEqualTo("703");
+	}
+
+	@Test
+	void rejectsReturnCandidatesForOneWayFlightWithoutSavingAnything() throws Exception {
+		String invalidRequest = saveRequestWithItemsAndFlight("""
+				%s,
+				%s,
+				%s
+				""".formatted(
+				item(1, "10:00:00", "Arrival"),
+				item(2, "14:00:00", "Tokyo tour"),
+				item(3, "11:00:00", "Departure")
+		)).replace("\"tripType\": \"ROUND_TRIP\"", "\"tripType\": \"ONE_WAY\"");
+
+		mockMvc.perform(post("/api/v1/schedules/ai/save")
+						.header("X-Member-UUID", UUID.randomUUID())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(invalidRequest))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+
+		assertThat(count("ScheduleJpaEntity")).isZero();
+		assertThat(count("ScheduleFlightJpaEntity")).isZero();
 	}
 
 	@Test
@@ -119,6 +194,74 @@ class AiScheduleSaveIntegrationTest {
 				  ]
 				}
 				""".formatted(items);
+	}
+
+	private String saveRequestWithItemsAndFlight(String items) {
+		return """
+				{
+				  "title": "Tokyo AI trip",
+				  "destination": "Tokyo",
+				  "startDate": "2026-08-20",
+				  "endDate": "2026-08-22",
+				  "participantCount": 2,
+				  "estimatedBudget": 500000,
+				  "transportation": "OTHER",
+				  "travelStyle": "TOUR_LANDMARK",
+				  "calendarColor": "#4F46E5",
+				  "items": [%s],
+				  "flight": {
+				    "departureLocation": "Seoul",
+				    "tripType": "ROUND_TRIP",
+				    "outboundCandidates": [%s],
+				    "returnCandidates": [%s]
+				  }
+				}
+				""".formatted(
+				items,
+				flightCandidate("2026-08-20", "ICN", "NRT", "2026-08-20T09:00:00+09:00",
+						"2026-08-20T11:30:00+09:00", "703"),
+				flightCandidate("2026-08-22", "NRT", "ICN", "2026-08-22T18:00:00+09:00",
+						"2026-08-22T20:30:00+09:00", "704")
+		);
+	}
+
+	private String flightCandidate(
+			String flightDate,
+			String departureCode,
+			String arrivalCode,
+			String departureAt,
+			String arrivalAt,
+			String flightNumber
+	) {
+		String departureTimezone = "ICN".equals(departureCode) ? "Asia/Seoul" : "Asia/Tokyo";
+		String arrivalTimezone = "ICN".equals(arrivalCode) ? "Asia/Seoul" : "Asia/Tokyo";
+		return """
+				{
+				  "flightDate": "%s",
+				  "flightStatus": "scheduled",
+				  "departure": {
+				    "airportCode": "%s", "terminal": "1", "gate": "10",
+				    "scheduledAt": "%s", "timezone": "%s"
+				  },
+				  "arrival": {
+				    "airportCode": "%s", "terminal": "2", "gate": "20",
+				    "scheduledAt": "%s", "timezone": "%s"
+				  },
+				  "carrierCode": "KE",
+				  "flightNumber": "%s",
+				  "operatingCarrierCode": "KE",
+				  "aircraftCode": "B789",
+				  "durationMinutes": 150
+				}
+				""".formatted(
+				flightDate, departureCode, departureAt, departureTimezone,
+				arrivalCode, arrivalAt, arrivalTimezone, flightNumber
+		);
+	}
+
+	private Long count(String entityName) {
+		return entityManager.createQuery("select count(e) from " + entityName + " e", Long.class)
+				.getSingleResult();
 	}
 
 	private String item(int dayNumber, String scheduleTime, String subtitle) {

@@ -7,6 +7,7 @@ import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleSaveReques
 import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
 import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase.SaveAiScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase.SaveAiScheduleItemCommand;
+import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase.SaveAiScheduleFlightCommand;
 
 final class AiScheduleSaveRequestMapper {
 
@@ -33,7 +34,22 @@ final class AiScheduleSaveRequestMapper {
 				validatedRequest.travelStyle(),
 				validatedRequest.content(),
 				validatedRequest.calendarColor(),
-				validatedRequest.items().stream().map(AiScheduleSaveRequestMapper::toItemCommand).toList()
+				validatedRequest.items().stream().map(AiScheduleSaveRequestMapper::toItemCommand).toList(),
+				toFlightCommand(validatedRequest.flight())
+		);
+	}
+
+	private static SaveAiScheduleFlightCommand toFlightCommand(
+			AiScheduleSaveRequest.SelectedFlightSaveRequest flight
+	) {
+		if (flight == null) {
+			return null;
+		}
+		return new SaveAiScheduleFlightCommand(
+				flight.departureLocation(),
+				flight.tripType(),
+				flight.outboundCandidates().stream().map(FlightCandidateRequestMapper::toCandidate).toList(),
+				flight.returnCandidates().stream().map(FlightCandidateRequestMapper::toCandidate).toList()
 		);
 	}
 

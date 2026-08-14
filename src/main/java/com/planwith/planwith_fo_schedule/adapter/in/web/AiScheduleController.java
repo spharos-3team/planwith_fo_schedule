@@ -70,11 +70,12 @@ public class AiScheduleController {
 		return generateDraft("POSTregenerate", "동일 조건 AI 일정 초안 재생성", authenticatedMemberUuid, request);
 	}
 
-	// 확인한 AI 일정 초안을 내 캘린더에 저장
+	// 확인한 AI 일정 초안과 선택 항공편을 내 캘린더에 저장
 	@PostMapping("/save")
 	@Operation(
-			summary = "AI 일정 초안 저장",
-			description = "사용자가 확인한 AI 일정 초안을 내 캘린더에 저장합니다. Schedule과 ScheduleItem을 하나의 로컬 트랜잭션으로 저장합니다."
+			summary = "AI 일정 초안 및 선택 항공편 저장",
+			description = "사용자가 확인한 AI 일정과 선택한 항공편을 내 캘린더에 저장합니다. "
+					+ "항공편을 선택하지 않으면 Schedule과 ScheduleItem만 저장합니다."
 	)
 	public ResponseEntity<ApiResponse<AiScheduleSaveResponse>> save(
 			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
@@ -91,10 +92,13 @@ public class AiScheduleController {
 				result.scheduleUuid(),
 				result.memberUuid(),
 				result.title(),
-				result.itemCount()
+				result.itemCount(),
+				result.flightSaved(),
+				result.flightSegmentCount()
 		);
-		log.info("AiScheduleController : POSTsave : AI 일정 초안 저장 완료 - scheduleUuid={}, itemCount={}",
-				result.scheduleUuid(), result.itemCount());
+		log.info("AiScheduleController : POSTsave : AI 일정 초안 저장 완료 - scheduleUuid={}, itemCount={}, "
+				+ "flightSaved={}, flightSegmentCount={}",
+				result.scheduleUuid(), result.itemCount(), result.flightSaved(), result.flightSegmentCount());
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
 
