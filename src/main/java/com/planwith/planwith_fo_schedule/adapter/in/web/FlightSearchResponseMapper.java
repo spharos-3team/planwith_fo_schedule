@@ -32,7 +32,7 @@ final class FlightSearchResponseMapper {
 		);
 	}
 
-	private static FlightCandidateResponse toCandidateResponse(FlightCandidate candidate) {
+	static FlightCandidateResponse toCandidateResponse(FlightCandidate candidate) {
 		return new FlightCandidateResponse(
 				candidate.flightDate(),
 				candidate.flightStatus(),

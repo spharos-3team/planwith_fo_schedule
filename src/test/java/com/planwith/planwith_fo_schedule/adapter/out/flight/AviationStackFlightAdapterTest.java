@@ -95,6 +95,22 @@ class AviationStackFlightAdapterTest {
 	}
 
 	@Test
+	void addsFlightNumberOnlyWhenConfirmingSelectedFlight() {
+		server.expect(requestTo(allOf(
+				containsString("dep_iata=ICN"),
+				containsString("arr_iata=NRT"),
+				containsString("flight_number=703")
+		)))
+				.andRespond(withSuccess("{\"data\":[]}", MediaType.APPLICATION_JSON));
+
+		adapter.search(new FlightSearchCriteria(
+				"ICN", "NRT", LocalDate.of(2026, 8, 20), "KE", "703"
+		));
+
+		server.verify();
+	}
+
+	@Test
 	void filtersRealtimeResponseByRequestedFlightDate() {
 		server.expect(requestTo(not(containsString("flight_date"))))
 				.andRespond(withSuccess("""

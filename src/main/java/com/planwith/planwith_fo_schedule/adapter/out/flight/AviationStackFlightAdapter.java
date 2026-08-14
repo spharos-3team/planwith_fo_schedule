@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class AviationStackFlightAdapter implements FlightSearchPort {
 							.queryParam("access_key", properties.getAccessKey())
 							.queryParam("dep_iata", criteria.departureAirportCode())
 							.queryParam("arr_iata", criteria.arrivalAirportCode())
+							.queryParamIfPresent("flight_number", optionalText(criteria.flightNumber()))
 							.queryParam("limit", 100)
 							.build())
 					.retrieve()
@@ -83,6 +85,10 @@ public class AviationStackFlightAdapter implements FlightSearchPort {
 					exception.getClass().getSimpleName());
 			throw new FlightSearchException("Failed to communicate with AviationStack.", exception);
 		}
+	}
+
+	private Optional<String> optionalText(String value) {
+		return value == null || value.isBlank() ? Optional.empty() : Optional.of(value.trim());
 	}
 
 	private String extractProviderCode(RestClientResponseException exception) {
