@@ -32,6 +32,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.GetCalendarSchedule
 import com.planwith.planwith_fo_schedule.application.port.in.GetCalendarSchedulesUseCase.CalendarScheduleResult;
 import com.planwith.planwith_fo_schedule.application.port.in.DeleteScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase.ScheduleDetailResult;
+import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase.ScheduleResult;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.UpdateScheduleUseCase.UpdateScheduleResult;
@@ -166,33 +167,31 @@ class ScheduleControllerTest {
 	void returnsScheduleDetail() throws Exception {
 		UUID scheduleUuid = UUID.randomUUID();
 		when(getScheduleDetailUseCase.getScheduleDetail(scheduleUuid)).thenReturn(new ScheduleDetailResult(
-				scheduleUuid,
-				"부산 여행",
-				"부산",
-				LocalDate.of(2026, 9, 1),
-				LocalDate.of(2026, 9, 3),
-				2,
-				500_000L,
-				TransportationType.TRAIN_PUBLIC_TRANSIT,
-				TravelStyle.TOUR_LANDMARK,
-				"해운대 방문",
-				"#3366FF",
-				ScheduleCreatorType.USER
+				new ScheduleResult(
+						scheduleUuid, "부산 여행", "부산",
+						LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), 2, 500_000L,
+						TransportationType.TRAIN_PUBLIC_TRANSIT, TravelStyle.TOUR_LANDMARK,
+						"해운대 방문", "#3366FF", ScheduleCreatorType.USER
+				),
+				null,
+				List.of()
 		));
 
 		mockMvc.perform(get("/schedules/{scheduleUuid}", scheduleUuid))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
-				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
-				.andExpect(jsonPath("$.data.title").value("부산 여행"))
-				.andExpect(jsonPath("$.data.destination").value("부산"))
-				.andExpect(jsonPath("$.data.startDate").value("2026-09-01"))
-				.andExpect(jsonPath("$.data.endDate").value("2026-09-03"))
-				.andExpect(jsonPath("$.data.headcount").value(2))
-				.andExpect(jsonPath("$.data.expectedCost").value(500000))
-				.andExpect(jsonPath("$.data.transportation").value("TRAIN_PUBLIC_TRANSIT"))
-				.andExpect(jsonPath("$.data.travelStyle").value("TOUR_LANDMARK"))
-				.andExpect(jsonPath("$.data.creatorType").value("USER"));
+				.andExpect(jsonPath("$.data.schedule.scheduleUuid").value(scheduleUuid.toString()))
+				.andExpect(jsonPath("$.data.schedule.title").value("부산 여행"))
+				.andExpect(jsonPath("$.data.schedule.destination").value("부산"))
+				.andExpect(jsonPath("$.data.schedule.startDate").value("2026-09-01"))
+				.andExpect(jsonPath("$.data.schedule.endDate").value("2026-09-03"))
+				.andExpect(jsonPath("$.data.schedule.headcount").value(2))
+				.andExpect(jsonPath("$.data.schedule.expectedCost").value(500000))
+				.andExpect(jsonPath("$.data.schedule.transportation").value("TRAIN_PUBLIC_TRANSIT"))
+				.andExpect(jsonPath("$.data.schedule.travelStyle").value("TOUR_LANDMARK"))
+				.andExpect(jsonPath("$.data.schedule.creatorType").value("USER"))
+				.andExpect(jsonPath("$.data.flight").doesNotExist())
+				.andExpect(jsonPath("$.data.items").isEmpty());
 	}
 
 	@Test

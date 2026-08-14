@@ -87,14 +87,16 @@ class ScheduleCreationIntegrationTest {
 		mockMvc.perform(get("/schedules/{scheduleUuid}", scheduleUuid))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
-				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
-				.andExpect(jsonPath("$.data.title").value("부산 여행"))
-				.andExpect(jsonPath("$.data.destination").value("부산"))
-				.andExpect(jsonPath("$.data.startDate").value("2026-09-01"))
-				.andExpect(jsonPath("$.data.endDate").value("2026-09-03"))
-				.andExpect(jsonPath("$.data.headcount").value(2))
-				.andExpect(jsonPath("$.data.content").value("해운대에서 자유롭게 시간을 보낸다."))
-				.andExpect(jsonPath("$.data.creatorType").value("USER"));
+				.andExpect(jsonPath("$.data.schedule.scheduleUuid").value(scheduleUuid.toString()))
+				.andExpect(jsonPath("$.data.schedule.title").value("부산 여행"))
+				.andExpect(jsonPath("$.data.schedule.destination").value("부산"))
+				.andExpect(jsonPath("$.data.schedule.startDate").value("2026-09-01"))
+				.andExpect(jsonPath("$.data.schedule.endDate").value("2026-09-03"))
+				.andExpect(jsonPath("$.data.schedule.headcount").value(2))
+				.andExpect(jsonPath("$.data.schedule.content").value("해운대에서 자유롭게 시간을 보낸다."))
+				.andExpect(jsonPath("$.data.schedule.creatorType").value("USER"))
+				.andExpect(jsonPath("$.data.flight").doesNotExist())
+				.andExpect(jsonPath("$.data.items").isEmpty());
 	}
 
 	@Test

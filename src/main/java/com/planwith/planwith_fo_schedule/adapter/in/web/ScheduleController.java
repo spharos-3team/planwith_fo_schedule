@@ -96,7 +96,7 @@ public class ScheduleController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
 
-	// 일정 상세 조회
+	// 일정, 일자별 계획 및 선택 항공편 통합 상세 조회
 	@GetMapping("/{scheduleUuid}")
 	public ResponseEntity<ApiResponse<ScheduleDetailResponse>> getScheduleDetail(
 			@PathVariable UUID scheduleUuid
@@ -105,22 +105,9 @@ public class ScheduleController {
 		ScheduleDetailResult result = getScheduleDetailUseCase.getScheduleDetail(scheduleUuid);
 		log.trace("ScheduleController : GETgetScheduleDetail : 일정 상세 조회 결과를 응답으로 변환 - scheduleUuid={}",
 				scheduleUuid);
-		ScheduleDetailResponse response = new ScheduleDetailResponse(
-				result.scheduleUuid(),
-				result.title(),
-				result.destination(),
-				result.startDate(),
-				result.endDate(),
-				result.headcount(),
-				result.expectedCost(),
-				result.transportation(),
-				result.travelStyle(),
-				result.content(),
-				result.calendarColor(),
-				result.creatorType()
-		);
+		ScheduleDetailResponse response = ScheduleDetailResponseMapper.toResponse(result);
 		log.debug("ScheduleController : GETgetScheduleDetail : 일정 상세 조회 결과 - scheduleUuid={}, creatorType={}",
-				scheduleUuid, result.creatorType());
+				scheduleUuid, result.schedule().creatorType());
 		log.info("ScheduleController : GETgetScheduleDetail : 일정 상세 조회 완료 - scheduleUuid={}", scheduleUuid);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
