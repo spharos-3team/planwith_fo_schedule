@@ -16,7 +16,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCas
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchResult;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightRecommendationCachePort;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 @Service
 public class FlightRecommendationService implements RecommendFlightsUseCase {
@@ -80,7 +80,7 @@ public class FlightRecommendationService implements RecommendFlightsUseCase {
 	}
 
 	private FlightRecommendationCacheKey toCacheKey(FlightRecommendationCommand command) {
-		FlightTripType tripType = command.tripType() == null ? FlightTripType.ROUND_TRIP : command.tripType();
+		TripType tripType = command.tripType() == null ? TripType.ROUND_TRIP : command.tripType();
 		return new FlightRecommendationCacheKey(
 				normalize(command.departureAirportCode()),
 				normalize(command.arrivalAirportCode()),

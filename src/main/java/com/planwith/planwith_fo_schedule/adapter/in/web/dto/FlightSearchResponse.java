@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public record FlightSearchResponse(
-		FlightTripType tripType,
+		TripType tripType,
 		List<FlightCandidateResponse> outboundCandidates,
 		List<FlightCandidateResponse> returnCandidates
 ) {

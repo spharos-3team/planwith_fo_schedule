@@ -1,6 +1,10 @@
 package com.planwith.planwith_fo_schedule.adapter.out.persistence;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.DateTimeException;
 import java.util.Optional;
 import java.util.List;
 
@@ -9,6 +13,8 @@ import org.springframework.stereotype.Repository;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.application.port.out.CalendarScheduleQueryPort;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.ScheduleFlight;
+import com.planwith.planwith_fo_schedule.domain.ScheduleFlightSegment;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItem;
 import com.planwith.planwith_fo_schedule.domain.vo.DayNumber;
 import com.planwith.planwith_fo_schedule.domain.vo.GeoPoint;
@@ -52,6 +58,9 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarSched
 		schedule.items().stream()
 				.map(this::toEntity)
 				.forEach(entity::addItem);
+		if (schedule.flight() != null) {
+			entity.assignFlight(toEntity(schedule.flight()));
+		}
 
 		return toDomain(scheduleRepository.save(entity));
 	}
@@ -144,8 +153,111 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarSched
 				entity.getCreatedAt(),
 				entity.getUpdatedAt(),
 				entity.getDeletedAt(),
-				entity.getItems().stream().map(this::toDomain).toList()
+				entity.getItems().stream().map(this::toDomain).toList(),
+				toDomain(entity.getFlight())
 		);
+	}
+
+	private ScheduleFlightJpaEntity toEntity(ScheduleFlight flight) {
+		ScheduleFlightJpaEntity entity = new ScheduleFlightJpaEntity(
+				flight.scheduleFlightId(),
+				flight.provider(),
+				flight.departureLocation(),
+				flight.originLocationCode(),
+				flight.destinationLocation(),
+				flight.destinationLocationCode(),
+				flight.tripType(),
+				flight.createdAt(),
+				flight.updatedAt()
+		);
+		flight.segments().stream().map(this::toEntity).forEach(entity::addSegment);
+		return entity;
+	}
+
+	private ScheduleFlightSegmentJpaEntity toEntity(ScheduleFlightSegment segment) {
+		return new ScheduleFlightSegmentJpaEntity(
+				segment.scheduleFlightSegmentId(),
+				segment.direction(),
+				segment.segmentOrder(),
+				segment.departureAirportCode(),
+				segment.arrivalAirportCode(),
+				segment.departureTerminal(),
+				segment.arrivalTerminal(),
+				segment.departureGate(),
+				segment.arrivalGate(),
+				toLocalDateTime(segment.departureAt(), segment.departureTimezone()),
+				toLocalDateTime(segment.arrivalAt(), segment.arrivalTimezone()),
+				segment.departureTimezone(),
+				segment.arrivalTimezone(),
+				segment.carrierCode(),
+				segment.flightNumber(),
+				segment.operatingCarrierCode(),
+				segment.aircraftCode(),
+				segment.flightStatus(),
+				segment.durationMinutes(),
+				segment.createdAt()
+		);
+	}
+
+	private ScheduleFlight toDomain(ScheduleFlightJpaEntity entity) {
+		if (entity == null) {
+			return null;
+		}
+		return ScheduleFlight.restore(
+				entity.getScheduleFlightId(),
+				entity.getScheduleId(),
+				entity.getProvider(),
+				entity.getDepartureLocation(),
+				entity.getOriginLocationCode(),
+				entity.getDestinationLocation(),
+				entity.getDestinationLocationCode(),
+				entity.getTripType(),
+				entity.getCreatedAt(),
+				entity.getUpdatedAt(),
+				entity.getSegments().stream().map(this::toDomain).toList()
+		);
+	}
+
+	private ScheduleFlightSegment toDomain(ScheduleFlightSegmentJpaEntity entity) {
+		return ScheduleFlightSegment.restore(
+				entity.getScheduleFlightSegmentId(),
+				entity.getScheduleFlightId(),
+				entity.getDirection(),
+				entity.getSegmentOrder(),
+				entity.getDepartureAirportCode(),
+				entity.getArrivalAirportCode(),
+				entity.getDepartureTerminal(),
+				entity.getArrivalTerminal(),
+				entity.getDepartureGate(),
+				entity.getArrivalGate(),
+				toOffsetDateTime(entity.getDepartureAt(), entity.getDepartureTimezone()),
+				toOffsetDateTime(entity.getArrivalAt(), entity.getArrivalTimezone()),
+				entity.getDepartureTimezone(),
+				entity.getArrivalTimezone(),
+				entity.getCarrierCode(),
+				entity.getFlightNumber(),
+				entity.getOperatingCarrierCode(),
+				entity.getAircraftCode(),
+				entity.getFlightStatus(),
+				entity.getDurationMinutes(),
+				entity.getCreatedAt()
+		);
+	}
+
+	private LocalDateTime toLocalDateTime(OffsetDateTime value, String timezone) {
+		try {
+			return value.atZoneSameInstant(ZoneId.of(timezone)).toLocalDateTime();
+		} catch (DateTimeException exception) {
+			return value.toLocalDateTime();
+		}
+	}
+
+	private OffsetDateTime toOffsetDateTime(LocalDateTime value, String timezone) {
+		try {
+			return value.atZone(ZoneId.of(timezone)).toOffsetDateTime();
+		} catch (DateTimeException exception) {
+			return value.atZone(ZoneId.of("UTC")).toOffsetDateTime();
+		}
 	}
 
 	private ScheduleItem toDomain(ScheduleItemJpaEntity entity) {

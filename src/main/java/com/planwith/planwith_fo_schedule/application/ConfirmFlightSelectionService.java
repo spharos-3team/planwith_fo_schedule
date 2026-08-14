@@ -18,7 +18,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.port.in.ConfirmFlightSelectionUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort.FlightSearchCriteria;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 @Service
 public class ConfirmFlightSelectionService implements ConfirmFlightSelectionUseCase {
@@ -104,9 +104,9 @@ public class ConfirmFlightSelectionService implements ConfirmFlightSelectionUseC
 		if (command.memberUuid() == null) {
 			throw new AuthenticationRequiredException();
 		}
-		FlightTripType tripType = command.tripType() == null ? FlightTripType.ONE_WAY : command.tripType();
+		TripType tripType = command.tripType() == null ? TripType.ONE_WAY : command.tripType();
 		validateCandidate(command.outboundCandidate(), "Outbound flight");
-		if (tripType == FlightTripType.ROUND_TRIP && command.returnCandidate() == null) {
+		if (tripType == TripType.ROUND_TRIP && command.returnCandidate() == null) {
 			throw new InvalidFlightSearchException("Return flight is required for a round trip.");
 		}
 		if (command.returnCandidate() != null) {

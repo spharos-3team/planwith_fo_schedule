@@ -3,7 +3,7 @@ package com.planwith.planwith_fo_schedule.adapter.in.web.dto;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -19,16 +19,16 @@ public record FlightSearchRequest(
 		String arrivalAirportCode,
 		@NotNull LocalDate departureDate,
 		LocalDate returnDate,
-		FlightTripType tripType
+		TripType tripType
 ) {
 	public FlightSearchRequest {
-		tripType = tripType == null ? FlightTripType.ROUND_TRIP : tripType;
+		tripType = tripType == null ? TripType.ROUND_TRIP : tripType;
 	}
 
 	@JsonIgnore
 	@AssertTrue(message = "returnDate is required for a round trip")
 	public boolean isRoundTripReturnDatePresent() {
-		return tripType != FlightTripType.ROUND_TRIP || returnDate != null;
+		return tripType != TripType.ROUND_TRIP || returnDate != null;
 	}
 
 	@JsonIgnore

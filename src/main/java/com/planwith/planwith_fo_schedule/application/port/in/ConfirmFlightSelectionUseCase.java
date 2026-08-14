@@ -4,7 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public interface ConfirmFlightSelectionUseCase {
 
@@ -12,7 +12,7 @@ public interface ConfirmFlightSelectionUseCase {
 
 	record ConfirmFlightSelectionCommand(
 			UUID memberUuid,
-			FlightTripType tripType,
+			TripType tripType,
 			FlightCandidate outboundCandidate,
 			FlightCandidate returnCandidate,
 			boolean refreshLatestInformation
@@ -21,7 +21,7 @@ public interface ConfirmFlightSelectionUseCase {
 
 	record FlightSelectionConfirmation(
 			UUID memberUuid,
-			FlightTripType tripType,
+			TripType tripType,
 			ConfirmedFlight outboundFlight,
 			ConfirmedFlight returnFlight,
 			OffsetDateTime confirmedAt

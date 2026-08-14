@@ -48,8 +48,7 @@ public final class AiScheduleGenerateRequestMapper {
 				flight.departureLocation(),
 				flight.originLocationCode(),
 				flight.destinationLocationCode(),
-				flight.tripType(),
-				flight.travelClass()
+				flight.tripType()
 		);
 	}
 }

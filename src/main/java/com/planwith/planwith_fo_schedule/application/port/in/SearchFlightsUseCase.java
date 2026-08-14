@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public interface SearchFlightsUseCase {
 
@@ -15,12 +15,12 @@ public interface SearchFlightsUseCase {
 			String arrivalAirportCode,
 			LocalDate departureDate,
 			LocalDate returnDate,
-			FlightTripType tripType
+			TripType tripType
 	) {
 	}
 
 	record FlightSearchResult(
-			FlightTripType tripType,
+			TripType tripType,
 			List<FlightCandidate> outboundCandidates,
 			List<FlightCandidate> returnCandidates
 	) {

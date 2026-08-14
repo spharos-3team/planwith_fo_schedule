@@ -25,7 +25,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.port.in.ConfirmFlightSelectionUseCase.ConfirmFlightSelectionCommand;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort.FlightSearchCriteria;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class ConfirmFlightSelectionServiceTest {
 
@@ -50,7 +50,7 @@ class ConfirmFlightSelectionServiceTest {
 		FlightSearchCriteria criteria = criteria("ICN", "NRT", "KE", "703");
 		when(flightSearchPort.search(criteria)).thenReturn(List.of(selected));
 
-		var result = service.confirm(command(selected, null, FlightTripType.ONE_WAY, true));
+		var result = service.confirm(command(selected, null, TripType.ONE_WAY, true));
 
 		assertThat(result.outboundFlight().candidate()).isEqualTo(selected);
 		assertThat(result.outboundFlight().refreshed()).isTrue();
@@ -65,7 +65,7 @@ class ConfirmFlightSelectionServiceTest {
 		when(flightSearchPort.search(criteria("ICN", "NRT", "KE", "703")))
 				.thenReturn(List.of(latest));
 
-		var result = service.confirm(command(selected, null, FlightTripType.ONE_WAY, true));
+		var result = service.confirm(command(selected, null, TripType.ONE_WAY, true));
 
 		assertThat(result.outboundFlight().candidate()).isEqualTo(latest);
 		assertThat(result.outboundFlight().informationChanged()).isTrue();
@@ -75,7 +75,7 @@ class ConfirmFlightSelectionServiceTest {
 	void confirmsSelectedInformationWithoutExternalCallWhenRefreshIsDisabled() {
 		FlightCandidate selected = candidate("ICN", "NRT", "KE", "703", "09:00", "11:30");
 
-		var result = service.confirm(command(selected, null, FlightTripType.ONE_WAY, false));
+		var result = service.confirm(command(selected, null, TripType.ONE_WAY, false));
 
 		assertThat(result.outboundFlight().candidate()).isEqualTo(selected);
 		assertThat(result.outboundFlight().refreshed()).isFalse();
@@ -88,7 +88,7 @@ class ConfirmFlightSelectionServiceTest {
 		when(flightSearchPort.search(criteria("ICN", "NRT", "KE", "703")))
 				.thenReturn(List.of(candidate("ICN", "NRT", "KE", "705", "10:00", "12:30")));
 
-		assertThatThrownBy(() -> service.confirm(command(selected, null, FlightTripType.ONE_WAY, true)))
+		assertThatThrownBy(() -> service.confirm(command(selected, null, TripType.ONE_WAY, true)))
 				.isInstanceOf(FlightCandidateNotFoundException.class);
 	}
 
@@ -101,7 +101,7 @@ class ConfirmFlightSelectionServiceTest {
 		when(flightSearchPort.search(criteria("NRT", "ICN", "KE", "704")))
 				.thenReturn(List.of(inbound));
 
-		var result = service.confirm(command(outbound, inbound, FlightTripType.ROUND_TRIP, true));
+		var result = service.confirm(command(outbound, inbound, TripType.ROUND_TRIP, true));
 
 		assertThat(result.returnFlight().candidate()).isEqualTo(inbound);
 		verify(flightSearchPort).search(criteria("ICN", "NRT", "KE", "703"));
@@ -113,16 +113,16 @@ class ConfirmFlightSelectionServiceTest {
 		FlightCandidate outbound = candidate("ICN", "NRT", "KE", "703", "09:00", "11:30");
 
 		assertThatThrownBy(() -> service.confirm(new ConfirmFlightSelectionCommand(
-				null, FlightTripType.ONE_WAY, outbound, null, false
+				null, TripType.ONE_WAY, outbound, null, false
 		))).isInstanceOf(AuthenticationRequiredException.class);
-		assertThatThrownBy(() -> service.confirm(command(outbound, null, FlightTripType.ROUND_TRIP, false)))
+		assertThatThrownBy(() -> service.confirm(command(outbound, null, TripType.ROUND_TRIP, false)))
 				.isInstanceOf(InvalidFlightSearchException.class);
 	}
 
 	private ConfirmFlightSelectionCommand command(
 			FlightCandidate outbound,
 			FlightCandidate inbound,
-			FlightTripType tripType,
+			TripType tripType,
 			boolean refresh
 	) {
 		return new ConfirmFlightSelectionCommand(MEMBER_UUID, tripType, outbound, inbound, refresh);

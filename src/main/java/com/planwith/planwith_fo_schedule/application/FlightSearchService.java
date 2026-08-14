@@ -14,7 +14,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort.FlightSearchCriteria;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 @Service
 public class FlightSearchService implements SearchFlightsUseCase {
@@ -39,7 +39,7 @@ public class FlightSearchService implements SearchFlightsUseCase {
 				validatedCommand.arrivalAirportCode(),
 				validatedCommand.departureDate()
 		));
-		List<FlightCandidate> returnCandidates = validatedCommand.tripType() == FlightTripType.ROUND_TRIP
+		List<FlightCandidate> returnCandidates = validatedCommand.tripType() == TripType.ROUND_TRIP
 				? flightSearchPort.search(new FlightSearchCriteria(
 						validatedCommand.arrivalAirportCode(),
 						validatedCommand.departureAirportCode(),
@@ -60,9 +60,9 @@ public class FlightSearchService implements SearchFlightsUseCase {
 			throw new InvalidFlightSearchException("Departure and arrival airport codes must be different.");
 		}
 		LocalDate departureDate = Objects.requireNonNull(command.departureDate(), "Departure date is required.");
-		FlightTripType tripType = command.tripType() == null ? FlightTripType.ROUND_TRIP : command.tripType();
+		TripType tripType = command.tripType() == null ? TripType.ROUND_TRIP : command.tripType();
 		LocalDate returnDate = command.returnDate();
-		if (tripType == FlightTripType.ROUND_TRIP && returnDate == null) {
+		if (tripType == TripType.ROUND_TRIP && returnDate == null) {
 			throw new InvalidFlightSearchException("Return date is required for a round trip.");
 		}
 		if (returnDate != null && returnDate.isBefore(departureDate)) {

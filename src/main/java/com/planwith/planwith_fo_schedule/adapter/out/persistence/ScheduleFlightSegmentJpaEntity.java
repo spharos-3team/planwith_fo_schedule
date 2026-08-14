@@ -62,11 +62,23 @@ class ScheduleFlightSegmentJpaEntity {
 	@Column(name = "arrival_terminal", length = 20)
 	private String arrivalTerminal;
 
+	@Column(name = "departure_gate", length = 20)
+	private String departureGate;
+
+	@Column(name = "arrival_gate", length = 20)
+	private String arrivalGate;
+
 	@Column(name = "departure_at", nullable = false)
 	private LocalDateTime departureAt;
 
 	@Column(name = "arrival_at", nullable = false)
 	private LocalDateTime arrivalAt;
+
+	@Column(name = "departure_timezone", nullable = false, length = 50)
+	private String departureTimezone;
+
+	@Column(name = "arrival_timezone", nullable = false, length = 50)
+	private String arrivalTimezone;
 
 	@Column(name = "carrier_code", nullable = false, length = 3)
 	private String carrierCode;
@@ -79,6 +91,9 @@ class ScheduleFlightSegmentJpaEntity {
 
 	@Column(name = "aircraft_code", length = 10)
 	private String aircraftCode;
+
+	@Column(name = "flight_status", length = 30)
+	private String flightStatus;
 
 	@Column(name = "duration_minutes")
 	private Integer durationMinutes;
@@ -98,12 +113,17 @@ class ScheduleFlightSegmentJpaEntity {
 			String arrivalAirportCode,
 			String departureTerminal,
 			String arrivalTerminal,
+			String departureGate,
+			String arrivalGate,
 			LocalDateTime departureAt,
 			LocalDateTime arrivalAt,
+			String departureTimezone,
+			String arrivalTimezone,
 			String carrierCode,
 			String flightNumber,
 			String operatingCarrierCode,
 			String aircraftCode,
+			String flightStatus,
 			Integer durationMinutes,
 			LocalDateTime createdAt
 	) {
@@ -114,12 +134,17 @@ class ScheduleFlightSegmentJpaEntity {
 		this.arrivalAirportCode = arrivalAirportCode;
 		this.departureTerminal = departureTerminal;
 		this.arrivalTerminal = arrivalTerminal;
+		this.departureGate = departureGate;
+		this.arrivalGate = arrivalGate;
 		this.departureAt = departureAt;
 		this.arrivalAt = arrivalAt;
+		this.departureTimezone = departureTimezone;
+		this.arrivalTimezone = arrivalTimezone;
 		this.carrierCode = carrierCode;
 		this.flightNumber = flightNumber;
 		this.operatingCarrierCode = operatingCarrierCode;
 		this.aircraftCode = aircraftCode;
+		this.flightStatus = flightStatus;
 		this.durationMinutes = durationMinutes;
 		this.createdAt = createdAt;
 	}
@@ -136,12 +161,17 @@ class ScheduleFlightSegmentJpaEntity {
 	String getArrivalAirportCode() { return arrivalAirportCode; }
 	String getDepartureTerminal() { return departureTerminal; }
 	String getArrivalTerminal() { return arrivalTerminal; }
+	String getDepartureGate() { return departureGate; }
+	String getArrivalGate() { return arrivalGate; }
 	LocalDateTime getDepartureAt() { return departureAt; }
 	LocalDateTime getArrivalAt() { return arrivalAt; }
+	String getDepartureTimezone() { return departureTimezone; }
+	String getArrivalTimezone() { return arrivalTimezone; }
 	String getCarrierCode() { return carrierCode; }
 	String getFlightNumber() { return flightNumber; }
 	String getOperatingCarrierCode() { return operatingCarrierCode; }
 	String getAircraftCode() { return aircraftCode; }
+	String getFlightStatus() { return flightStatus; }
 	Integer getDurationMinutes() { return durationMinutes; }
 	LocalDateTime getCreatedAt() { return createdAt; }
 }

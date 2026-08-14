@@ -2,14 +2,14 @@ package com.planwith.planwith_fo_schedule.application.model;
 
 import java.time.LocalDate;
 
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public record FlightRecommendationCacheKey(
 		String departureAirportCode,
 		String arrivalAirportCode,
 		LocalDate departureDate,
 		LocalDate returnDate,
-		FlightTripType tripType
+		TripType tripType
 ) {
 	public String value() {
 		return String.join(":",

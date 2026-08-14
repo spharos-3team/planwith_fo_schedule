@@ -9,8 +9,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
@@ -97,7 +96,7 @@ class AiScheduleGenerateRequestValidationTest {
 				null,
 				null,
 				null,
-				new AiScheduleFlightRequest("인천", "icn", "KIX1", null, null)
+				new AiScheduleFlightRequest("인천", "icn", "KIX1", null)
 		);
 
 		assertThat(pathsOf(validator.validate(request))).contains(
@@ -120,8 +119,7 @@ class AiScheduleGenerateRequestValidationTest {
 						"인천",
 						"ICN",
 						"KIX",
-						FlightTripType.ROUND_TRIP,
-						FlightTravelClass.ECONOMY
+						TripType.ROUND_TRIP
 				)
 		);
 	}

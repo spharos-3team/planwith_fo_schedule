@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.model.FlightRecommendation;
 import com.planwith.planwith_fo_schedule.application.port.in.RecommendFlightsUseCase;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class FlightRecommendationControllerTest {
 
@@ -38,7 +38,7 @@ class FlightRecommendationControllerTest {
 	@Test
 	void returnsTopThreeFlightRecommendations() throws Exception {
 		when(useCase.recommend(any())).thenReturn(new FlightRecommendation(
-				FlightTripType.ONE_WAY,
+				TripType.ONE_WAY,
 				List.of(candidate("101"), candidate("102"), candidate("103")),
 				List.of()
 		));

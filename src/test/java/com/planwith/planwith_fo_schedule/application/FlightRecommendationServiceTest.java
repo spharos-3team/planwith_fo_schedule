@@ -21,7 +21,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.RecommendFlightsUse
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchResult;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightRecommendationCachePort;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class FlightRecommendationServiceTest {
 
@@ -44,7 +44,7 @@ class FlightRecommendationServiceTest {
 	void returnsCachedRecommendationWithoutCallingFlightApi() {
 		FlightRecommendationCommand command = command();
 		FlightRecommendation cached = new FlightRecommendation(
-				FlightTripType.ONE_WAY, List.of(candidate("100", 100)), List.of()
+				TripType.ONE_WAY, List.of(candidate("100", 100)), List.of()
 		);
 		when(cachePort.find(any())).thenReturn(Optional.of(cached));
 
@@ -57,7 +57,7 @@ class FlightRecommendationServiceTest {
 	void searchesRanksTopThreeAndCachesResultWhenCacheMisses() {
 		when(cachePort.find(any())).thenReturn(Optional.empty());
 		when(searchFlightsUseCase.search(any())).thenReturn(new FlightSearchResult(
-				FlightTripType.ONE_WAY,
+				TripType.ONE_WAY,
 				List.of(candidate("104", 140), candidate("101", 80), candidate("103", 120), candidate("102", 100)),
 				List.of()
 		));
@@ -72,7 +72,7 @@ class FlightRecommendationServiceTest {
 
 	private FlightRecommendationCommand command() {
 		return new FlightRecommendationCommand(
-				"icn", "nrt", LocalDate.of(2026, 8, 13), null, FlightTripType.ONE_WAY
+				"icn", "nrt", LocalDate.of(2026, 8, 13), null, TripType.ONE_WAY
 		);
 	}
 

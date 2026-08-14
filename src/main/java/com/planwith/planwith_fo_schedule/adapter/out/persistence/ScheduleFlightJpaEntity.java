@@ -1,6 +1,5 @@
 package com.planwith.planwith_fo_schedule.adapter.out.persistence;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +7,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,7 +34,7 @@ import jakarta.persistence.Table;
 		)
 )
 class ScheduleFlightJpaEntity {
-	private static final String DEFAULT_PROVIDER = "AMADEUS";
+	private static final String DEFAULT_PROVIDER = "AVIATIONSTACK";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,20 +62,7 @@ class ScheduleFlightJpaEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "trip_type", nullable = false, length = 20)
-	private FlightTripType tripType;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "travel_class", nullable = false, length = 30)
-	private FlightTravelClass travelClass;
-
-	@Column(name = "total_price", precision = 15, scale = 2)
-	private BigDecimal totalPrice;
-
-	@Column(name = "currency_code", length = 3)
-	private String currencyCode;
-
-	@Column(name = "price_checked_at")
-	private LocalDateTime priceCheckedAt;
+	private TripType tripType;
 
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
@@ -101,11 +86,7 @@ class ScheduleFlightJpaEntity {
 			String originLocationCode,
 			String destinationLocation,
 			String destinationLocationCode,
-			FlightTripType tripType,
-			FlightTravelClass travelClass,
-			BigDecimal totalPrice,
-			String currencyCode,
-			LocalDateTime priceCheckedAt,
+			TripType tripType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt
 	) {
@@ -115,11 +96,7 @@ class ScheduleFlightJpaEntity {
 		this.originLocationCode = originLocationCode;
 		this.destinationLocation = destinationLocation;
 		this.destinationLocationCode = destinationLocationCode;
-		this.tripType = tripType == null ? FlightTripType.ROUND_TRIP : tripType;
-		this.travelClass = travelClass == null ? FlightTravelClass.ECONOMY : travelClass;
-		this.totalPrice = totalPrice;
-		this.currencyCode = currencyCode;
-		this.priceCheckedAt = priceCheckedAt;
+		this.tripType = tripType == null ? TripType.ROUND_TRIP : tripType;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
@@ -138,11 +115,7 @@ class ScheduleFlightJpaEntity {
 	String getOriginLocationCode() { return originLocationCode; }
 	String getDestinationLocation() { return destinationLocation; }
 	String getDestinationLocationCode() { return destinationLocationCode; }
-	FlightTripType getTripType() { return tripType; }
-	FlightTravelClass getTravelClass() { return travelClass; }
-	BigDecimal getTotalPrice() { return totalPrice; }
-	String getCurrencyCode() { return currencyCode; }
-	LocalDateTime getPriceCheckedAt() { return priceCheckedAt; }
+	TripType getTripType() { return tripType; }
 	LocalDateTime getCreatedAt() { return createdAt; }
 	LocalDateTime getUpdatedAt() { return updatedAt; }
 	List<ScheduleFlightSegmentJpaEntity> getSegments() { return List.copyOf(segments); }
