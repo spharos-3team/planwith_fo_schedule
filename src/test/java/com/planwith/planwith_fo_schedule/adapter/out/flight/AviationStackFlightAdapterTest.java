@@ -39,7 +39,7 @@ class AviationStackFlightAdapterTest {
 		properties.setAccessKey("test-access-key");
 		RestClient.Builder builder = RestClient.builder().baseUrl("https://api.aviationstack.test/v1");
 		server = MockRestServiceServer.bindTo(builder).build();
-		adapter = new AviationStackFlightAdapter(builder.build(), properties);
+		adapter = new AviationStackFlightAdapter(builder.build(), properties, new AviationStackFlightMapper());
 	}
 
 	@Test
