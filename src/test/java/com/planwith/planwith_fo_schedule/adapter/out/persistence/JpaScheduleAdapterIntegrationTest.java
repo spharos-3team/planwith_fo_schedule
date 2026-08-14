@@ -50,6 +50,7 @@ class JpaScheduleAdapterIntegrationTest {
 				new MemberUuid(UUID.randomUUID()),
 				"서울 여행",
 				"서울",
+				"https://images.example.com/seoul.jpg",
 				LocalDate.of(2026, 8, 10),
 				LocalDate.of(2026, 8, 12),
 				new Headcount(2),
@@ -83,6 +84,7 @@ class JpaScheduleAdapterIntegrationTest {
 		assertThat(savedSchedule.updatedAt()).isNotNull();
 		assertThat(savedSchedule.transportation()).isEqualTo(TransportationType.TRAIN_PUBLIC_TRANSIT);
 		assertThat(savedSchedule.travelStyle()).isEqualTo(TravelStyle.TOUR_LANDMARK);
+		assertThat(savedSchedule.imageUrl()).isEqualTo("https://images.example.com/seoul.jpg");
 		assertThat(savedSchedule.items()).singleElement().satisfies(item -> {
 			assertThat(item.scheduleItemId()).isNotNull();
 			assertThat(item.scheduleId()).isEqualTo(savedSchedule.scheduleId());
@@ -94,8 +96,10 @@ class JpaScheduleAdapterIntegrationTest {
 		assertThat(scheduleRepositoryPort.findByScheduleUuid(savedSchedule.scheduleUuid()))
 				.isPresent()
 				.get()
-				.extracting(Schedule::scheduleId)
-				.isEqualTo(savedSchedule.scheduleId());
+				.satisfies(restored -> {
+					assertThat(restored.scheduleId()).isEqualTo(savedSchedule.scheduleId());
+					assertThat(restored.imageUrl()).isEqualTo("https://images.example.com/seoul.jpg");
+				});
 	}
 
 	@Test

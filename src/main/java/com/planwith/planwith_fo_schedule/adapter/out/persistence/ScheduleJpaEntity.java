@@ -51,6 +51,9 @@ class ScheduleJpaEntity {
 	@Column(nullable = false, length = 200)
 	private String destination;
 
+	@Column(name = "image_url", length = 2_048)
+	private String imageUrl;
+
 	@Column(name = "start_date", nullable = false)
 	private LocalDate startDate;
 
@@ -107,6 +110,7 @@ class ScheduleJpaEntity {
 			UUID memberUuid,
 			String title,
 			String destination,
+			String imageUrl,
 			LocalDate startDate,
 			LocalDate endDate,
 			int headcount,
@@ -125,6 +129,7 @@ class ScheduleJpaEntity {
 		this.memberUuid = memberUuid;
 		this.title = title;
 		this.destination = destination;
+		this.imageUrl = imageUrl;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.headcount = headcount;
@@ -182,6 +187,7 @@ class ScheduleJpaEntity {
 	UUID getMemberUuid() { return memberUuid; }
 	String getTitle() { return title; }
 	String getDestination() { return destination; }
+	String getImageUrl() { return imageUrl; }
 	LocalDate getStartDate() { return startDate; }
 	LocalDate getEndDate() { return endDate; }
 	int getHeadcount() { return headcount; }

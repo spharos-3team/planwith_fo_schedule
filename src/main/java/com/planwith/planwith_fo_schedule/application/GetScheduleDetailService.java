@@ -62,6 +62,7 @@ public class GetScheduleDetailService implements GetScheduleDetailUseCase {
 	private ScheduleResult toScheduleResult(Schedule schedule) {
 		return new ScheduleResult(
 				schedule.scheduleUuid().value(), schedule.title(), schedule.destination(),
+				schedule.imageUrl(),
 				schedule.period().startDate(), schedule.period().endDate(), schedule.headcount().value(),
 				schedule.expectedCost().amount(), schedule.transportation(), schedule.travelStyle(),
 				schedule.content(), schedule.calendarColor(), schedule.creatorType()

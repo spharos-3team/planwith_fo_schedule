@@ -116,6 +116,7 @@ public class AiScheduleController {
 				result.memberUuid(),
 				result.title(),
 				result.destination(),
+				result.imageUrl(),
 				result.startDate(),
 				result.endDate(),
 				result.participantCount(),

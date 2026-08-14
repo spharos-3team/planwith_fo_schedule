@@ -168,7 +168,7 @@ class ScheduleControllerTest {
 		UUID scheduleUuid = UUID.randomUUID();
 		when(getScheduleDetailUseCase.getScheduleDetail(scheduleUuid)).thenReturn(new ScheduleDetailResult(
 				new ScheduleResult(
-						scheduleUuid, "부산 여행", "부산",
+						scheduleUuid, "부산 여행", "부산", "https://images.example.com/busan.jpg",
 						LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), 2, 500_000L,
 						TransportationType.TRAIN_PUBLIC_TRANSIT, TravelStyle.TOUR_LANDMARK,
 						"해운대 방문", "#3366FF", ScheduleCreatorType.USER
@@ -183,6 +183,7 @@ class ScheduleControllerTest {
 				.andExpect(jsonPath("$.data.schedule.scheduleUuid").value(scheduleUuid.toString()))
 				.andExpect(jsonPath("$.data.schedule.title").value("부산 여행"))
 				.andExpect(jsonPath("$.data.schedule.destination").value("부산"))
+				.andExpect(jsonPath("$.data.schedule.imageUrl").value("https://images.example.com/busan.jpg"))
 				.andExpect(jsonPath("$.data.schedule.startDate").value("2026-09-01"))
 				.andExpect(jsonPath("$.data.schedule.endDate").value("2026-09-03"))
 				.andExpect(jsonPath("$.data.schedule.headcount").value(2))

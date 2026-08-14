@@ -14,6 +14,7 @@ public record AiScheduleGenerateResponse(
 		UUID memberUuid,
 		String title,
 		String destination,
+		String imageUrl,
 		LocalDate startDate,
 		LocalDate endDate,
 		int participantCount,

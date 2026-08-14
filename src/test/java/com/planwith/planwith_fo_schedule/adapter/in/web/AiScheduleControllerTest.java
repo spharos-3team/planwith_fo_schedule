@@ -60,6 +60,7 @@ class AiScheduleControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()))
+				.andExpect(jsonPath("$.data.imageUrl").value("https://images.example.com/busan.jpg"))
 				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"));
 
 		verify(useCase).generate(any());
@@ -199,7 +200,7 @@ class AiScheduleControllerTest {
 
 	private AiScheduleResult aiScheduleResult(UUID memberUuid) {
 		return new AiScheduleResult(
-				memberUuid, "부산 AI 여행", "부산",
+				memberUuid, "부산 AI 여행", "부산", "https://images.example.com/busan.jpg",
 				LocalDate.of(2026, 8, 20), LocalDate.of(2026, 8, 22),
 				2, 500_000, TransportationType.TRAIN_PUBLIC_TRANSIT, TravelStyle.TOUR_LANDMARK,
 				"AI 추천 일정",
@@ -216,6 +217,7 @@ class AiScheduleControllerTest {
 				{
 				  "title": "부산 AI 여행",
 				  "destination": "부산",
+				  "imageUrl": "https://images.example.com/busan.jpg",
 				  "startDate": "2026-08-20",
 				  "endDate": "2026-08-22",
 				  "participantCount": 2,

@@ -53,6 +53,7 @@ public class SaveAiScheduleService implements SaveAiScheduleUseCase {
 				new MemberUuid(validatedCommand.memberUuid()),
 				validatedCommand.title(),
 				validatedCommand.destination(),
+				validatedCommand.imageUrl(),
 				validatedCommand.startDate(),
 				validatedCommand.endDate(),
 				new Headcount(validatedCommand.participantCount()),
