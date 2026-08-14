@@ -19,7 +19,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCas
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchResult;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort.FlightSearchCriteria;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class FlightSearchServiceTest {
 
@@ -47,7 +47,7 @@ class FlightSearchServiceTest {
 				"icn", "nrt", departureDate, returnDate, null
 		));
 
-		assertThat(result.tripType()).isEqualTo(FlightTripType.ROUND_TRIP);
+		assertThat(result.tripType()).isEqualTo(TripType.ROUND_TRIP);
 		assertThat(result.outboundCandidates()).containsExactly(outbound);
 		assertThat(result.returnCandidates()).containsExactly(inbound);
 		verify(flightSearchPort).search(outboundCriteria);
@@ -61,7 +61,7 @@ class FlightSearchServiceTest {
 		when(flightSearchPort.search(criteria)).thenReturn(List.of());
 
 		FlightSearchResult result = service.search(new FlightSearchCommand(
-				"GMP", "CJU", departureDate, null, FlightTripType.ONE_WAY
+				"GMP", "CJU", departureDate, null, TripType.ONE_WAY
 		));
 
 		assertThat(result.returnCandidates()).isEmpty();
@@ -74,13 +74,13 @@ class FlightSearchServiceTest {
 		LocalDate departureDate = LocalDate.of(2026, 8, 20);
 
 		assertThatThrownBy(() -> service.search(new FlightSearchCommand(
-				"ICN", "ICN", departureDate, departureDate, FlightTripType.ROUND_TRIP
+				"ICN", "ICN", departureDate, departureDate, TripType.ROUND_TRIP
 		))).isInstanceOf(InvalidFlightSearchException.class);
 		assertThatThrownBy(() -> service.search(new FlightSearchCommand(
-				"ICN", "NRT", departureDate, null, FlightTripType.ROUND_TRIP
+				"ICN", "NRT", departureDate, null, TripType.ROUND_TRIP
 		))).isInstanceOf(InvalidFlightSearchException.class);
 		assertThatThrownBy(() -> service.search(new FlightSearchCommand(
-				"IC", "NRT", departureDate, null, FlightTripType.ONE_WAY
+				"IC", "NRT", departureDate, null, TripType.ONE_WAY
 		))).isInstanceOf(InvalidFlightSearchException.class);
 	}
 

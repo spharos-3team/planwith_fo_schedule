@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,9 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.FlightDirection;
-import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
+import com.planwith.planwith_fo_schedule.domain.ScheduleFlight;
+import com.planwith.planwith_fo_schedule.domain.ScheduleFlightSegment;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItem;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
@@ -129,72 +130,57 @@ class JpaScheduleAdapterIntegrationTest {
 
 	@Test
 	void mapsAndSavesFlightWithOrderedSegments() {
-		ScheduleJpaEntity schedule = new ScheduleJpaEntity(
-				null,
-				UUID.randomUUID(),
-				UUID.randomUUID(),
+		Schedule schedule = Schedule.create(
+				new MemberUuid(UUID.randomUUID()),
 				"도쿄 여행",
 				"도쿄",
 				LocalDate.of(2026, 9, 1),
 				LocalDate.of(2026, 9, 5),
-				2,
-				1_500_000L,
+				new Headcount(2),
+				ScheduleCost.of(1_500_000L),
 				TransportationType.OTHER,
 				TravelStyle.TOUR_LANDMARK,
 				null,
 				"#3366FF",
 				ScheduleCreatorType.AI,
-				null,
-				null,
-				null
+				List.of()
 		);
-		ScheduleFlightJpaEntity flight = new ScheduleFlightJpaEntity(
-				null,
-				"AMADEUS",
+		ScheduleFlightSegment outbound = ScheduleFlightSegment.create(
+				FlightDirection.OUTBOUND, 1, "ICN", "NRT", "1", "2", "10", "20",
+				OffsetDateTime.parse("2026-09-01T09:00:00+09:00"),
+				OffsetDateTime.parse("2026-09-01T11:30:00+09:00"),
+				"Asia/Seoul", "Asia/Tokyo", "KE", "703", "KE", "789", "scheduled", 150
+		);
+		ScheduleFlightSegment inbound = ScheduleFlightSegment.create(
+				FlightDirection.RETURN, 1, "NRT", "ICN", "2", "1", "30", "40",
+				OffsetDateTime.parse("2026-09-05T18:00:00+09:00"),
+				OffsetDateTime.parse("2026-09-05T20:30:00+09:00"),
+				"Asia/Tokyo", "Asia/Seoul", "KE", "704", "KE", "789", "scheduled", 150
+		);
+		ScheduleFlight flight = ScheduleFlight.create(
+				"AVIATIONSTACK",
 				"인천",
 				"ICN",
 				"도쿄",
 				"NRT",
-				FlightTripType.ROUND_TRIP,
-				FlightTravelClass.ECONOMY,
-				new BigDecimal("420000.00"),
-				"KRW",
-				LocalDateTime.of(2026, 8, 11, 13, 0),
-				null,
-				null
+				TripType.ROUND_TRIP,
+				List.of(outbound, inbound)
 		);
-		ScheduleFlightSegmentJpaEntity segment = new ScheduleFlightSegmentJpaEntity(
-				null,
-				FlightDirection.OUTBOUND,
-				1,
-				"ICN",
-				"NRT",
-				"1",
-				"2",
-				LocalDateTime.of(2026, 9, 1, 9, 0),
-				LocalDateTime.of(2026, 9, 1, 11, 30),
-				"KE",
-				"703",
-				"KE",
-				"789",
-				150,
-				null
-		);
-		flight.addSegment(segment);
-		schedule.assignFlight(flight);
 
-		ScheduleJpaEntity savedSchedule = springDataScheduleRepository.saveAndFlush(schedule);
+		Schedule savedSchedule = scheduleRepositoryPort.save(schedule.withFlight(flight));
+		springDataScheduleRepository.flush();
 
-		assertThat(savedSchedule.getFlight().getScheduleFlightId()).isNotNull();
-		assertThat(savedSchedule.getFlight().getScheduleId()).isEqualTo(savedSchedule.getScheduleId());
-		assertThat(savedSchedule.getFlight().getProvider()).isEqualTo("AMADEUS");
-		assertThat(savedSchedule.getFlight().getTripType()).isEqualTo(FlightTripType.ROUND_TRIP);
-		assertThat(savedSchedule.getFlight().getTravelClass()).isEqualTo(FlightTravelClass.ECONOMY);
-		assertThat(savedSchedule.getFlight().getSegments()).singleElement().satisfies(savedSegment -> {
-			assertThat(savedSegment.getScheduleFlightSegmentId()).isNotNull();
-			assertThat(savedSegment.getScheduleFlightId()).isEqualTo(savedSchedule.getFlight().getScheduleFlightId());
-			assertThat(savedSegment.getDirection()).isEqualTo(FlightDirection.OUTBOUND);
-			assertThat(savedSegment.getSegmentOrder()).isEqualTo(1);
+		assertThat(savedSchedule.flight()).isNotNull();
+		assertThat(savedSchedule.flight().scheduleFlightId()).isNotNull();
+		assertThat(savedSchedule.flight().scheduleId()).isEqualTo(savedSchedule.scheduleId());
+		assertThat(savedSchedule.flight().provider()).isEqualTo("AVIATIONSTACK");
+		assertThat(savedSchedule.flight().tripType()).isEqualTo(TripType.ROUND_TRIP);
+		assertThat(savedSchedule.flight().segments()).hasSize(2).allSatisfy(savedSegment -> {
+			assertThat(savedSegment.scheduleFlightSegmentId()).isNotNull();
+			assertThat(savedSegment.scheduleFlightId()).isEqualTo(savedSchedule.flight().scheduleFlightId());
+			assertThat(savedSegment.departureGate()).isNotBlank();
+			assertThat(savedSegment.departureTimezone()).isNotBlank();
+			assertThat(savedSegment.flightStatus()).isEqualTo("scheduled");
 		});
 	}
 }

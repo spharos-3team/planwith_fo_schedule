@@ -3,7 +3,7 @@ package com.planwith.planwith_fo_schedule.application.port.in;
 import java.time.LocalDate;
 
 import com.planwith.planwith_fo_schedule.application.model.FlightRecommendation;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public interface RecommendFlightsUseCase {
 
@@ -14,7 +14,7 @@ public interface RecommendFlightsUseCase {
 			String arrivalAirportCode,
 			LocalDate departureDate,
 			LocalDate returnDate,
-			FlightTripType tripType
+			TripType tripType
 	) {
 	}
 }

@@ -36,6 +36,7 @@ public final class Schedule {
 	private final LocalDateTime updatedAt;
 	private final LocalDateTime deletedAt;
 	private final List<ScheduleItem> items;
+	private final ScheduleFlight flight;
 
 	private Schedule(
 			Long scheduleId,
@@ -54,7 +55,8 @@ public final class Schedule {
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
 			LocalDateTime deletedAt,
-			List<ScheduleItem> items
+			List<ScheduleItem> items,
+			ScheduleFlight flight
 	) {
 		this.scheduleId = scheduleId;
 		this.scheduleUuid = Objects.requireNonNull(scheduleUuid, "Schedule UUID is required.");
@@ -73,6 +75,7 @@ public final class Schedule {
 		this.updatedAt = updatedAt;
 		this.deletedAt = deletedAt;
 		this.items = validateItems(items, period);
+		this.flight = validateFlight(scheduleId, flight);
 	}
 
 	public static Schedule create(
@@ -118,7 +121,8 @@ public final class Schedule {
 				null,
 				null,
 				null,
-				items
+				items,
+				null
 		);
 	}
 
@@ -158,7 +162,35 @@ public final class Schedule {
 				createdAt,
 				updatedAt,
 				deletedAt,
-				items
+				items,
+				null
+		);
+	}
+
+	public static Schedule restore(
+			Long scheduleId,
+			ScheduleUuid scheduleUuid,
+			MemberUuid memberUuid,
+			String title,
+			String destination,
+			SchedulePeriod period,
+			Headcount headcount,
+			ScheduleCost expectedCost,
+			TransportationType transportation,
+			TravelStyle travelStyle,
+			String content,
+			String calendarColor,
+			ScheduleCreatorType creatorType,
+			LocalDateTime createdAt,
+			LocalDateTime updatedAt,
+			LocalDateTime deletedAt,
+			List<ScheduleItem> items,
+			ScheduleFlight flight
+	) {
+		return new Schedule(
+				scheduleId, scheduleUuid, memberUuid, title, destination, period, headcount, expectedCost,
+				transportation, travelStyle, content, calendarColor, creatorType, createdAt, updatedAt,
+				deletedAt, items, flight
 		);
 	}
 
@@ -199,7 +231,8 @@ public final class Schedule {
 				createdAt,
 				updatedAt,
 				deletedAt,
-				items
+				items,
+				flight
 		);
 	}
 
@@ -221,8 +254,24 @@ public final class Schedule {
 				createdAt,
 				updatedAt,
 				Objects.requireNonNull(deletionTime, "Deletion time is required."),
-				items
+				items,
+				flight
 		);
+	}
+
+	public Schedule withFlight(ScheduleFlight flight) {
+		return new Schedule(
+				scheduleId, scheduleUuid, memberUuid, title, destination, period, headcount, expectedCost,
+				transportation, travelStyle, content, calendarColor, creatorType, createdAt, updatedAt,
+				deletedAt, items, Objects.requireNonNull(flight, "Schedule flight is required.")
+		);
+	}
+
+	private static ScheduleFlight validateFlight(Long scheduleId, ScheduleFlight flight) {
+		if (flight != null && flight.scheduleId() != null && !flight.scheduleId().equals(scheduleId)) {
+			throw new InvalidScheduleException("Schedule flight belongs to another schedule.");
+		}
+		return flight;
 	}
 
 	private static List<ScheduleItem> validateItems(List<ScheduleItem> items, SchedulePeriod period) {
@@ -312,4 +361,5 @@ public final class Schedule {
 	public LocalDateTime updatedAt() { return updatedAt; }
 	public LocalDateTime deletedAt() { return deletedAt; }
 	public List<ScheduleItem> items() { return items; }
+	public ScheduleFlight flight() { return flight; }
 }

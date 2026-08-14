@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
@@ -14,20 +14,20 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record FlightSelectionConfirmRequest(
-		FlightTripType tripType,
+		TripType tripType,
 		@NotNull @Valid FlightCandidateRequest outboundCandidate,
 		@Valid FlightCandidateRequest returnCandidate,
 		Boolean refreshLatestInformation
 ) {
 	public FlightSelectionConfirmRequest {
-		tripType = tripType == null ? FlightTripType.ONE_WAY : tripType;
+		tripType = tripType == null ? TripType.ONE_WAY : tripType;
 		refreshLatestInformation = refreshLatestInformation == null ? Boolean.TRUE : refreshLatestInformation;
 	}
 
 	@JsonIgnore
 	@AssertTrue(message = "returnCandidate is required for a round trip")
 	public boolean isRoundTripReturnCandidatePresent() {
-		return tripType != FlightTripType.ROUND_TRIP || returnCandidate != null;
+		return tripType != TripType.ROUND_TRIP || returnCandidate != null;
 	}
 
 	public record FlightCandidateRequest(

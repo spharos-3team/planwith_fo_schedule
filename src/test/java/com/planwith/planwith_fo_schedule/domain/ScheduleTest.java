@@ -94,15 +94,9 @@ class ScheduleTest {
 				ScheduleItemType.ACTIVITY,
 				ScheduleItemType.ETC
 		);
-		assertThat(FlightTripType.values()).containsExactly(
-				FlightTripType.ONE_WAY,
-				FlightTripType.ROUND_TRIP
-		);
-		assertThat(FlightTravelClass.values()).containsExactly(
-				FlightTravelClass.ECONOMY,
-				FlightTravelClass.PREMIUM_ECONOMY,
-				FlightTravelClass.BUSINESS,
-				FlightTravelClass.FIRST
+		assertThat(TripType.values()).containsExactly(
+				TripType.ONE_WAY,
+				TripType.ROUND_TRIP
 		);
 		assertThat(FlightDirection.values()).containsExactly(
 				FlightDirection.OUTBOUND,

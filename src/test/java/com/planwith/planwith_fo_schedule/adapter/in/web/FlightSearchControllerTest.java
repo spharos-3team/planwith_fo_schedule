@@ -25,7 +25,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.SearchFlightsUseCase.FlightSearchResult;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class FlightSearchControllerTest {
 
@@ -45,7 +45,7 @@ class FlightSearchControllerTest {
 		FlightCandidate outbound = candidate("ICN", "NRT", "703");
 		FlightCandidate inbound = candidate("NRT", "ICN", "704");
 		when(searchFlightsUseCase.search(any())).thenReturn(
-				new FlightSearchResult(FlightTripType.ROUND_TRIP, List.of(outbound), List.of(inbound))
+				new FlightSearchResult(TripType.ROUND_TRIP, List.of(outbound), List.of(inbound))
 		);
 
 		mockMvc.perform(post("/api/v1/flights/search")
@@ -68,7 +68,7 @@ class FlightSearchControllerTest {
 
 		ArgumentCaptor<FlightSearchCommand> captor = ArgumentCaptor.forClass(FlightSearchCommand.class);
 		verify(searchFlightsUseCase).search(captor.capture());
-		assertThat(captor.getValue().tripType()).isEqualTo(FlightTripType.ROUND_TRIP);
+		assertThat(captor.getValue().tripType()).isEqualTo(TripType.ROUND_TRIP);
 	}
 
 	@Test

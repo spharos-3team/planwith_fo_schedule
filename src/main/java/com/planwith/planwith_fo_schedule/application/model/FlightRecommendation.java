@@ -2,10 +2,10 @@ package com.planwith.planwith_fo_schedule.application.model;
 
 import java.util.List;
 
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public record FlightRecommendation(
-		FlightTripType tripType,
+		TripType tripType,
 		List<FlightCandidate> outboundCandidates,
 		List<FlightCandidate> returnCandidates
 ) {

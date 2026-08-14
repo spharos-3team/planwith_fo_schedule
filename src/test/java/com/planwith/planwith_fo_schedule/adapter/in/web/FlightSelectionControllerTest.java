@@ -22,7 +22,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.port.in.ConfirmFlightSelectionUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.ConfirmFlightSelectionUseCase.ConfirmedFlight;
 import com.planwith.planwith_fo_schedule.application.port.in.ConfirmFlightSelectionUseCase.FlightSelectionConfirmation;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class FlightSelectionControllerTest {
 
@@ -43,7 +43,7 @@ class FlightSelectionControllerTest {
 	void returnsConfirmedLatestFlightInformation() throws Exception {
 		FlightCandidate latest = candidate("09:30", "12:00");
 		when(useCase.confirm(any())).thenReturn(new FlightSelectionConfirmation(
-				MEMBER_UUID, FlightTripType.ONE_WAY, new ConfirmedFlight(latest, true, true), null,
+				MEMBER_UUID, TripType.ONE_WAY, new ConfirmedFlight(latest, true, true), null,
 				OffsetDateTime.parse("2026-08-14T01:00:00Z")
 		));
 

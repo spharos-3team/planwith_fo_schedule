@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
@@ -32,8 +31,7 @@ class AiScheduleGenerateRequestSerializationTest {
 						"인천",
 						"ICN",
 						"KIX",
-						FlightTripType.ROUND_TRIP,
-						FlightTravelClass.ECONOMY
+						TripType.ROUND_TRIP
 				)
 		);
 
@@ -47,7 +45,7 @@ class AiScheduleGenerateRequestSerializationTest {
 				.contains("\"travelStyle\":\"TOUR_LANDMARK\"")
 				.contains("\"originLocationCode\":\"ICN\"")
 				.contains("\"tripType\":\"ROUND_TRIP\"")
-				.doesNotContain("memberUuid", "provider", "travelPeriodValid");
+				.doesNotContain("memberUuid", "provider", "travelClass", "travelPeriodValid");
 
 		AiScheduleGenerateRequest restored = objectMapper.readValue(json, AiScheduleGenerateRequest.class);
 		assertThat(restored).isEqualTo(request);

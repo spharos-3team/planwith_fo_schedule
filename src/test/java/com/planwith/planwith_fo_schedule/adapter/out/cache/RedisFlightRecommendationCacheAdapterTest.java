@@ -20,7 +20,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.model.FlightRecommendation;
 import com.planwith.planwith_fo_schedule.application.model.FlightRecommendationCacheKey;
 import com.planwith.planwith_fo_schedule.config.FlightRecommendationCacheProperties;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 class RedisFlightRecommendationCacheAdapterTest {
 
@@ -41,10 +41,10 @@ class RedisFlightRecommendationCacheAdapterTest {
 		FlightRecommendationCacheProperties properties = new FlightRecommendationCacheProperties();
 		adapter = new RedisFlightRecommendationCacheAdapter(redisTemplate, objectMapper, properties);
 		key = new FlightRecommendationCacheKey(
-				"ICN", "NRT", LocalDate.of(2026, 8, 13), null, FlightTripType.ONE_WAY
+				"ICN", "NRT", LocalDate.of(2026, 8, 13), null, TripType.ONE_WAY
 		);
 		recommendation = new FlightRecommendation(
-				FlightTripType.ONE_WAY,
+				TripType.ONE_WAY,
 				List.of(new FlightCandidate(
 						LocalDate.of(2026, 8, 13), "scheduled",
 						new FlightCandidate.AirportSchedule("ICN", null, null, null, null),

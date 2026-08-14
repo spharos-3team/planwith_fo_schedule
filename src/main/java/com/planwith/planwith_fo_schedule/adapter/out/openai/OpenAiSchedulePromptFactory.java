@@ -154,8 +154,7 @@ class OpenAiSchedulePromptFactory {
 					"departureLocation", command.flight().departureLocation(),
 					"originLocationCode", command.flight().originLocationCode(),
 					"destinationLocationCode", command.flight().destinationLocationCode(),
-					"tripType", command.flight().tripType(),
-					"travelClass", command.flight().travelClass()
+					"tripType", command.flight().tripType()
 			));
 		}
 

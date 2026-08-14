@@ -4,11 +4,11 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.FlightSearchResponse.FlightCandidateResponse;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 
 public record FlightSelectionConfirmResponse(
 		UUID memberUuid,
-		FlightTripType tripType,
+		TripType tripType,
 		ConfirmedFlightResponse outboundFlight,
 		ConfirmedFlightResponse returnFlight,
 		OffsetDateTime confirmedAt

@@ -2,8 +2,7 @@ package com.planwith.planwith_fo_schedule.application.command;
 
 import java.util.Objects;
 
-import com.planwith.planwith_fo_schedule.domain.FlightTravelClass;
-import com.planwith.planwith_fo_schedule.domain.FlightTripType;
+import com.planwith.planwith_fo_schedule.domain.TripType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 import com.planwith.planwith_fo_schedule.domain.vo.Headcount;
@@ -36,8 +35,7 @@ public record AiScheduleGenerateCommand(
 			String departureLocation,
 			String originLocationCode,
 			String destinationLocationCode,
-			FlightTripType tripType,
-			FlightTravelClass travelClass
+			TripType tripType
 	) {
 		public AiScheduleFlightCommand {
 			departureLocation = requireText(departureLocation, "Departure location is required.");
@@ -46,8 +44,7 @@ public record AiScheduleGenerateCommand(
 					destinationLocationCode,
 					"Destination location code is required."
 			);
-			tripType = tripType == null ? FlightTripType.ROUND_TRIP : tripType;
-			travelClass = travelClass == null ? FlightTravelClass.ECONOMY : travelClass;
+			tripType = tripType == null ? TripType.ROUND_TRIP : tripType;
 		}
 	}
 
