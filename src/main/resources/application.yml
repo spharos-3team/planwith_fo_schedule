@@ -57,6 +57,12 @@ ai:
   usage-report:
     enabled: ${AI_USAGE_REPORT_ENABLED:false}
     topic: ${AI_USAGE_REPORT_TOPIC:planwith.ai-usage.reported}
+    relay-batch-size: ${AI_USAGE_REPORT_RELAY_BATCH_SIZE:50}
+    relay-interval: ${AI_USAGE_REPORT_RELAY_INTERVAL:5s}
+    relay-initial-delay: ${AI_USAGE_REPORT_RELAY_INITIAL_DELAY:5s}
+    send-timeout: ${AI_USAGE_REPORT_SEND_TIMEOUT:10s}
+    initial-retry-delay: ${AI_USAGE_REPORT_INITIAL_RETRY_DELAY:5s}
+    max-retry-delay: ${AI_USAGE_REPORT_MAX_RETRY_DELAY:5m}
 
 openai:
   api-key: ${OPENAI_API_KEY:}

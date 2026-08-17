@@ -1,5 +1,7 @@
 package com.planwith.planwith_fo_schedule.adapter.out.kafka;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -7,12 +9,12 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import com.planwith.planwith_fo_schedule.application.model.AiUsageReportEvent;
-import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
+import com.planwith.planwith_fo_schedule.application.port.out.AiUsageEventPublisher;
 import com.planwith.planwith_fo_schedule.config.AiUsageReportProperties;
 
 @Component
 @ConditionalOnProperty(name = "ai.usage-report.enabled", havingValue = "true")
-public class KafkaAiUsageReportingAdapter implements AiUsageReportingPort {
+public class KafkaAiUsageReportingAdapter implements AiUsageEventPublisher {
 
 	private static final Logger log = LoggerFactory.getLogger(KafkaAiUsageReportingAdapter.class);
 
@@ -31,23 +33,24 @@ public class KafkaAiUsageReportingAdapter implements AiUsageReportingPort {
 	}
 
 	@Override
-	public void report(AiUsageReportEvent event) {
+	public CompletableFuture<Void> publish(AiUsageReportEvent event) {
 		String messageKey = event.requestId().toString();
-		log.info("KafkaAiUsageReportingAdapter : report : AI 사용량 이벤트 발행 시작 - requestId={}, "
+		log.info("KafkaAiUsageReportingAdapter : publish : AI 사용량 이벤트 발행 시작 - requestId={}, "
 						+ "memberUuid={}, operationType={}, topic={}",
 				event.requestId(), event.memberUuid(), event.operationType(), topic);
-		kafkaTemplate.send(topic, messageKey, event)
+		return kafkaTemplate.send(topic, messageKey, event)
 				.whenComplete((result, exception) -> {
 					if (exception != null) {
-						log.error("KafkaAiUsageReportingAdapter : report : AI 사용량 이벤트 발행 실패 - "
+						log.error("KafkaAiUsageReportingAdapter : publish : AI 사용량 이벤트 발행 실패 - "
 										+ "requestId={}, topic={}, exceptionType={}",
 								event.requestId(), topic, exception.getClass().getSimpleName());
 						return;
 					}
-					log.info("KafkaAiUsageReportingAdapter : report : AI 사용량 이벤트 발행 완료 - "
+					log.info("KafkaAiUsageReportingAdapter : publish : AI 사용량 이벤트 발행 완료 - "
 									+ "requestId={}, topic={}, partition={}, offset={}",
 							event.requestId(), topic, result.getRecordMetadata().partition(),
 							result.getRecordMetadata().offset());
-				});
+				})
+				.thenApply(result -> null);
 	}
 }
