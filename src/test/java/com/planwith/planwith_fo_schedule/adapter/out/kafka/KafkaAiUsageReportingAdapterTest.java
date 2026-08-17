@@ -36,7 +36,7 @@ class KafkaAiUsageReportingAdapterTest {
 				same(event)
 		)).thenReturn(future);
 
-		adapter.report(event);
+		adapter.publish(event);
 
 		verify(kafkaTemplate).send(
 				"planwith.ai-usage.reported",
