@@ -10,6 +10,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,6 +31,7 @@ public class AiUsageOutboxRelay {
 	private final AiUsageReportProperties properties;
 	private final Clock clock;
 
+	@Autowired
 	public AiUsageOutboxRelay(
 			SpringDataAiUsageOutboxRepository repository,
 			AiUsageEventPublisher publisher,
