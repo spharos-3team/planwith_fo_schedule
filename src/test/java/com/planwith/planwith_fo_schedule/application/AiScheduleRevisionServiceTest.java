@@ -16,16 +16,19 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageReportEvent;
 import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase.ReviseScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.ScheduleRevisionContext;
+import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
@@ -40,17 +43,21 @@ class AiScheduleRevisionServiceTest {
 
 	private ScheduleRepositoryPort repository;
 	private AiScheduleRevisionPort revisionPort;
+	private AiUsageReportingPort usageReportingPort;
 	private AiScheduleRevisionService service;
 
 	@BeforeEach
 	void setUp() {
 		repository = mock(ScheduleRepositoryPort.class);
 		revisionPort = mock(AiScheduleRevisionPort.class);
+		usageReportingPort = mock(AiUsageReportingPort.class);
 		service = new AiScheduleRevisionService(
 				repository,
 				revisionPort,
 				new AiUsageAggregator(),
-				new AiRequestIdGenerator()
+				new AiRequestIdGenerator(),
+				new AiUsageReportEventFactory(),
+				usageReportingPort
 		);
 	}
 
@@ -79,6 +86,12 @@ class AiScheduleRevisionServiceTest {
 		assertThat(result.usage().operationType()).isEqualTo(AiOperationType.REVISE);
 		assertThat(result.usage().totalTokens()).isEqualTo(120);
 		verify(revisionPort).revise(any(ScheduleRevisionContext.class));
+		ArgumentCaptor<AiUsageReportEvent> eventCaptor = ArgumentCaptor.forClass(AiUsageReportEvent.class);
+		verify(usageReportingPort).report(eventCaptor.capture());
+		assertThat(eventCaptor.getValue().memberUuid()).isEqualTo(schedule.memberUuid().value());
+		assertThat(eventCaptor.getValue().requestId()).isEqualTo(result.usage().requestId());
+		assertThat(eventCaptor.getValue().operationType()).isEqualTo(AiOperationType.REVISE);
+		assertThat(eventCaptor.getValue().totalTokens()).isEqualTo(120);
 		verify(repository, never()).update(any());
 	}
 

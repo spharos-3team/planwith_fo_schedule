@@ -48,7 +48,9 @@ java -classpath '.\gradle\wrapper\gradle-wrapper.jar' org.gradle.wrapper.GradleW
 - `adapter.out.persistence`: JPA Entity와 Repository Adapter
 - `config`: 서비스 설정
 
-Kafka, Redis, CQRS, Outbox는 현재 구성에 포함하지 않습니다.
+AI 사용량 보고는 기본적으로 비활성화됩니다. Kafka가 구성된 환경에서는
+`AI_USAGE_REPORT_ENABLED=true`, `KAFKA_BOOTSTRAP_SERVERS`, `AI_USAGE_REPORT_TOPIC`을 설정해
+Token Service용 `AiUsageReportEvent` 발행을 활성화할 수 있습니다. Outbox와 재전송은 현재 구성에 포함하지 않습니다.
 
 ## 서버 배포 확인
 

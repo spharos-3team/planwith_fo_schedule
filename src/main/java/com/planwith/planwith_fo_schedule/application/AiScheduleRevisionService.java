@@ -16,6 +16,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithA
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.ScheduleRevisionContext;
+import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
@@ -30,17 +31,23 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 	private final AiScheduleRevisionPort aiScheduleRevisionPort;
 	private final AiUsageAggregator aiUsageAggregator;
 	private final AiRequestIdGenerator requestIdGenerator;
+	private final AiUsageReportEventFactory usageReportEventFactory;
+	private final AiUsageReportingPort usageReportingPort;
 
 	public AiScheduleRevisionService(
 			ScheduleRepositoryPort scheduleRepositoryPort,
 			AiScheduleRevisionPort aiScheduleRevisionPort,
 			AiUsageAggregator aiUsageAggregator,
-			AiRequestIdGenerator requestIdGenerator
+			AiRequestIdGenerator requestIdGenerator,
+			AiUsageReportEventFactory usageReportEventFactory,
+			AiUsageReportingPort usageReportingPort
 	) {
 		this.scheduleRepositoryPort = scheduleRepositoryPort;
 		this.aiScheduleRevisionPort = aiScheduleRevisionPort;
 		this.aiUsageAggregator = aiUsageAggregator;
 		this.requestIdGenerator = requestIdGenerator;
+		this.usageReportEventFactory = usageReportEventFactory;
+		this.usageReportingPort = usageReportingPort;
 	}
 
 	@Override
@@ -92,6 +99,7 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 					AiOperationType.REVISE,
 					java.util.List.of(revisedSchedule.usage())
 			);
+			usageReportingPort.report(usageReportEventFactory.create(usage));
 			log.info("AiScheduleRevisionService : revise : AI 일정 첨삭 초안 생성 완료 - scheduleUuid={}, "
 							+ "requestId={}",
 					scheduleUuid, requestId);

@@ -18,6 +18,7 @@ import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
+import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort.DestinationImageSearchResult;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
@@ -38,17 +39,23 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 	private final DestinationImageSearchPort destinationImageSearchPort;
 	private final AiUsageAggregator aiUsageAggregator;
 	private final AiRequestIdGenerator requestIdGenerator;
+	private final AiUsageReportEventFactory usageReportEventFactory;
+	private final AiUsageReportingPort usageReportingPort;
 
 	public AiScheduleApplicationService(
 			AiScheduleGenerationPort aiScheduleGenerationPort,
 			DestinationImageSearchPort destinationImageSearchPort,
 			AiUsageAggregator aiUsageAggregator,
-			AiRequestIdGenerator requestIdGenerator
+			AiRequestIdGenerator requestIdGenerator,
+			AiUsageReportEventFactory usageReportEventFactory,
+			AiUsageReportingPort usageReportingPort
 	) {
 		this.aiScheduleGenerationPort = aiScheduleGenerationPort;
 		this.destinationImageSearchPort = destinationImageSearchPort;
 		this.aiUsageAggregator = aiUsageAggregator;
 		this.requestIdGenerator = requestIdGenerator;
+		this.usageReportEventFactory = usageReportEventFactory;
+		this.usageReportingPort = usageReportingPort;
 	}
 
 	@Override
@@ -86,6 +93,7 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 					operationType,
 					availableUsages(generated.usage(), imageSearchResult.usage())
 			);
+			usageReportingPort.report(usageReportEventFactory.create(usage));
 
 			AiScheduleResult result = new AiScheduleResult(
 					schedule.memberUuid().value(),
