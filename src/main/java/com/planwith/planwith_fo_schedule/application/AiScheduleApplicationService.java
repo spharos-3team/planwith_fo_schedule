@@ -11,6 +11,7 @@ import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleU
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
+import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort.DestinationImageSearchResult;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
@@ -55,7 +56,9 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 					ScheduleCreatorType.AI,
 					generatedItems
 			);
-			String imageUrl = destinationImageSearchPort.searchRepresentativeImage(command.destination()).orElse(null);
+			DestinationImageSearchResult imageSearchResult =
+					destinationImageSearchPort.searchRepresentativeImageWithUsage(command.destination());
+			String imageUrl = imageSearchResult.imageUrl().orElse(null);
 
 			return new AiScheduleResult(
 					schedule.memberUuid().value(),
@@ -69,7 +72,9 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 					schedule.transportation(),
 					schedule.travelStyle(),
 					schedule.content(),
-					schedule.items().stream().map(this::toResultItem).toList()
+					schedule.items().stream().map(this::toResultItem).toList(),
+					generated.usage(),
+					imageSearchResult.usage()
 			);
 		} catch (InvalidScheduleException exception) {
 			throw new AiScheduleGenerationException("AI returned a schedule that violates domain rules.", exception);

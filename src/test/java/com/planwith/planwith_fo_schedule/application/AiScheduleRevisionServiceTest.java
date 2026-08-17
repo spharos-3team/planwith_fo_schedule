@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase.ReviseScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
@@ -52,7 +53,10 @@ class AiScheduleRevisionServiceTest {
 		Schedule schedule = createSchedule(UUID.randomUUID());
 		when(repository.findByScheduleUuid(schedule.scheduleUuid())).thenReturn(Optional.of(schedule));
 		when(revisionPort.revise(any())).thenReturn(
-				new RevisedSchedule("첫날에는 해운대를 여유롭게 산책합니다.")
+				new RevisedSchedule(
+						"첫날에는 해운대를 여유롭게 산책합니다.",
+						new OpenAiUsage("gpt-4o-mini-2024-07-18", 90, 30, 120)
+				)
 		);
 
 		var result = service.revise(new ReviseScheduleCommand(
@@ -63,6 +67,8 @@ class AiScheduleRevisionServiceTest {
 
 		assertThat(result.scheduleUuid()).isEqualTo(schedule.scheduleUuid().value());
 		assertThat(result.revisedContent()).contains("해운대");
+		assertThat(result.usage().model()).isEqualTo("gpt-4o-mini-2024-07-18");
+		assertThat(result.usage().totalTokens()).isEqualTo(120);
 		verify(revisionPort).revise(any(ScheduleRevisionContext.class));
 		verify(repository, never()).update(any());
 	}

@@ -18,6 +18,7 @@ import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleGenerateRe
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleSaveRequest;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleSaveResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
+import com.planwith.planwith_fo_schedule.adapter.in.web.dto.OpenAiUsageResponse;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase;
 
@@ -130,7 +131,9 @@ public class AiScheduleController {
 								item.description(), item.estimatedCost(), item.placeName(), item.placeAddress(),
 								item.latitude(), item.longitude()
 						))
-						.toList()
+						.toList(),
+				OpenAiUsageResponse.from(result.scheduleUsage()),
+				OpenAiUsageResponse.from(result.imageUsage())
 		);
 		log.info("AiScheduleController : {} : {} 완료 - itemCount={}",
 				methodName, roleDescription, result.items().size());

@@ -38,6 +38,7 @@ import com.planwith.planwith_fo_schedule.application.model.FlightCandidate.Airpo
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedAiSchedule;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
+import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort.DestinationImageSearchResult;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightRecommendationCachePort;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort;
 import com.planwith.planwith_fo_schedule.application.port.out.FlightSearchPort.FlightSearchCriteria;
@@ -74,7 +75,8 @@ class FlightEventFlowIntegrationTest {
 	void setUp() {
 		mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
 		memberUuid = UUID.randomUUID();
-		when(destinationImageSearchPort.searchRepresentativeImage(any())).thenReturn(Optional.empty());
+		when(destinationImageSearchPort.searchRepresentativeImageWithUsage(any()))
+				.thenReturn(new DestinationImageSearchResult(Optional.empty(), null));
 		when(flightRecommendationCachePort.find(any())).thenReturn(Optional.empty());
 	}
 

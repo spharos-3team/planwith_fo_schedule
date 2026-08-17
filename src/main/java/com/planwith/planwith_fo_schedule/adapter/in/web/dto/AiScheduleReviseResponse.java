@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record AiScheduleReviseResponse(
 		UUID scheduleUuid,
-		String revisedContent
+		String revisedContent,
+		OpenAiUsageResponse usage
 ) {
 }

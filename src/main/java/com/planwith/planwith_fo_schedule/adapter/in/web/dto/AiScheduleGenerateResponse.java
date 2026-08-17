@@ -22,7 +22,9 @@ public record AiScheduleGenerateResponse(
 		TransportationType transportation,
 		TravelStyle travelStyle,
 		String content,
-		List<AiScheduleItemResponse> items
+		List<AiScheduleItemResponse> items,
+		OpenAiUsageResponse scheduleUsage,
+		OpenAiUsageResponse imageUsage
 ) {
 
 	public record AiScheduleItemResponse(

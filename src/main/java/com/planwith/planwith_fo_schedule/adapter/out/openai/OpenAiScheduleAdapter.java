@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
 import com.planwith.planwith_fo_schedule.config.OpenAiProperties;
@@ -44,7 +45,7 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 
 	@Override
 	public GeneratedAiSchedule generate(AiScheduleGenerateCommand command) {
-		String outputText = requestOutputText(
+		OpenAiTextResult result = requestOutputText(
 				promptFactory.instructions(),
 				promptFactory.userInput(command),
 				"planwith_schedule",
@@ -52,12 +53,12 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 				"generate",
 				"일정 생성"
 		);
-		return toGeneratedSchedule(outputText);
+		return toGeneratedSchedule(result.outputText(), result.usage());
 	}
 
 	@Override
 	public RevisedSchedule revise(ScheduleRevisionContext context) {
-		String outputText = requestOutputText(
+		OpenAiTextResult result = requestOutputText(
 				promptFactory.revisionInstructions(),
 				promptFactory.revisionUserInput(context),
 				"planwith_schedule_revision",
@@ -65,10 +66,10 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 				"revise",
 				"일정 첨삭"
 		);
-		return toRevisedSchedule(outputText);
+		return toRevisedSchedule(result.outputText(), result.usage());
 	}
 
-	private String requestOutputText(
+	private OpenAiTextResult requestOutputText(
 			String instructions,
 			String input,
 			String schemaName,
@@ -103,7 +104,12 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 			if (outputText == null) {
 				throw new AiScheduleGenerationException("OpenAI returned no schedule content.");
 			}
-			return outputText;
+			OpenAiUsage usage = toUsage(response);
+			log.info("OpenAiScheduleAdapter : {} : OpenAI {} 사용량 수집 완료 - model={}, inputTokens={}, "
+							+ "outputTokens={}, totalTokens={}",
+					operation, roleDescription, usage.model(), usage.inputTokens(), usage.outputTokens(),
+					usage.totalTokens());
+			return new OpenAiTextResult(outputText, usage);
 		} catch (RestClientResponseException exception) {
 			log.warn("OpenAiScheduleAdapter : {} : OpenAI {} 요청 실패 - status={}",
 					operation, roleDescription, exception.getStatusCode().value());
@@ -115,7 +121,7 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 		}
 	}
 
-	private GeneratedAiSchedule toGeneratedSchedule(String outputText) {
+	private GeneratedAiSchedule toGeneratedSchedule(String outputText, OpenAiUsage usage) {
 		try {
 			OpenAiGeneratedSchedulePayload payload = objectMapper.readValue(
 					outputText,
@@ -130,13 +136,13 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 									item.latitude(), item.longitude()
 							))
 							.toList();
-			return new GeneratedAiSchedule(payload.title(), payload.content(), items);
+			return new GeneratedAiSchedule(payload.title(), payload.content(), items, usage);
 		} catch (JsonProcessingException exception) {
 			throw new AiScheduleGenerationException("OpenAI returned an invalid schedule response.", exception);
 		}
 	}
 
-	private RevisedSchedule toRevisedSchedule(String outputText) {
+	private RevisedSchedule toRevisedSchedule(String outputText, OpenAiUsage usage) {
 		try {
 			OpenAiRevisedSchedulePayload payload = objectMapper.readValue(
 					outputText,
@@ -145,7 +151,7 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 			if (payload.content() == null || payload.content().isBlank()) {
 				throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision.");
 			}
-			return new RevisedSchedule(payload.content());
+			return new RevisedSchedule(payload.content(), usage);
 		} catch (JsonProcessingException exception) {
 			throw new AiScheduleGenerationException("OpenAI returned an invalid schedule revision response.", exception);
 		}
@@ -158,5 +164,24 @@ public class OpenAiScheduleAdapter implements AiScheduleGenerationPort, AiSchedu
 		if (properties.getModel() == null || properties.getModel().isBlank()) {
 			throw new AiScheduleGenerationException("OPENAI_MODEL is not configured.");
 		}
+	}
+
+	private OpenAiUsage toUsage(OpenAiResponsesResponse response) {
+		if (response.model() == null || response.model().isBlank() || response.usage() == null) {
+			throw new AiScheduleGenerationException("OpenAI returned no usage information.");
+		}
+		try {
+			return new OpenAiUsage(
+					response.model(),
+					response.usage().inputTokens(),
+					response.usage().outputTokens(),
+					response.usage().totalTokens()
+			);
+		} catch (IllegalArgumentException exception) {
+			throw new AiScheduleGenerationException("OpenAI returned invalid usage information.", exception);
+		}
+	}
+
+	private record OpenAiTextResult(String outputText, OpenAiUsage usage) {
 	}
 }
