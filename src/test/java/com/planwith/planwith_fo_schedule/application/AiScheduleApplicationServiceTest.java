@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
 import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
@@ -38,17 +39,21 @@ class AiScheduleApplicationServiceTest {
 						item(1, LocalTime.of(10, 0), "첫째 날 일정"),
 						item(2, LocalTime.of(10, 0), "둘째 날 일정"),
 						item(3, LocalTime.of(10, 0), "셋째 날 일정")
-				)
+				),
+				new OpenAiUsage("gpt-4o-mini-2024-07-18", 100, 50, 150)
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port, noImageSearch());
+		AiScheduleApplicationService service = service(port, noImageSearch());
 		AiScheduleGenerateCommand sameConditions = command();
 
 		var firstDraft = service.generate(sameConditions);
-		var regeneratedDraft = service.generate(sameConditions);
+		var regeneratedDraft = service.generate(sameConditions, AiOperationType.REGENERATE);
 
 		assertThat(callCount).hasValue(2);
 		assertThat(firstDraft.title()).isEqualTo("AI 일정 초안 1");
 		assertThat(regeneratedDraft.title()).isEqualTo("AI 일정 초안 2");
+		assertThat(firstDraft.usage().operationType()).isEqualTo(AiOperationType.GENERATE);
+		assertThat(regeneratedDraft.usage().operationType()).isEqualTo(AiOperationType.REGENERATE);
+		assertThat(regeneratedDraft.usage().requestId()).isNotEqualTo(firstDraft.usage().requestId());
 	}
 
 	@Test
@@ -64,18 +69,23 @@ class AiScheduleApplicationServiceTest {
 				),
 				new OpenAiUsage("gpt-4o-mini-2024-07-18", 120, 80, 200)
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(
-				port,
-				imageSearchWithUsage()
-		);
+		AiScheduleApplicationService service = service(port, imageSearchWithUsage());
 
-		var result = service.generate(command());
+		AiScheduleGenerateCommand command = command();
+		var result = service.generate(command);
 
 		assertThat(result.title()).isEqualTo("부산 AI 여행");
 		assertThat(result.imageUrl()).isEqualTo("https://images.example.com/busan.jpg");
 		assertThat(result.scheduleUsage().totalTokens()).isEqualTo(200);
 		assertThat(result.imageUsage().model()).isEqualTo("gpt-5.6-2026-08-01");
 		assertThat(result.imageUsage().totalTokens()).isEqualTo(60);
+		assertThat(result.usage().memberUuid()).isEqualTo(command.memberUuid().value());
+		assertThat(result.usage().requestId()).isNotNull();
+		assertThat(result.usage().operationType()).isEqualTo(AiOperationType.GENERATE);
+		assertThat(result.usage().model()).isEqualTo("gpt-4o-mini-2024-07-18,gpt-5.6-2026-08-01");
+		assertThat(result.usage().inputTokens()).isEqualTo(165);
+		assertThat(result.usage().outputTokens()).isEqualTo(95);
+		assertThat(result.usage().totalTokens()).isEqualTo(260);
 		assertThat(result.items())
 				.extracting(item -> "%d-%s".formatted(item.dayNumber(), item.scheduleTime()))
 				.containsExactly("1-10:00", "2-09:00", "2-14:00", "3-11:00");
@@ -91,7 +101,7 @@ class AiScheduleApplicationServiceTest {
 						item(3, LocalTime.of(10, 0), "마지막 날 일정")
 				)
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port, noImageSearch());
+		AiScheduleApplicationService service = service(port, noImageSearch());
 
 		assertThatThrownBy(() -> service.generate(command()))
 				.isInstanceOf(AiScheduleGenerationException.class)
@@ -105,7 +115,7 @@ class AiScheduleApplicationServiceTest {
 				null,
 				List.of(item(4, LocalTime.NOON, "범위를 벗어난 일정"))
 		);
-		AiScheduleApplicationService service = new AiScheduleApplicationService(port, noImageSearch());
+		AiScheduleApplicationService service = service(port, noImageSearch());
 
 		assertThatThrownBy(() -> service.generate(command()))
 				.isInstanceOf(AiScheduleGenerationException.class)
@@ -129,6 +139,18 @@ class AiScheduleApplicationServiceTest {
 
 	private DestinationImageSearchPort noImageSearch() {
 		return destination -> Optional.empty();
+	}
+
+	private AiScheduleApplicationService service(
+			AiScheduleGenerationPort generationPort,
+			DestinationImageSearchPort imageSearchPort
+	) {
+		return new AiScheduleApplicationService(
+				generationPort,
+				imageSearchPort,
+				new AiUsageAggregator(),
+				new AiRequestIdGenerator()
+		);
 	}
 
 	private DestinationImageSearchPort imageSearchWithUsage() {

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
 import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase.ReviseScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
@@ -45,7 +46,12 @@ class AiScheduleRevisionServiceTest {
 	void setUp() {
 		repository = mock(ScheduleRepositoryPort.class);
 		revisionPort = mock(AiScheduleRevisionPort.class);
-		service = new AiScheduleRevisionService(repository, revisionPort);
+		service = new AiScheduleRevisionService(
+				repository,
+				revisionPort,
+				new AiUsageAggregator(),
+				new AiRequestIdGenerator()
+		);
 	}
 
 	@Test
@@ -68,6 +74,9 @@ class AiScheduleRevisionServiceTest {
 		assertThat(result.scheduleUuid()).isEqualTo(schedule.scheduleUuid().value());
 		assertThat(result.revisedContent()).contains("해운대");
 		assertThat(result.usage().model()).isEqualTo("gpt-4o-mini-2024-07-18");
+		assertThat(result.usage().memberUuid()).isEqualTo(schedule.memberUuid().value());
+		assertThat(result.usage().requestId()).isNotNull();
+		assertThat(result.usage().operationType()).isEqualTo(AiOperationType.REVISE);
 		assertThat(result.usage().totalTokens()).isEqualTo(120);
 		verify(revisionPort).revise(any(ScheduleRevisionContext.class));
 		verify(repository, never()).update(any());

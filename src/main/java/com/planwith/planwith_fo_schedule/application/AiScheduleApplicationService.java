@@ -2,11 +2,19 @@ package com.planwith.planwith_fo_schedule.application;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageResult;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
@@ -24,19 +32,32 @@ import com.planwith.planwith_fo_schedule.domain.vo.ScheduleItemLocation;
 @Service
 public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 
+	private static final Logger log = LoggerFactory.getLogger(AiScheduleApplicationService.class);
+
 	private final AiScheduleGenerationPort aiScheduleGenerationPort;
 	private final DestinationImageSearchPort destinationImageSearchPort;
+	private final AiUsageAggregator aiUsageAggregator;
+	private final AiRequestIdGenerator requestIdGenerator;
 
 	public AiScheduleApplicationService(
 			AiScheduleGenerationPort aiScheduleGenerationPort,
-			DestinationImageSearchPort destinationImageSearchPort
+			DestinationImageSearchPort destinationImageSearchPort,
+			AiUsageAggregator aiUsageAggregator,
+			AiRequestIdGenerator requestIdGenerator
 	) {
 		this.aiScheduleGenerationPort = aiScheduleGenerationPort;
 		this.destinationImageSearchPort = destinationImageSearchPort;
+		this.aiUsageAggregator = aiUsageAggregator;
+		this.requestIdGenerator = requestIdGenerator;
 	}
 
 	@Override
-	public AiScheduleResult generate(AiScheduleGenerateCommand command) {
+	public AiScheduleResult generate(AiScheduleGenerateCommand command, AiOperationType operationType) {
+		requireGenerationOperation(operationType);
+		UUID requestId = requestIdGenerator.generate();
+		log.info("AiScheduleApplicationService : generate : AI 일정 생성 비즈니스 로직 시작 - memberUuid={}, "
+						+ "requestId={}, operationType={}",
+				command.memberUuid().value(), requestId, operationType);
 		AiScheduleGenerationPort.GeneratedAiSchedule generated = aiScheduleGenerationPort.generate(command);
 		try {
 			List<ScheduleItem> generatedItems = normalizeItems(generated.items());
@@ -59,8 +80,14 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 			DestinationImageSearchResult imageSearchResult =
 					destinationImageSearchPort.searchRepresentativeImageWithUsage(command.destination());
 			String imageUrl = imageSearchResult.imageUrl().orElse(null);
+			AiUsageResult usage = aiUsageAggregator.aggregate(
+					schedule.memberUuid().value(),
+					requestId,
+					operationType,
+					availableUsages(generated.usage(), imageSearchResult.usage())
+			);
 
-			return new AiScheduleResult(
+			AiScheduleResult result = new AiScheduleResult(
 					schedule.memberUuid().value(),
 					schedule.title(),
 					schedule.destination(),
@@ -74,10 +101,27 @@ public class AiScheduleApplicationService implements GenerateAiScheduleUseCase {
 					schedule.content(),
 					schedule.items().stream().map(this::toResultItem).toList(),
 					generated.usage(),
-					imageSearchResult.usage()
+					imageSearchResult.usage(),
+					usage
 			);
+			log.info("AiScheduleApplicationService : generate : AI 일정 생성 비즈니스 로직 완료 - memberUuid={}, "
+							+ "requestId={}, operationType={}, itemCount={}",
+					result.memberUuid(), requestId, operationType, result.items().size());
+			return result;
 		} catch (InvalidScheduleException exception) {
 			throw new AiScheduleGenerationException("AI returned a schedule that violates domain rules.", exception);
+		}
+	}
+
+	private List<OpenAiUsage> availableUsages(OpenAiUsage... usages) {
+		return Stream.of(usages)
+				.filter(Objects::nonNull)
+				.toList();
+	}
+
+	private void requireGenerationOperation(AiOperationType operationType) {
+		if (operationType != AiOperationType.GENERATE && operationType != AiOperationType.REGENERATE) {
+			throw new IllegalArgumentException("AI schedule generation operation must be GENERATE or REGENERATE.");
 		}
 	}
 

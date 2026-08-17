@@ -18,7 +18,9 @@ import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleGenerateRe
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleSaveRequest;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleSaveResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
+import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiUsageResultResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.OpenAiUsageResponse;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase;
 
@@ -53,7 +55,13 @@ public class AiScheduleController {
 	) {
 		log.info("AiScheduleController : POSTgenerate : AI 일정 초안 생성 시작");
 		logAiDraftRequest(request);
-		return generateDraft("POSTgenerate", "AI 일정 초안 생성", authenticatedMemberUuid, request);
+		return generateDraft(
+				"POSTgenerate",
+				"AI 일정 초안 생성",
+				AiOperationType.GENERATE,
+				authenticatedMemberUuid,
+				request
+		);
 	}
 
 	// 동일 조건으로 AI 일정 초안 다시 생성
@@ -68,7 +76,13 @@ public class AiScheduleController {
 	) {
 		log.info("AiScheduleController : POSTregenerate : 동일 조건 AI 일정 초안 재생성 시작");
 		logAiDraftRequest(request);
-		return generateDraft("POSTregenerate", "동일 조건 AI 일정 초안 재생성", authenticatedMemberUuid, request);
+		return generateDraft(
+				"POSTregenerate",
+				"동일 조건 AI 일정 초안 재생성",
+				AiOperationType.REGENERATE,
+				authenticatedMemberUuid,
+				request
+		);
 	}
 
 	// 확인한 AI 일정 초안과 선택 항공편을 내 캘린더에 저장
@@ -106,12 +120,14 @@ public class AiScheduleController {
 	private ResponseEntity<ApiResponse<AiScheduleGenerateResponse>> generateDraft(
 			String methodName,
 			String roleDescription,
+			AiOperationType operationType,
 			UUID authenticatedMemberUuid,
 			AiScheduleGenerateRequest request
 	) {
 		log.trace("AiScheduleController : {} : {} 요청을 애플리케이션 명령으로 변환", methodName, roleDescription);
 		GenerateAiScheduleUseCase.AiScheduleResult result = generateAiScheduleUseCase.generate(
-				AiScheduleGenerateRequestMapper.toCommand(authenticatedMemberUuid, request)
+				AiScheduleGenerateRequestMapper.toCommand(authenticatedMemberUuid, request),
+				operationType
 		);
 		AiScheduleGenerateResponse response = new AiScheduleGenerateResponse(
 				result.memberUuid(),
@@ -133,7 +149,8 @@ public class AiScheduleController {
 						))
 						.toList(),
 				OpenAiUsageResponse.from(result.scheduleUsage()),
-				OpenAiUsageResponse.from(result.imageUsage())
+				OpenAiUsageResponse.from(result.imageUsage()),
+				AiUsageResultResponse.from(result.usage())
 		);
 		log.info("AiScheduleController : {} : {} 완료 - itemCount={}",
 				methodName, roleDescription, result.items().size());

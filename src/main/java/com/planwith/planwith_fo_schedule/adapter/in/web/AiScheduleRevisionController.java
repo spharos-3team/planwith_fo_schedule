@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleReviseRequest;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiScheduleReviseResponse;
+import com.planwith.planwith_fo_schedule.adapter.in.web.dto.AiUsageResultResponse;
 import com.planwith.planwith_fo_schedule.adapter.in.web.dto.ApiResponse;
-import com.planwith.planwith_fo_schedule.adapter.in.web.dto.OpenAiUsageResponse;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase.ReviseScheduleResult;
 
@@ -53,7 +53,7 @@ public class AiScheduleRevisionController {
 		AiScheduleReviseResponse response = new AiScheduleReviseResponse(
 				result.scheduleUuid(),
 				result.revisedContent(),
-				OpenAiUsageResponse.from(result.usage())
+				AiUsageResultResponse.from(result.usage())
 		);
 		log.info("AiScheduleRevisionController : POSTrevise : 기존 일정 AI 첨삭 초안 반환 완료 - scheduleUuid={}",
 				scheduleUuid);
