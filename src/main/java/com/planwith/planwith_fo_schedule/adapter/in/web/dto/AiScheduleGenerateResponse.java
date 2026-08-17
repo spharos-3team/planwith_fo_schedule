@@ -24,7 +24,8 @@ public record AiScheduleGenerateResponse(
 		String content,
 		List<AiScheduleItemResponse> items,
 		OpenAiUsageResponse scheduleUsage,
-		OpenAiUsageResponse imageUsage
+		OpenAiUsageResponse imageUsage,
+		AiUsageResultResponse usage
 ) {
 
 	public record AiScheduleItemResponse(

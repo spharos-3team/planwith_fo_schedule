@@ -24,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageResult;
 import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleItemResult;
@@ -52,7 +54,7 @@ class AiScheduleControllerTest {
 	@Test
 	void generatesAiScheduleWithAuthenticatedMemberHeader() throws Exception {
 		UUID memberUuid = UUID.randomUUID();
-		when(useCase.generate(any())).thenReturn(aiScheduleResult(memberUuid));
+		when(useCase.generate(any(), any())).thenReturn(aiScheduleResult(memberUuid, AiOperationType.GENERATE));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
 						.header("X-Member-UUID", memberUuid)
@@ -68,15 +70,20 @@ class AiScheduleControllerTest {
 				.andExpect(jsonPath("$.data.scheduleUsage.outputTokens").value(80))
 				.andExpect(jsonPath("$.data.scheduleUsage.totalTokens").value(200))
 				.andExpect(jsonPath("$.data.imageUsage.model").value("gpt-5.6-2026-08-01"))
-				.andExpect(jsonPath("$.data.imageUsage.totalTokens").value(60));
+				.andExpect(jsonPath("$.data.imageUsage.totalTokens").value(60))
+				.andExpect(jsonPath("$.data.usage.memberUuid").value(memberUuid.toString()))
+				.andExpect(jsonPath("$.data.usage.operationType").value("GENERATE"))
+				.andExpect(jsonPath("$.data.usage.inputTokens").value(165))
+				.andExpect(jsonPath("$.data.usage.outputTokens").value(95))
+				.andExpect(jsonPath("$.data.usage.totalTokens").value(260));
 
-		verify(useCase).generate(any());
+		verify(useCase).generate(any(), org.mockito.ArgumentMatchers.eq(AiOperationType.GENERATE));
 	}
 
 	@Test
 	void generatesNewDraftWithReenteredAndModifiedConditions() throws Exception {
 		UUID memberUuid = UUID.randomUUID();
-		when(useCase.generate(any())).thenReturn(aiScheduleResult(memberUuid));
+		when(useCase.generate(any(), any())).thenReturn(aiScheduleResult(memberUuid, AiOperationType.GENERATE));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
 						.header("X-Member-UUID", memberUuid)
@@ -98,7 +105,7 @@ class AiScheduleControllerTest {
 
 		ArgumentCaptor<AiScheduleGenerateCommand> commandCaptor =
 				ArgumentCaptor.forClass(AiScheduleGenerateCommand.class);
-		verify(useCase).generate(commandCaptor.capture());
+		verify(useCase).generate(commandCaptor.capture(), org.mockito.ArgumentMatchers.eq(AiOperationType.GENERATE));
 		AiScheduleGenerateCommand command = commandCaptor.getValue();
 		assertThat(command.memberUuid().value()).isEqualTo(memberUuid);
 		assertThat(command.destination()).isEqualTo("제주");
@@ -117,7 +124,7 @@ class AiScheduleControllerTest {
 	@Test
 	void regeneratesAiScheduleByCallingExistingGenerationUseCaseAgain() throws Exception {
 		UUID memberUuid = UUID.randomUUID();
-		when(useCase.generate(any())).thenReturn(aiScheduleResult(memberUuid));
+		when(useCase.generate(any(), any())).thenReturn(aiScheduleResult(memberUuid, AiOperationType.REGENERATE));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/regenerate")
 						.header("X-Member-UUID", memberUuid)
@@ -126,9 +133,10 @@ class AiScheduleControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()))
-				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"));
+				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"))
+				.andExpect(jsonPath("$.data.usage.operationType").value("REGENERATE"));
 
-		verify(useCase).generate(any());
+		verify(useCase).generate(any(), org.mockito.ArgumentMatchers.eq(AiOperationType.REGENERATE));
 	}
 
 	@Test
@@ -205,7 +213,7 @@ class AiScheduleControllerTest {
 				""";
 	}
 
-	private AiScheduleResult aiScheduleResult(UUID memberUuid) {
+	private AiScheduleResult aiScheduleResult(UUID memberUuid, AiOperationType operationType) {
 		return new AiScheduleResult(
 				memberUuid, "부산 AI 여행", "부산", "https://images.example.com/busan.jpg",
 				LocalDate.of(2026, 8, 20), LocalDate.of(2026, 8, 22),
@@ -217,7 +225,16 @@ class AiScheduleControllerTest {
 						new BigDecimal("129.1604000")
 				)),
 				new OpenAiUsage("gpt-4o-mini-2024-07-18", 120, 80, 200),
-				new OpenAiUsage("gpt-5.6-2026-08-01", 45, 15, 60)
+				new OpenAiUsage("gpt-5.6-2026-08-01", 45, 15, 60),
+				new AiUsageResult(
+						memberUuid,
+						UUID.randomUUID(),
+						operationType,
+						"gpt-4o-mini-2024-07-18,gpt-5.6-2026-08-01",
+						165,
+						95,
+						260
+				)
 		);
 	}
 

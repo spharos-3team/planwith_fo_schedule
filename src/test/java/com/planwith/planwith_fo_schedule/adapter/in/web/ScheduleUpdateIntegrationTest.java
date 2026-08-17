@@ -27,6 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planwith.planwith_fo_schedule.adapter.out.openai.OpenAiScheduleAdapter;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
 
 import jakarta.persistence.EntityManager;
@@ -145,7 +146,10 @@ class ScheduleUpdateIntegrationTest {
 
 		String manuallyEditedTitle = "부산 가족 여행";
 		String revisedContent = "1일차 해운대, 2일차 맛집 탐방, 3일차 광안리";
-		when(openAiScheduleAdapter.revise(any())).thenReturn(new RevisedSchedule(revisedContent));
+		when(openAiScheduleAdapter.revise(any())).thenReturn(new RevisedSchedule(
+				revisedContent,
+				new OpenAiUsage("gpt-4o-mini-2024-07-18", 90, 30, 120)
+		));
 
 		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
 						.header("X-Member-UUID", memberUuid)

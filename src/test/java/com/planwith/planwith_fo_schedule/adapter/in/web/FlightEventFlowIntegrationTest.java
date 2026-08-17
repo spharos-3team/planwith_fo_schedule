@@ -35,6 +35,7 @@ import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateC
 import com.planwith.planwith_fo_schedule.application.exception.FlightSearchException;
 import com.planwith.planwith_fo_schedule.application.model.FlightCandidate;
 import com.planwith.planwith_fo_schedule.application.model.FlightCandidate.AirportSchedule;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedAiSchedule;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
@@ -260,7 +261,8 @@ class FlightEventFlowIntegrationTest {
 						generatedItem(1, "Tokyo arrival"),
 						generatedItem(2, "Tokyo tour"),
 						generatedItem(3, "Return home")
-				)
+				),
+				new OpenAiUsage("gpt-4o-mini-2024-07-18", 120, 80, 200)
 		);
 	}
 

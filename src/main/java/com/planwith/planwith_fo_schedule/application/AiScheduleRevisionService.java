@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageResult;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.RevisedSchedule;
@@ -26,13 +28,19 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 
 	private final ScheduleRepositoryPort scheduleRepositoryPort;
 	private final AiScheduleRevisionPort aiScheduleRevisionPort;
+	private final AiUsageAggregator aiUsageAggregator;
+	private final AiRequestIdGenerator requestIdGenerator;
 
 	public AiScheduleRevisionService(
 			ScheduleRepositoryPort scheduleRepositoryPort,
-			AiScheduleRevisionPort aiScheduleRevisionPort
+			AiScheduleRevisionPort aiScheduleRevisionPort,
+			AiUsageAggregator aiUsageAggregator,
+			AiRequestIdGenerator requestIdGenerator
 	) {
 		this.scheduleRepositoryPort = scheduleRepositoryPort;
 		this.aiScheduleRevisionPort = aiScheduleRevisionPort;
+		this.aiUsageAggregator = aiUsageAggregator;
+		this.requestIdGenerator = requestIdGenerator;
 	}
 
 	@Override
@@ -46,10 +54,12 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 				validatedCommand.authenticatedMemberUuid(),
 				"Authenticated member UUID is required."
 		);
+		UUID requestId = requestIdGenerator.generate();
 		requireAdditionalRequest(validatedCommand.additionalRequest());
 
-		log.info("AiScheduleRevisionService : revise : AI 일정 첨삭 비즈니스 로직 시작 - scheduleUuid={}",
-				scheduleUuid);
+		log.info("AiScheduleRevisionService : revise : AI 일정 첨삭 비즈니스 로직 시작 - scheduleUuid={}, "
+						+ "requestId={}",
+				scheduleUuid, requestId);
 		Schedule schedule = scheduleRepositoryPort.findByScheduleUuid(new ScheduleUuid(scheduleUuid))
 				.orElseThrow(() -> new ScheduleNotFoundException(scheduleUuid));
 		validateOwnership(schedule, memberUuid);
@@ -76,12 +86,19 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 					revisedSchedule.content(),
 					null
 			);
-			log.info("AiScheduleRevisionService : revise : AI 일정 첨삭 초안 생성 완료 - scheduleUuid={}",
-					scheduleUuid);
+			AiUsageResult usage = aiUsageAggregator.aggregate(
+					memberUuid,
+					requestId,
+					AiOperationType.REVISE,
+					java.util.List.of(revisedSchedule.usage())
+			);
+			log.info("AiScheduleRevisionService : revise : AI 일정 첨삭 초안 생성 완료 - scheduleUuid={}, "
+							+ "requestId={}",
+					scheduleUuid, requestId);
 			return new ReviseScheduleResult(
 					scheduleUuid,
 					revisedDraft.content(),
-					revisedSchedule.usage()
+					usage
 			);
 		} catch (InvalidScheduleException exception) {
 			throw new AiScheduleGenerationException("AI returned an invalid schedule revision.", exception);

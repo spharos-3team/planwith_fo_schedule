@@ -2,7 +2,7 @@ package com.planwith.planwith_fo_schedule.application.port.in;
 
 import java.util.UUID;
 
-import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageResult;
 
 public interface ReviseScheduleWithAiUseCase {
 
@@ -18,7 +18,7 @@ public interface ReviseScheduleWithAiUseCase {
 	record ReviseScheduleResult(
 			UUID scheduleUuid,
 			String revisedContent,
-			OpenAiUsage usage
+			AiUsageResult usage
 	) {
 		public ReviseScheduleResult(UUID scheduleUuid, String revisedContent) {
 			this(scheduleUuid, revisedContent, null);

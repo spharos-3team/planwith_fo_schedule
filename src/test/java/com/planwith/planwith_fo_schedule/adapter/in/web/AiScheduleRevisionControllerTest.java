@@ -20,7 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleAccessDeniedException;
-import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
+import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageResult;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase.ReviseScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.ReviseScheduleWithAiUseCase.ReviseScheduleResult;
@@ -45,7 +46,15 @@ class AiScheduleRevisionControllerTest {
 		when(useCase.revise(any())).thenReturn(new ReviseScheduleResult(
 				scheduleUuid,
 				"해운대를 중심으로 여유롭게 여행합니다.",
-				new OpenAiUsage("gpt-4o-mini-2024-07-18", 90, 30, 120)
+				new AiUsageResult(
+						memberUuid,
+						UUID.randomUUID(),
+						AiOperationType.REVISE,
+						"gpt-4o-mini-2024-07-18",
+						90,
+						30,
+						120
+				)
 		));
 
 		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
@@ -57,6 +66,8 @@ class AiScheduleRevisionControllerTest {
 				.andExpect(jsonPath("$.data.scheduleUuid").value(scheduleUuid.toString()))
 				.andExpect(jsonPath("$.data.revisedTitle").doesNotExist())
 				.andExpect(jsonPath("$.data.revisedContent").value("해운대를 중심으로 여유롭게 여행합니다."))
+				.andExpect(jsonPath("$.data.usage.memberUuid").value(memberUuid.toString()))
+				.andExpect(jsonPath("$.data.usage.operationType").value("REVISE"))
 				.andExpect(jsonPath("$.data.usage.model").value("gpt-4o-mini-2024-07-18"))
 				.andExpect(jsonPath("$.data.usage.inputTokens").value(90))
 				.andExpect(jsonPath("$.data.usage.outputTokens").value(30))
