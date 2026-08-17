@@ -6,7 +6,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-record OpenAiImageSearchResponse(List<Output> output) {
+record OpenAiImageSearchResponse(
+		List<Output> output,
+		String model,
+		OpenAiResponsesResponse.Usage usage
+) {
 
 	String firstImageUrl() {
 		if (output == null) {

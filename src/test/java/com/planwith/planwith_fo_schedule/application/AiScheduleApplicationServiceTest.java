@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
@@ -60,17 +61,21 @@ class AiScheduleApplicationServiceTest {
 						item(1, LocalTime.of(10, 0), "해운대 산책"),
 						item(3, LocalTime.of(11, 0), "부산역 이동"),
 						item(2, LocalTime.of(9, 0), "자갈치시장 방문")
-				)
+				),
+				new OpenAiUsage("gpt-4o-mini-2024-07-18", 120, 80, 200)
 		);
 		AiScheduleApplicationService service = new AiScheduleApplicationService(
 				port,
-				destination -> Optional.of("https://images.example.com/busan.jpg")
+				imageSearchWithUsage()
 		);
 
 		var result = service.generate(command());
 
 		assertThat(result.title()).isEqualTo("부산 AI 여행");
 		assertThat(result.imageUrl()).isEqualTo("https://images.example.com/busan.jpg");
+		assertThat(result.scheduleUsage().totalTokens()).isEqualTo(200);
+		assertThat(result.imageUsage().model()).isEqualTo("gpt-5.6-2026-08-01");
+		assertThat(result.imageUsage().totalTokens()).isEqualTo(60);
 		assertThat(result.items())
 				.extracting(item -> "%d-%s".formatted(item.dayNumber(), item.scheduleTime()))
 				.containsExactly("1-10:00", "2-09:00", "2-14:00", "3-11:00");
@@ -124,6 +129,23 @@ class AiScheduleApplicationServiceTest {
 
 	private DestinationImageSearchPort noImageSearch() {
 		return destination -> Optional.empty();
+	}
+
+	private DestinationImageSearchPort imageSearchWithUsage() {
+		return new DestinationImageSearchPort() {
+			@Override
+			public Optional<String> searchRepresentativeImage(String destination) {
+				return Optional.of("https://images.example.com/busan.jpg");
+			}
+
+			@Override
+			public DestinationImageSearchResult searchRepresentativeImageWithUsage(String destination) {
+				return new DestinationImageSearchResult(
+						searchRepresentativeImage(destination),
+						new OpenAiUsage("gpt-5.6-2026-08-01", 45, 15, 60)
+				);
+			}
+		};
 	}
 
 	private AiScheduleGenerateCommand command() {

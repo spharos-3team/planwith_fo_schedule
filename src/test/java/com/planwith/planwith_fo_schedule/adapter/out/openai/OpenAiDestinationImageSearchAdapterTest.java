@@ -40,6 +40,12 @@ class OpenAiDestinationImageSearchAdapterTest {
 	void searchesExactlyOneImageAndReturnsCanonicalUrl() {
 		String response = """
 				{
+				  "model": "gpt-5.6-2026-08-01",
+				  "usage": {
+				    "input_tokens": 45,
+				    "output_tokens": 15,
+				    "total_tokens": 60
+				  },
 				  "output": [{
 				    "type": "web_search_call",
 				    "results": [{
@@ -64,8 +70,14 @@ class OpenAiDestinationImageSearchAdapterTest {
 				.andExpect(jsonPath("$.input").value(org.hamcrest.Matchers.containsString("일본, 도쿄")))
 				.andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
 
-		assertThat(adapter.searchRepresentativeImage("일본, 도쿄"))
+		var result = adapter.searchRepresentativeImageWithUsage("일본, 도쿄");
+
+		assertThat(result.imageUrl())
 				.contains("https://images.example.com/tokyo.jpg");
+		assertThat(result.usage().model()).isEqualTo("gpt-5.6-2026-08-01");
+		assertThat(result.usage().inputTokens()).isEqualTo(45);
+		assertThat(result.usage().outputTokens()).isEqualTo(15);
+		assertThat(result.usage().totalTokens()).isEqualTo(60);
 		server.verify();
 	}
 
@@ -73,6 +85,12 @@ class OpenAiDestinationImageSearchAdapterTest {
 	void rejectsNonHttpsImageResult() {
 		String response = """
 				{
+				  "model": "gpt-5.6-2026-08-01",
+				  "usage": {
+				    "input_tokens": 30,
+				    "output_tokens": 10,
+				    "total_tokens": 40
+				  },
 				  "output": [{
 				    "type": "web_search_call",
 				    "results": [{
@@ -86,7 +104,10 @@ class OpenAiDestinationImageSearchAdapterTest {
 		server.expect(requestTo("https://api.openai.com/v1/responses"))
 				.andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
 
-		assertThat(adapter.searchRepresentativeImage("서울")).isEmpty();
+		var result = adapter.searchRepresentativeImageWithUsage("서울");
+
+		assertThat(result.imageUrl()).isEmpty();
+		assertThat(result.usage().totalTokens()).isEqualTo(40);
 		server.verify();
 	}
 }

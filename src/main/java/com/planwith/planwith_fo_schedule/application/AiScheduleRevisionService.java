@@ -80,7 +80,8 @@ public class AiScheduleRevisionService implements ReviseScheduleWithAiUseCase {
 					scheduleUuid);
 			return new ReviseScheduleResult(
 					scheduleUuid,
-					revisedDraft.content()
+					revisedDraft.content(),
+					revisedSchedule.usage()
 			);
 		} catch (InvalidScheduleException exception) {
 			throw new AiScheduleGenerationException("AI returned an invalid schedule revision.", exception);

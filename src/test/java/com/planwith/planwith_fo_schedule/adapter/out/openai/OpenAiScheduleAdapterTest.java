@@ -74,6 +74,12 @@ class OpenAiScheduleAdapterTest {
 				""";
 		String response = """
 				{
+				  "model": "gpt-4o-mini-2024-07-18",
+				  "usage": {
+				    "input_tokens": 120,
+				    "output_tokens": 80,
+				    "total_tokens": 200
+				  },
 				  "output": [{
 				    "content": [{"type": "output_text", "text": %s}]
 				  }]
@@ -93,6 +99,10 @@ class OpenAiScheduleAdapterTest {
 		assertThat(result.title()).isEqualTo("부산 AI 여행");
 		assertThat(result.items()).hasSize(1);
 		assertThat(result.items().get(0).scheduleType()).isEqualTo(ScheduleItemType.TOUR);
+		assertThat(result.usage().model()).isEqualTo("gpt-4o-mini-2024-07-18");
+		assertThat(result.usage().inputTokens()).isEqualTo(120);
+		assertThat(result.usage().outputTokens()).isEqualTo(80);
+		assertThat(result.usage().totalTokens()).isEqualTo(200);
 		server.verify();
 	}
 
@@ -105,6 +115,12 @@ class OpenAiScheduleAdapterTest {
 				""";
 		String response = """
 				{
+				  "model": "gpt-4o-mini-2024-07-18",
+				  "usage": {
+				    "input_tokens": 90,
+				    "output_tokens": 30,
+				    "total_tokens": 120
+				  },
 				  "output": [{
 				    "content": [{"type": "output_text", "text": %s}]
 				  }]
@@ -130,6 +146,10 @@ class OpenAiScheduleAdapterTest {
 		var result = adapter.revise(revisionContext());
 
 		assertThat(result.content()).contains("해운대");
+		assertThat(result.usage().model()).isEqualTo("gpt-4o-mini-2024-07-18");
+		assertThat(result.usage().inputTokens()).isEqualTo(90);
+		assertThat(result.usage().outputTokens()).isEqualTo(30);
+		assertThat(result.usage().totalTokens()).isEqualTo(120);
 		server.verify();
 	}
 

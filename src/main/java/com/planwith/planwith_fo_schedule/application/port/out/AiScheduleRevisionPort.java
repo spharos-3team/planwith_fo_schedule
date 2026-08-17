@@ -2,6 +2,7 @@ package com.planwith.planwith_fo_schedule.application.port.out;
 
 import java.time.LocalDate;
 
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
 
@@ -24,7 +25,11 @@ public interface AiScheduleRevisionPort {
 	}
 
 	record RevisedSchedule(
-			String content
+			String content,
+			OpenAiUsage usage
 	) {
+		public RevisedSchedule(String content) {
+			this(content, null);
+		}
 	}
 }

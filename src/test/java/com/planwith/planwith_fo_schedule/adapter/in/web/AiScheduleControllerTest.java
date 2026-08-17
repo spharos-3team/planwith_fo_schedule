@@ -23,8 +23,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
+import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
+import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleItemResult;
 import com.planwith.planwith_fo_schedule.application.port.in.GenerateAiScheduleUseCase.AiScheduleResult;
 import com.planwith.planwith_fo_schedule.application.port.in.SaveAiScheduleUseCase;
@@ -61,7 +62,13 @@ class AiScheduleControllerTest {
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.memberUuid").value(memberUuid.toString()))
 				.andExpect(jsonPath("$.data.imageUrl").value("https://images.example.com/busan.jpg"))
-				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"));
+				.andExpect(jsonPath("$.data.items[0].scheduleType").value("TOUR"))
+				.andExpect(jsonPath("$.data.scheduleUsage.model").value("gpt-4o-mini-2024-07-18"))
+				.andExpect(jsonPath("$.data.scheduleUsage.inputTokens").value(120))
+				.andExpect(jsonPath("$.data.scheduleUsage.outputTokens").value(80))
+				.andExpect(jsonPath("$.data.scheduleUsage.totalTokens").value(200))
+				.andExpect(jsonPath("$.data.imageUsage.model").value("gpt-5.6-2026-08-01"))
+				.andExpect(jsonPath("$.data.imageUsage.totalTokens").value(60));
 
 		verify(useCase).generate(any());
 	}
@@ -208,7 +215,9 @@ class AiScheduleControllerTest {
 						1, LocalTime.of(10, 0), "해운대 산책", ScheduleItemType.TOUR,
 						"해변 산책", 0, "해운대", "부산광역시", new BigDecimal("35.1587000"),
 						new BigDecimal("129.1604000")
-				))
+				)),
+				new OpenAiUsage("gpt-4o-mini-2024-07-18", 120, 80, 200),
+				new OpenAiUsage("gpt-5.6-2026-08-01", 45, 15, 60)
 		);
 	}
 
