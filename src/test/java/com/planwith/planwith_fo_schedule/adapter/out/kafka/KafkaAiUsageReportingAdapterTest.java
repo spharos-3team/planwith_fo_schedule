@@ -23,13 +23,13 @@ class KafkaAiUsageReportingAdapterTest {
 
 	@Test
 	void publishesUsageEventUsingRequestIdAsMessageKey() {
-		KafkaTemplate<String, AiUsageReportEvent> kafkaTemplate = kafkaTemplate();
+		KafkaTemplate<Object, Object> kafkaTemplate = kafkaTemplate();
 		AiUsageReportProperties properties = new AiUsageReportProperties();
 		properties.setTopic("planwith.ai-usage.reported");
 		KafkaAiUsageReportingAdapter adapter = new KafkaAiUsageReportingAdapter(kafkaTemplate, properties);
 		UUID requestId = UUID.randomUUID();
 		AiUsageReportEvent event = event(requestId);
-		CompletableFuture<SendResult<String, AiUsageReportEvent>> future = new CompletableFuture<>();
+		CompletableFuture<SendResult<Object, Object>> future = new CompletableFuture<>();
 		when(kafkaTemplate.send(
 				eq("planwith.ai-usage.reported"),
 				eq(requestId.toString()),
@@ -56,7 +56,7 @@ class KafkaAiUsageReportingAdapterTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	private KafkaTemplate<String, AiUsageReportEvent> kafkaTemplate() {
+	private KafkaTemplate<Object, Object> kafkaTemplate() {
 		return mock(KafkaTemplate.class);
 	}
 

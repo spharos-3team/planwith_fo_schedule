@@ -2,6 +2,7 @@ package com.planwith.planwith_fo_schedule.adapter.out.outbox;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,8 @@ import jakarta.persistence.LockModeType;
 interface SpringDataAiUsageOutboxRepository extends JpaRepository<AiUsageOutboxJpaEntity, Long> {
 
 	boolean existsByRequestId(UUID requestId);
+
+	Optional<AiUsageOutboxJpaEntity> findByRequestId(UUID requestId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("""

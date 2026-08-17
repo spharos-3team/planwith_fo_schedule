@@ -18,11 +18,11 @@ public class KafkaAiUsageReportingAdapter implements AiUsageEventPublisher {
 
 	private static final Logger log = LoggerFactory.getLogger(KafkaAiUsageReportingAdapter.class);
 
-	private final KafkaTemplate<String, AiUsageReportEvent> kafkaTemplate;
+	private final KafkaTemplate<Object, Object> kafkaTemplate;
 	private final String topic;
 
 	public KafkaAiUsageReportingAdapter(
-			KafkaTemplate<String, AiUsageReportEvent> kafkaTemplate,
+			KafkaTemplate<Object, Object> kafkaTemplate,
 			AiUsageReportProperties properties
 	) {
 		this.kafkaTemplate = kafkaTemplate;
