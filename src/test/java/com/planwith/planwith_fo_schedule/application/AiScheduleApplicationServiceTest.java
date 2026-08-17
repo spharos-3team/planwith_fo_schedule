@@ -9,15 +9,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.command.AiScheduleGenerateCommand;
 import com.planwith.planwith_fo_schedule.application.exception.AiScheduleGenerationException;
 import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
+import com.planwith.planwith_fo_schedule.application.model.AiUsageReportEvent;
 import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort;
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
+import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
@@ -69,7 +72,8 @@ class AiScheduleApplicationServiceTest {
 				),
 				new OpenAiUsage("gpt-4o-mini-2024-07-18", 120, 80, 200)
 		);
-		AiScheduleApplicationService service = service(port, imageSearchWithUsage());
+		AtomicReference<AiUsageReportEvent> reportedEvent = new AtomicReference<>();
+		AiScheduleApplicationService service = service(port, imageSearchWithUsage(), reportedEvent::set);
 
 		AiScheduleGenerateCommand command = command();
 		var result = service.generate(command);
@@ -86,6 +90,14 @@ class AiScheduleApplicationServiceTest {
 		assertThat(result.usage().inputTokens()).isEqualTo(165);
 		assertThat(result.usage().outputTokens()).isEqualTo(95);
 		assertThat(result.usage().totalTokens()).isEqualTo(260);
+		assertThat(reportedEvent.get().memberUuid()).isEqualTo(result.usage().memberUuid());
+		assertThat(reportedEvent.get().requestId()).isEqualTo(result.usage().requestId());
+		assertThat(reportedEvent.get().operationType()).isEqualTo(AiOperationType.GENERATE);
+		assertThat(reportedEvent.get().model()).isEqualTo(result.usage().model());
+		assertThat(reportedEvent.get().inputTokens()).isEqualTo(165);
+		assertThat(reportedEvent.get().outputTokens()).isEqualTo(95);
+		assertThat(reportedEvent.get().totalTokens()).isEqualTo(260);
+		assertThat(reportedEvent.get().occurredAt()).isNotNull();
 		assertThat(result.items())
 				.extracting(item -> "%d-%s".formatted(item.dayNumber(), item.scheduleTime()))
 				.containsExactly("1-10:00", "2-09:00", "2-14:00", "3-11:00");
@@ -145,11 +157,22 @@ class AiScheduleApplicationServiceTest {
 			AiScheduleGenerationPort generationPort,
 			DestinationImageSearchPort imageSearchPort
 	) {
+		return service(generationPort, imageSearchPort, event -> {
+		});
+	}
+
+	private AiScheduleApplicationService service(
+			AiScheduleGenerationPort generationPort,
+			DestinationImageSearchPort imageSearchPort,
+			AiUsageReportingPort usageReportingPort
+	) {
 		return new AiScheduleApplicationService(
 				generationPort,
 				imageSearchPort,
 				new AiUsageAggregator(),
-				new AiRequestIdGenerator()
+				new AiRequestIdGenerator(),
+				new AiUsageReportEventFactory(),
+				usageReportingPort
 		);
 	}
 
