@@ -37,7 +37,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://192.168.10.167:8761/eureka/}
+      defaultZone: "${EUREKA_DEFAULT_ZONE:http://discovery:8761/eureka/}"
   instance:
     prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:true}
 
