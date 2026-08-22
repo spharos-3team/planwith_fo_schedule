@@ -54,6 +54,8 @@ app:
     server-url: ${SWAGGER_SERVER_URL:/}
 
 ai:
+  token-policy:
+    openai-tokens-per-product-token: ${AI_OPENAI_TOKENS_PER_PRODUCT_TOKEN:1000}
   usage-report:
     enabled: ${AI_USAGE_REPORT_ENABLED:false}
     topic: ${AI_USAGE_REPORT_TOPIC:planwith.ai-usage.reported}

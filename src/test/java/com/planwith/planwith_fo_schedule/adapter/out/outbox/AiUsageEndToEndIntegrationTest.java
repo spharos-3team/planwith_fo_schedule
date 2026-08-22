@@ -149,9 +149,9 @@ class AiUsageEndToEndIntegrationTest {
 			UUID reviseRequestId = UUID.fromString(revisedUsage.path("requestId").asText());
 			assertThat(revisedUsage.path("operationType").asText()).isEqualTo("REVISE");
 			assertThat(revisedUsage.path("model").asText()).isEqualTo("gpt-schedule-response");
-			assertThat(revisedUsage.path("inputTokens").asLong()).isEqualTo(1_000);
-			assertThat(revisedUsage.path("outputTokens").asLong()).isEqualTo(500);
-			assertThat(revisedUsage.path("totalTokens").asLong()).isEqualTo(1_500);
+			assertThat(revisedUsage.path("inputTokens").asLong()).isEqualTo(1);
+			assertThat(revisedUsage.path("outputTokens").asLong()).isEqualTo(1);
+			assertThat(revisedUsage.path("totalTokens").asLong()).isEqualTo(2);
 			assertThat(reviseRequestId).isNotIn(generateRequestId, regenerateRequestId);
 			relay(kafkaPublisher);
 			AiUsageReportEvent reviseEvent = consume(consumer, reviseRequestId);
@@ -163,7 +163,7 @@ class AiUsageEndToEndIntegrationTest {
 			assertThat(tokenService.processedRequestIds())
 					.containsExactlyInAnyOrder(generateRequestId, regenerateRequestId, reviseRequestId);
 			assertThat(tokenService.ledger()).hasSize(3);
-			assertThat(tokenService.ledger().get(regenerateRequestId)).isEqualTo(5_700);
+			assertThat(tokenService.ledger().get(regenerateRequestId)).isEqualTo(6);
 		}
 	}
 
@@ -171,9 +171,9 @@ class AiUsageEndToEndIntegrationTest {
 		assertThat(usage.path("memberUuid").asText()).isEqualTo(memberUuid.toString());
 		assertThat(usage.path("operationType").asText()).isEqualTo(operationType.name());
 		assertThat(usage.path("model").asText()).isEqualTo("gpt-schedule-response,gpt-image-response");
-		assertThat(usage.path("inputTokens").asLong()).isEqualTo(2_500);
-		assertThat(usage.path("outputTokens").asLong()).isEqualTo(3_200);
-		assertThat(usage.path("totalTokens").asLong()).isEqualTo(5_700);
+		assertThat(usage.path("inputTokens").asLong()).isEqualTo(3);
+		assertThat(usage.path("outputTokens").asLong()).isEqualTo(3);
+		assertThat(usage.path("totalTokens").asLong()).isEqualTo(6);
 		return UUID.fromString(usage.path("requestId").asText());
 	}
 
