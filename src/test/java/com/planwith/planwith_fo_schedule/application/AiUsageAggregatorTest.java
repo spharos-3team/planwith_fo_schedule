@@ -10,13 +10,14 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_schedule.application.model.AiOperationType;
 import com.planwith.planwith_fo_schedule.application.model.OpenAiUsage;
+import com.planwith.planwith_fo_schedule.config.AiTokenPolicyProperties;
 
 class AiUsageAggregatorTest {
 
-	private final AiUsageAggregator aggregator = new AiUsageAggregator();
+	private final AiUsageAggregator aggregator = defaultAggregator();
 
 	@Test
-	void aggregatesMultipleOpenAiCallsIntoOneRequestUsage() {
+	void convertsSummedOpenAiUsageIntoProductTokens() {
 		UUID memberUuid = UUID.randomUUID();
 		UUID requestId = UUID.randomUUID();
 
@@ -34,9 +35,25 @@ class AiUsageAggregatorTest {
 		assertThat(result.requestId()).isEqualTo(requestId);
 		assertThat(result.operationType()).isEqualTo(AiOperationType.GENERATE);
 		assertThat(result.model()).isEqualTo("gpt-4o-mini-2024-07-18,gpt-5.6-2026-08-01");
-		assertThat(result.inputTokens()).isEqualTo(2_500);
-		assertThat(result.outputTokens()).isEqualTo(3_200);
-		assertThat(result.totalTokens()).isEqualTo(5_700);
+		assertThat(result.inputTokens()).isEqualTo(3);
+		assertThat(result.outputTokens()).isEqualTo(3);
+		assertThat(result.totalTokens()).isEqualTo(6);
+	}
+
+	@Test
+	void convertsAfterSummingSoPartialCallsDoNotRoundTwice() {
+		var result = aggregator.aggregate(
+				UUID.randomUUID(),
+				UUID.randomUUID(),
+				AiOperationType.GENERATE,
+				List.of(
+						new OpenAiUsage("gpt-4o-mini", 600, 0, 600),
+						new OpenAiUsage("gpt-4o-mini", 600, 0, 600)
+				)
+		);
+
+		assertThat(result.totalTokens()).isEqualTo(1);
+		assertThat(result.inputTokens() + result.outputTokens()).isEqualTo(1);
 	}
 
 	@Test
@@ -52,7 +69,7 @@ class AiUsageAggregatorTest {
 		);
 
 		assertThat(result.model()).isEqualTo("gpt-4o-mini");
-		assertThat(result.totalTokens()).isEqualTo(45);
+		assertThat(result.totalTokens()).isEqualTo(1);
 	}
 
 	@Test
@@ -80,5 +97,9 @@ class AiUsageAggregatorTest {
 		))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("exceeds");
+	}
+
+	private AiUsageAggregator defaultAggregator() {
+		return new AiUsageAggregator(new AiProductTokenConverter(new AiTokenPolicyProperties()));
 	}
 }

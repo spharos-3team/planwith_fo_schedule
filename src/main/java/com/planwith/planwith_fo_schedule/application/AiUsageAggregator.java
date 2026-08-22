@@ -17,6 +17,12 @@ public class AiUsageAggregator {
 
 	private static final Logger log = LoggerFactory.getLogger(AiUsageAggregator.class);
 
+	private final AiProductTokenConverter productTokenConverter;
+
+	public AiUsageAggregator(AiProductTokenConverter productTokenConverter) {
+		this.productTokenConverter = productTokenConverter;
+	}
+
 	public AiUsageResult aggregate(
 			UUID memberUuid,
 			UUID requestId,
@@ -31,15 +37,26 @@ public class AiUsageAggregator {
 		}
 
 		try {
+			long rawInputTokens = sumInputTokens(validUsages);
+			long rawOutputTokens = sumOutputTokens(validUsages);
+			long rawTotalTokens = sumTotalTokens(validUsages);
+			AiProductTokenConverter.ConvertedUsage converted = productTokenConverter.convert(
+					rawInputTokens,
+					rawOutputTokens,
+					rawTotalTokens
+			);
 			AiUsageResult result = new AiUsageResult(
 					memberUuid,
 					requestId,
 					operationType,
 					aggregateModels(validUsages),
-					sumInputTokens(validUsages),
-					sumOutputTokens(validUsages),
-					sumTotalTokens(validUsages)
+					converted.inputTokens(),
+					converted.outputTokens(),
+					converted.totalTokens()
 			);
+			log.debug("AiUsageAggregator : aggregate : OpenAI 원본 사용량 확인 - memberUuid={}, requestId={}, "
+							+ "inputTokens={}, outputTokens={}, totalTokens={}",
+					memberUuid, requestId, rawInputTokens, rawOutputTokens, rawTotalTokens);
 			log.info("AiUsageAggregator : aggregate : AI 요청 사용량 집계 완료 - memberUuid={}, requestId={}, "
 							+ "operationType={}, model={}, inputTokens={}, outputTokens={}, totalTokens={}",
 					result.memberUuid(), result.requestId(), result.operationType(), result.model(),

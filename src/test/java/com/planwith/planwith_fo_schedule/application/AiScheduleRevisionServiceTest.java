@@ -30,6 +30,7 @@ import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevision
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleRevisionPort.ScheduleRevisionContext;
 import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
 import com.planwith.planwith_fo_schedule.application.port.out.ScheduleRepositoryPort;
+import com.planwith.planwith_fo_schedule.config.AiTokenPolicyProperties;
 import com.planwith.planwith_fo_schedule.domain.Schedule;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
@@ -54,7 +55,7 @@ class AiScheduleRevisionServiceTest {
 		service = new AiScheduleRevisionService(
 				repository,
 				revisionPort,
-				new AiUsageAggregator(),
+				new AiUsageAggregator(new AiProductTokenConverter(new AiTokenPolicyProperties())),
 				new AiRequestIdGenerator(),
 				new AiUsageReportEventFactory(),
 				usageReportingPort
@@ -84,14 +85,14 @@ class AiScheduleRevisionServiceTest {
 		assertThat(result.usage().memberUuid()).isEqualTo(schedule.memberUuid().value());
 		assertThat(result.usage().requestId()).isNotNull();
 		assertThat(result.usage().operationType()).isEqualTo(AiOperationType.REVISE);
-		assertThat(result.usage().totalTokens()).isEqualTo(120);
+		assertThat(result.usage().totalTokens()).isEqualTo(1);
 		verify(revisionPort).revise(any(ScheduleRevisionContext.class));
 		ArgumentCaptor<AiUsageReportEvent> eventCaptor = ArgumentCaptor.forClass(AiUsageReportEvent.class);
 		verify(usageReportingPort).report(eventCaptor.capture());
 		assertThat(eventCaptor.getValue().memberUuid()).isEqualTo(schedule.memberUuid().value());
 		assertThat(eventCaptor.getValue().requestId()).isEqualTo(result.usage().requestId());
 		assertThat(eventCaptor.getValue().operationType()).isEqualTo(AiOperationType.REVISE);
-		assertThat(eventCaptor.getValue().totalTokens()).isEqualTo(120);
+		assertThat(eventCaptor.getValue().totalTokens()).isEqualTo(1);
 		verify(repository, never()).update(any());
 	}
 

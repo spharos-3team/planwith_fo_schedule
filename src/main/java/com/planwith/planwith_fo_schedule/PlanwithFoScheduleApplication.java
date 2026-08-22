@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.planwith.planwith_fo_schedule.config.AiTokenPolicyProperties;
 import com.planwith.planwith_fo_schedule.config.AiUsageReportProperties;
 import com.planwith.planwith_fo_schedule.config.AviationStackProperties;
 import com.planwith.planwith_fo_schedule.config.DeployProperties;
@@ -20,7 +21,8 @@ import com.planwith.planwith_fo_schedule.config.OpenApiProperties;
 		OpenAiProperties.class,
 		AviationStackProperties.class,
 		FlightRecommendationCacheProperties.class,
-		AiUsageReportProperties.class
+		AiUsageReportProperties.class,
+		AiTokenPolicyProperties.class
 })
 public class PlanwithFoScheduleApplication {
 

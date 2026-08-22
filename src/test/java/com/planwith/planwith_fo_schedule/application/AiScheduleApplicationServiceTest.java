@@ -22,6 +22,7 @@ import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerati
 import com.planwith.planwith_fo_schedule.application.port.out.AiScheduleGenerationPort.GeneratedScheduleItem;
 import com.planwith.planwith_fo_schedule.application.port.out.AiUsageReportingPort;
 import com.planwith.planwith_fo_schedule.application.port.out.DestinationImageSearchPort;
+import com.planwith.planwith_fo_schedule.config.AiTokenPolicyProperties;
 import com.planwith.planwith_fo_schedule.domain.ScheduleItemType;
 import com.planwith.planwith_fo_schedule.domain.TransportationType;
 import com.planwith.planwith_fo_schedule.domain.TravelStyle;
@@ -87,16 +88,15 @@ class AiScheduleApplicationServiceTest {
 		assertThat(result.usage().requestId()).isNotNull();
 		assertThat(result.usage().operationType()).isEqualTo(AiOperationType.GENERATE);
 		assertThat(result.usage().model()).isEqualTo("gpt-4o-mini-2024-07-18,gpt-5.6-2026-08-01");
-		assertThat(result.usage().inputTokens()).isEqualTo(165);
-		assertThat(result.usage().outputTokens()).isEqualTo(95);
-		assertThat(result.usage().totalTokens()).isEqualTo(260);
+		assertThat(result.usage().totalTokens()).isEqualTo(1);
+		assertThat(result.usage().inputTokens() + result.usage().outputTokens()).isEqualTo(1);
 		assertThat(reportedEvent.get().memberUuid()).isEqualTo(result.usage().memberUuid());
 		assertThat(reportedEvent.get().requestId()).isEqualTo(result.usage().requestId());
 		assertThat(reportedEvent.get().operationType()).isEqualTo(AiOperationType.GENERATE);
 		assertThat(reportedEvent.get().model()).isEqualTo(result.usage().model());
-		assertThat(reportedEvent.get().inputTokens()).isEqualTo(165);
-		assertThat(reportedEvent.get().outputTokens()).isEqualTo(95);
-		assertThat(reportedEvent.get().totalTokens()).isEqualTo(260);
+		assertThat(reportedEvent.get().inputTokens()).isEqualTo(result.usage().inputTokens());
+		assertThat(reportedEvent.get().outputTokens()).isEqualTo(result.usage().outputTokens());
+		assertThat(reportedEvent.get().totalTokens()).isEqualTo(1);
 		assertThat(reportedEvent.get().occurredAt()).isNotNull();
 		assertThat(result.items())
 				.extracting(item -> "%d-%s".formatted(item.dayNumber(), item.scheduleTime()))
@@ -169,7 +169,7 @@ class AiScheduleApplicationServiceTest {
 		return new AiScheduleApplicationService(
 				generationPort,
 				imageSearchPort,
-				new AiUsageAggregator(),
+				new AiUsageAggregator(new AiProductTokenConverter(new AiTokenPolicyProperties())),
 				new AiRequestIdGenerator(),
 				new AiUsageReportEventFactory(),
 				usageReportingPort
