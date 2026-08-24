@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,6 +67,7 @@ public class ScheduleController {
 	// 일반 일정 생성
 	@PostMapping
 	public ResponseEntity<ApiResponse<CreateScheduleResponse>> createSchedule(
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID authenticatedMemberUuid,
 			@Valid @RequestBody CreateScheduleRequest request
 	) {
 		log.info("ScheduleController : POSTcreateSchedule : 일반 일정 생성 시작");
@@ -74,7 +76,7 @@ public class ScheduleController {
 				request.startDate(), request.endDate(), request.headcount(), request.transportation(), request.travelStyle());
 		log.trace("ScheduleController : POSTcreateSchedule : 일정 생성 요청을 애플리케이션 명령으로 변환");
 		CreateScheduleCommand command = new CreateScheduleCommand(
-				request.memberUuid(),
+				authenticatedMemberUuid == null ? request.memberUuid() : authenticatedMemberUuid,
 				request.title(),
 				request.destination(),
 				request.startDate(),

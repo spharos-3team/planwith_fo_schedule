@@ -18,3 +18,7 @@ eureka:
 ai:
   usage-report:
     enabled: false
+
+schedule:
+  gateway-auth:
+    enabled: false
