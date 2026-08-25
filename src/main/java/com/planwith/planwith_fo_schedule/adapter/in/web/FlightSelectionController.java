@@ -39,7 +39,7 @@ public class FlightSelectionController {
 			description = "추천 결과에서 선택한 항공편을 확정합니다. 기본적으로 AviationStack에서 동일 운항편의 최신 정보를 조회하며, 가격 확인과 DB 저장은 수행하지 않습니다."
 	)
 	public ResponseEntity<ApiResponse<FlightSelectionConfirmResponse>> confirm(
-			@RequestHeader(value = "X-Member-UUID", required = false) UUID memberUuid,
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID memberUuid,
 			@Valid @RequestBody FlightSelectionConfirmRequest request
 	) {
 		log.info("FlightSelectionController : POSTconfirm : 선택 항공편 최종 정보 확인 요청 - tripType={}, refresh={}",

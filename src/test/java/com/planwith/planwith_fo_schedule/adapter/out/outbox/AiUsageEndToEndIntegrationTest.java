@@ -179,7 +179,7 @@ class AiUsageEndToEndIntegrationTest {
 
 	private JsonNode requestAiDraft(String path) throws Exception {
 		MvcResult result = mockMvc.perform(post(path)
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -220,7 +220,7 @@ class AiUsageEndToEndIntegrationTest {
 
 	private JsonNode reviseSchedule(UUID scheduleUuid) throws Exception {
 		MvcResult result = mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{"additionalRequest": "맛집 중심으로 수정해줘"}

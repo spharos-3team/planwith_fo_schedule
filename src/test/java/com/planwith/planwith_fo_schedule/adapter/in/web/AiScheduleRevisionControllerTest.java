@@ -58,7 +58,7 @@ class AiScheduleRevisionControllerTest {
 		));
 
 		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validRequest()))
 				.andExpect(status().isOk())
@@ -94,7 +94,7 @@ class AiScheduleRevisionControllerTest {
 	@Test
 	void rejectsBlankAdditionalRequest() throws Exception {
 		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", UUID.randomUUID())
-						.header("X-Member-UUID", UUID.randomUUID())
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{"additionalRequest": " "}
@@ -111,7 +111,7 @@ class AiScheduleRevisionControllerTest {
 		when(useCase.revise(any())).thenThrow(new ScheduleAccessDeniedException(scheduleUuid));
 
 		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
-						.header("X-Member-UUID", UUID.randomUUID())
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validRequest()))
 				.andExpect(status().isForbidden())

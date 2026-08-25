@@ -152,7 +152,7 @@ class ScheduleUpdateIntegrationTest {
 		));
 
 		mockMvc.perform(post("/api/v1/schedules/{scheduleUuid}/ai/revise", scheduleUuid)
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{

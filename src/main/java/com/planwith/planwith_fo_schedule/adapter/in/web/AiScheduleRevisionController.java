@@ -41,7 +41,7 @@ public class AiScheduleRevisionController {
 			description = "기존 일정 전체를 참고해 자유 일정 내용의 수정안만 반환합니다. 결과는 DB에 저장하지 않습니다."
 	)
 	public ResponseEntity<ApiResponse<AiScheduleReviseResponse>> revise(
-			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID authenticatedMemberUuid,
 			@PathVariable UUID scheduleUuid,
 			@Valid @RequestBody AiScheduleReviseRequest request
 	) {

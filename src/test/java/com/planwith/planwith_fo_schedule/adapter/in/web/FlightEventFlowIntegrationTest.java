@@ -90,7 +90,7 @@ class FlightEventFlowIntegrationTest {
 
 		// 시나리오 2: 항공편 검색 조건을 포함한 AI 일정 생성
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(aiGenerateRequest(true)))
 				.andExpect(status().isOk())
@@ -126,7 +126,7 @@ class FlightEventFlowIntegrationTest {
 
 		// 시나리오 7: 사용자가 추천 항공편을 선택하여 최종 정보 확정
 		mockMvc.perform(post("/api/v1/flights/confirmations")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(confirmationRequest()))
 				.andExpect(status().isOk())
@@ -136,7 +136,7 @@ class FlightEventFlowIntegrationTest {
 
 		// 시나리오 8: 확정한 왕복 항공편과 AI 일정을 내 캘린더에 저장
 		MvcResult saveResult = mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(saveRequestWithDirectRoundTrip()))
 				.andExpect(status().isCreated())
@@ -162,7 +162,7 @@ class FlightEventFlowIntegrationTest {
 
 		// 시나리오 1: 항공편 없이 AI 일정 생성
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(aiGenerateRequest(false)))
 				.andExpect(status().isOk())
@@ -217,7 +217,7 @@ class FlightEventFlowIntegrationTest {
 	void savesAndReturnsScheduleWithoutFlight() throws Exception {
 		// 시나리오 12: 항공편 없는 일정 상세 조회
 		MvcResult saveResult = mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(saveRequestWithoutFlight()))
 				.andExpect(status().isCreated())
@@ -235,7 +235,7 @@ class FlightEventFlowIntegrationTest {
 	void savesStopoverCandidatesAsOrderedSegments() throws Exception {
 		// 시나리오 9: 경유편을 순서가 보장된 Segment로 저장
 		MvcResult saveResult = mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(saveRequestWithStopover()))
 				.andExpect(status().isCreated())

@@ -50,7 +50,7 @@ public class AiScheduleController {
 			description = "최초 생성 또는 사용자가 정보를 수정한 뒤 다시 입력한 조건으로 새 AI 일정 초안을 생성합니다. 결과는 DB에 저장하지 않습니다."
 	)
 	public ResponseEntity<ApiResponse<AiScheduleGenerateResponse>> generate(
-			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID authenticatedMemberUuid,
 			@Valid @RequestBody AiScheduleGenerateRequest request
 	) {
 		log.info("AiScheduleController : POSTgenerate : AI 일정 초안 생성 시작");
@@ -71,7 +71,7 @@ public class AiScheduleController {
 			description = "기존 입력조건을 변경하지 않고 OpenAI를 다시 호출해 새 일정 초안을 반환합니다. 결과는 DB에 저장하지 않습니다."
 	)
 	public ResponseEntity<ApiResponse<AiScheduleGenerateResponse>> regenerate(
-			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID authenticatedMemberUuid,
 			@Valid @RequestBody AiScheduleGenerateRequest request
 	) {
 		log.info("AiScheduleController : POSTregenerate : 동일 조건 AI 일정 초안 재생성 시작");
@@ -93,7 +93,7 @@ public class AiScheduleController {
 					+ "항공편을 선택하지 않으면 Schedule과 ScheduleItem만 저장합니다."
 	)
 	public ResponseEntity<ApiResponse<AiScheduleSaveResponse>> save(
-			@RequestHeader(value = "X-Member-UUID", required = false) UUID authenticatedMemberUuid,
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID authenticatedMemberUuid,
 			@Valid @RequestBody AiScheduleSaveRequest request
 	) {
 		log.info("AiScheduleController : POSTsave : AI 일정 초안 저장 시작");

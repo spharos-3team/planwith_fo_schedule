@@ -57,7 +57,7 @@ class AiScheduleControllerTest {
 		when(useCase.generate(any(), any())).thenReturn(aiScheduleResult(memberUuid, AiOperationType.GENERATE));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validRequest()))
 				.andExpect(status().isOk())
@@ -86,7 +86,7 @@ class AiScheduleControllerTest {
 		when(useCase.generate(any(), any())).thenReturn(aiScheduleResult(memberUuid, AiOperationType.GENERATE));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -127,7 +127,7 @@ class AiScheduleControllerTest {
 		when(useCase.generate(any(), any())).thenReturn(aiScheduleResult(memberUuid, AiOperationType.REGENERATE));
 
 		mockMvc.perform(post("/api/v1/schedules/ai/regenerate")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validRequest()))
 				.andExpect(status().isOk())
@@ -157,7 +157,7 @@ class AiScheduleControllerTest {
 		);
 
 		mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validSaveRequest()))
 				.andExpect(status().isCreated())
@@ -191,7 +191,7 @@ class AiScheduleControllerTest {
 	@Test
 	void rejectsInvalidTravelPeriodBeforeCallingUseCase() throws Exception {
 		mockMvc.perform(post("/api/v1/schedules/ai/generate")
-						.header("X-Member-UUID", UUID.randomUUID())
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validRequest().replace("2026-08-22", "2026-08-19")))
 				.andExpect(status().isBadRequest())

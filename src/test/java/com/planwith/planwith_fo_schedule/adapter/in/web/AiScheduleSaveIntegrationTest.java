@@ -54,7 +54,7 @@ class AiScheduleSaveIntegrationTest {
 		UUID memberUuid = UUID.randomUUID();
 
 		mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", memberUuid)
+						.header("X-Auth-User-Id", memberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(validSaveRequest()))
 				.andExpect(status().isCreated())
@@ -86,7 +86,7 @@ class AiScheduleSaveIntegrationTest {
 	@Test
 	void savesScheduleItemsSelectedFlightAndSegmentsInOneRequest() throws Exception {
 		MvcResult result = mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", UUID.randomUUID())
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(saveRequestWithItemsAndFlight("""
 								%s,
@@ -133,7 +133,7 @@ class AiScheduleSaveIntegrationTest {
 		)).replace("\"tripType\": \"ROUND_TRIP\"", "\"tripType\": \"ONE_WAY\"");
 
 		mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", UUID.randomUUID())
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(invalidRequest))
 				.andExpect(status().isBadRequest())
@@ -146,7 +146,7 @@ class AiScheduleSaveIntegrationTest {
 	@Test
 	void rejectsDraftMissingTravelDayWithoutSavingAnything() throws Exception {
 		mockMvc.perform(post("/api/v1/schedules/ai/save")
-						.header("X-Member-UUID", UUID.randomUUID())
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(saveRequestWithItems("""
 								%s,

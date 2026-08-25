@@ -48,7 +48,7 @@ class FlightSelectionControllerTest {
 		));
 
 		mockMvc.perform(post("/api/v1/flights/confirmations")
-						.header("X-Member-UUID", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody(true)))
 				.andExpect(status().isOk())
@@ -73,7 +73,7 @@ class FlightSelectionControllerTest {
 		when(useCase.confirm(any())).thenThrow(new FlightCandidateNotFoundException("KE", "703"));
 
 		mockMvc.perform(post("/api/v1/flights/confirmations")
-						.header("X-Member-UUID", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(requestBody(true)))
 				.andExpect(status().isConflict())
