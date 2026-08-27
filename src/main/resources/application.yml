@@ -16,13 +16,13 @@ spring:
           time_zone: UTC
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST:}
+      port: ${REDIS_PORT:}
       password: ${REDIS_PASSWORD:}
-      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
-      timeout: ${REDIS_TIMEOUT:2s}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:}
+      timeout: ${REDIS_TIMEOUT:}
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:}
     producer:
       acks: all
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -61,7 +61,7 @@ ai:
   token-policy:
     openai-tokens-per-product-token: ${AI_OPENAI_TOKENS_PER_PRODUCT_TOKEN:1000}
   usage-report:
-    enabled: ${AI_USAGE_REPORT_ENABLED:false}
+    enabled: ${AI_USAGE_REPORT_ENABLED:true}
     topic: ${AI_USAGE_REPORT_TOPIC:planwith.ai-usage.reported}
     relay-batch-size: ${AI_USAGE_REPORT_RELAY_BATCH_SIZE:50}
     relay-interval: ${AI_USAGE_REPORT_RELAY_INTERVAL:5s}
@@ -79,7 +79,7 @@ openai:
   read-timeout-millis: ${OPENAI_READ_TIMEOUT_MILLIS:60000}
 
 aviationstack:
-  enabled: ${AVIATIONSTACK_ENABLED:false}
+  enabled: ${AVIATIONSTACK_ENABLED:true}
   access-key: ${AVIATIONSTACK_ACCESS_KEY:}
   base-url: ${AVIATIONSTACK_BASE_URL:https://api.aviationstack.com/v1}
   connect-timeout-millis: ${AVIATIONSTACK_CONNECT_TIMEOUT_MILLIS:5000}
