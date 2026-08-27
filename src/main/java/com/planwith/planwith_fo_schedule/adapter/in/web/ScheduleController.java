@@ -114,17 +114,18 @@ public class ScheduleController {
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
-	// 기간별 캘린더 일정 조회
+	// 기간별 캘린더 일정 조회 — 인증된 회원이 등록한 일정만 반환
 	@GetMapping("/calendar")
 	public ResponseEntity<ApiResponse<List<CalendarScheduleResponse>>> getCalendarSchedules(
+			@RequestHeader(value = "X-Auth-User-Id", required = false) UUID authenticatedMemberUuid,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
 	) {
 		log.info("ScheduleController : GETgetCalendarSchedules : 기간별 캘린더 일정 조회 시작");
-		log.debug("ScheduleController : GETgetCalendarSchedules : 캘린더 조회 기간 - startDate={}, endDate={}",
-				startDate, endDate);
+		log.debug("ScheduleController : GETgetCalendarSchedules : 캘린더 조회 기간 - memberUuid={}, startDate={}, endDate={}",
+				authenticatedMemberUuid, startDate, endDate);
 		List<CalendarScheduleResponse> response = getCalendarSchedulesUseCase
-				.getCalendarSchedules(startDate, endDate).stream()
+				.getCalendarSchedules(authenticatedMemberUuid, startDate, endDate).stream()
 				.map(schedule -> new CalendarScheduleResponse(
 						schedule.scheduleUuid(),
 						schedule.title(),

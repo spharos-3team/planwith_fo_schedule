@@ -8,7 +8,7 @@ import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 
 public interface GetCalendarSchedulesUseCase {
 
-	List<CalendarScheduleResult> getCalendarSchedules(LocalDate startDate, LocalDate endDate);
+	List<CalendarScheduleResult> getCalendarSchedules(UUID memberUuid, LocalDate startDate, LocalDate endDate);
 
 	record CalendarScheduleResult(
 			UUID scheduleUuid,

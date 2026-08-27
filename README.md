@@ -57,7 +57,7 @@ Hexagonal Spring Boot 일정 도메인 서비스로, **일정 원장 + AI 생성
 |------|--------|
 | Deploy | `/api/planwith-fo-schedule` (`deploy-check`) |
 | Schedule CRUD | `/schedules`, `/api/v1/schedules` |
-| Calendar | `GET .../calendar` |
+| Calendar | `GET .../calendar` (본인 일정만, `X-Auth-User-Id` 필수) |
 | AI Schedule | `/schedules/ai`, `/api/v1/schedules/ai` (`generate` / `regenerate` / `save`) |
 | AI Revise | `POST .../{scheduleUuid}/ai/revise` |
 | Flight | `/flights`, `/api/v1/flights` (`search` / `recommendations` / `confirmations`) |

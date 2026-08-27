@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleCommand;
 import com.planwith.planwith_fo_schedule.application.port.in.CreateScheduleUseCase.CreateScheduleResult;
+import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
 import com.planwith.planwith_fo_schedule.application.exception.ScheduleNotFoundException;
 import com.planwith.planwith_fo_schedule.application.port.in.GetScheduleDetailUseCase;
 import com.planwith.planwith_fo_schedule.application.port.in.GetCalendarSchedulesUseCase;
@@ -296,9 +297,11 @@ class ScheduleControllerTest {
 
 	@Test
 	void returnsCalendarSchedulesForRequestedPeriod() throws Exception {
+		UUID memberUuid = UUID.randomUUID();
 		UUID firstUuid = UUID.randomUUID();
 		UUID secondUuid = UUID.randomUUID();
 		when(getCalendarSchedulesUseCase.getCalendarSchedules(
+				memberUuid,
 				LocalDate.of(2026, 8, 1),
 				LocalDate.of(2026, 8, 31)
 		)).thenReturn(List.of(
@@ -321,6 +324,7 @@ class ScheduleControllerTest {
 		));
 
 		mockMvc.perform(get("/api/v1/schedules/calendar")
+						.header("X-Auth-User-Id", memberUuid)
 						.param("startDate", "2026-08-01")
 						.param("endDate", "2026-08-31"))
 				.andExpect(status().isOk())
@@ -336,6 +340,7 @@ class ScheduleControllerTest {
 	@Test
 	void rejectsMissingCalendarPeriodParameter() throws Exception {
 		mockMvc.perform(get("/schedules/calendar")
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.param("startDate", "2026-08-01"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
@@ -344,9 +349,25 @@ class ScheduleControllerTest {
 	@Test
 	void rejectsInvalidCalendarDateFormat() throws Exception {
 		mockMvc.perform(get("/schedules/calendar")
+						.header("X-Auth-User-Id", UUID.randomUUID())
 						.param("startDate", "2026/08/01")
 						.param("endDate", "2026-08-31"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+	}
+
+	@Test
+	void rejectsCalendarQueryWithoutAuthenticatedMember() throws Exception {
+		when(getCalendarSchedulesUseCase.getCalendarSchedules(
+				null,
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 31)
+		)).thenThrow(new AuthenticationRequiredException());
+
+		mockMvc.perform(get("/schedules/calendar")
+						.param("startDate", "2026-08-01")
+						.param("endDate", "2026-08-31"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
 	}
 }

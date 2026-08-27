@@ -105,8 +105,12 @@ public class JpaScheduleAdapter implements ScheduleRepositoryPort, CalendarSched
 	}
 
 	@Override
-	public List<CalendarScheduleData> findOverlappingSchedules(SchedulePeriod period) {
-		return scheduleRepository.findCalendarSchedules(period.startDate(), period.endDate()).stream()
+	public List<CalendarScheduleData> findOverlappingSchedules(MemberUuid memberUuid, SchedulePeriod period) {
+		return scheduleRepository.findCalendarSchedules(
+				memberUuid.value(),
+				period.startDate(),
+				period.endDate()
+		).stream()
 				.map(schedule -> new CalendarScheduleData(
 						schedule.getScheduleUuid(),
 						schedule.getTitle(),

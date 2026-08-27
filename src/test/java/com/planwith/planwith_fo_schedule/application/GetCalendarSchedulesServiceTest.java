@@ -12,10 +12,12 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import com.planwith.planwith_fo_schedule.application.exception.AuthenticationRequiredException;
 import com.planwith.planwith_fo_schedule.application.port.out.CalendarScheduleQueryPort;
 import com.planwith.planwith_fo_schedule.application.port.out.CalendarScheduleQueryPort.CalendarScheduleData;
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
 import com.planwith.planwith_fo_schedule.domain.InvalidScheduleException;
+import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 class GetCalendarSchedulesServiceTest {
@@ -24,12 +26,13 @@ class GetCalendarSchedulesServiceTest {
 	void returnsCalendarSummaryInRepositoryOrder() {
 		CalendarScheduleQueryPort queryPort = mock(CalendarScheduleQueryPort.class);
 		GetCalendarSchedulesService service = new GetCalendarSchedulesService(queryPort);
+		UUID memberUuid = UUID.randomUUID();
 		SchedulePeriod period = new SchedulePeriod(
 				LocalDate.of(2026, 8, 1),
 				LocalDate.of(2026, 8, 31)
 		);
 		UUID scheduleUuid = UUID.randomUUID();
-		when(queryPort.findOverlappingSchedules(period)).thenReturn(List.of(
+		when(queryPort.findOverlappingSchedules(new MemberUuid(memberUuid), period)).thenReturn(List.of(
 				new CalendarScheduleData(
 						scheduleUuid,
 						"오사카 여행",
@@ -40,13 +43,13 @@ class GetCalendarSchedulesServiceTest {
 				)
 		));
 
-		var result = service.getCalendarSchedules(period.startDate(), period.endDate());
+		var result = service.getCalendarSchedules(memberUuid, period.startDate(), period.endDate());
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).scheduleUuid()).isEqualTo(scheduleUuid);
 		assertThat(result.get(0).title()).isEqualTo("오사카 여행");
 		assertThat(result.get(0).creatorType()).isEqualTo(ScheduleCreatorType.USER);
-		verify(queryPort).findOverlappingSchedules(period);
+		verify(queryPort).findOverlappingSchedules(new MemberUuid(memberUuid), period);
 	}
 
 	@Test
@@ -55,8 +58,21 @@ class GetCalendarSchedulesServiceTest {
 		GetCalendarSchedulesService service = new GetCalendarSchedulesService(queryPort);
 
 		assertThatThrownBy(() -> service.getCalendarSchedules(
+				UUID.randomUUID(),
 				LocalDate.of(2026, 8, 31),
 				LocalDate.of(2026, 8, 1)
 		)).isInstanceOf(InvalidScheduleException.class);
+	}
+
+	@Test
+	void rejectsCalendarQueryWithoutAuthenticatedMember() {
+		CalendarScheduleQueryPort queryPort = mock(CalendarScheduleQueryPort.class);
+		GetCalendarSchedulesService service = new GetCalendarSchedulesService(queryPort);
+
+		assertThatThrownBy(() -> service.getCalendarSchedules(
+				null,
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 31)
+		)).isInstanceOf(AuthenticationRequiredException.class);
 	}
 }

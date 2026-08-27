@@ -25,11 +25,13 @@ interface SpringDataScheduleRepository extends JpaRepository<ScheduleJpaEntity, 
 				s.creatorType as creatorType
 			from ScheduleJpaEntity s
 			where s.deletedAt is null
+			  and s.memberUuid = :memberUuid
 			  and s.startDate <= :endDate
 			  and s.endDate >= :startDate
 			order by s.startDate asc, s.endDate asc, s.scheduleId asc
 			""")
 	List<CalendarScheduleProjection> findCalendarSchedules(
+			@Param("memberUuid") UUID memberUuid,
 			@Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate
 	);

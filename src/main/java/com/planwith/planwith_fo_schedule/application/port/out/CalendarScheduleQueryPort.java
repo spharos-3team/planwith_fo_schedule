@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.UUID;
 
 import com.planwith.planwith_fo_schedule.domain.ScheduleCreatorType;
+import com.planwith.planwith_fo_schedule.domain.vo.MemberUuid;
 import com.planwith.planwith_fo_schedule.domain.vo.SchedulePeriod;
 
 public interface CalendarScheduleQueryPort {
 
-	List<CalendarScheduleData> findOverlappingSchedules(SchedulePeriod period);
+	List<CalendarScheduleData> findOverlappingSchedules(MemberUuid memberUuid, SchedulePeriod period);
 
 	record CalendarScheduleData(
 			UUID scheduleUuid,
